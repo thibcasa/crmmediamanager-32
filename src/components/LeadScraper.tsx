@@ -7,9 +7,44 @@ import { FirecrawlService } from '@/utils/FirecrawlService';
 
 export const LeadScraper = () => {
   const { toast } = useToast();
-  const [region, setRegion] = useState('');
+  const [region, setRegion] = useState('alpes-maritimes');
+  const [apiKey, setApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+
+  const handleSaveApiKey = async () => {
+    if (!apiKey) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une clé API",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const isValid = await FirecrawlService.testApiKey(apiKey);
+      if (isValid) {
+        FirecrawlService.saveApiKey(apiKey);
+        toast({
+          title: "Succès",
+          description: "Clé API sauvegardée avec succès",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Clé API invalide",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier la clé API",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleScrape = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,17 +85,42 @@ export const LeadScraper = () => {
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Recherche de Propriétaires</h2>
+
+      {!FirecrawlService.getApiKey() && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Clé API Firecrawl</label>
+            <div className="flex gap-2">
+              <Input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Entrez votre clé API Firecrawl"
+                className="flex-1"
+              />
+              <Button onClick={handleSaveApiKey}>
+                Sauvegarder
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleScrape} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Région</label>
           <Input
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            placeholder="ex: ile-de-france"
+            placeholder="ex: alpes-maritimes"
             className="w-full"
           />
         </div>
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button 
+          type="submit" 
+          disabled={isLoading || !FirecrawlService.getApiKey()} 
+          className="w-full"
+        >
           {isLoading ? "Recherche en cours..." : "Lancer la recherche"}
         </Button>
       </form>
