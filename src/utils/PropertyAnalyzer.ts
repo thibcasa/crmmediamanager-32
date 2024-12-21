@@ -1,5 +1,7 @@
+export type PropertyType = 'investment' | 'primary_residence' | 'vacation' | 'inheritance';
+
 export interface PropertyAnalysis {
-  type: 'investment' | 'primary_residence' | 'vacation' | 'inheritance';
+  type: PropertyType;
   sellingReason?: string;
   priceRange: 'low' | 'medium' | 'high';
   urgency: 'low' | 'medium' | 'high';
@@ -10,7 +12,7 @@ export class PropertyAnalyzer {
     const descLower = description.toLowerCase();
     
     // Analyse du type de bien
-    let type: PropertyAnalysis['type'] = 'primary_residence';
+    let type: PropertyType = 'primary_residence';
     if (descLower.includes('investissement') || descLower.includes('rendement') || descLower.includes('locataire')) {
       type = 'investment';
     } else if (descLower.includes('succession') || descLower.includes('héritage')) {
@@ -34,6 +36,10 @@ export class PropertyAnalyzer {
       else if (price > 500000) priceRange = 'high';
     }
 
-    return { type, urgency, priceRange };
+    return {
+      type,
+      priceRange,
+      urgency
+    };
   }
 }
