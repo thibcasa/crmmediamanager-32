@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Users, Building2, TrendingUp, Brain } from "lucide-react";
+import { LeadScraper } from "@/components/LeadScraper";
+import { EmailCampaign } from "@/components/EmailCampaign";
 
 const stats = [
   {
@@ -64,43 +66,8 @@ const Index = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Prospects Récents</h2>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-lg hover:bg-sage-50 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-sage-200" />
-                  <div>
-                    <p className="font-medium">Client {i}</p>
-                    <p className="text-sm text-muted-foreground">Dernier contact: il y a {i} jour{i > 1 ? 's' : ''}</p>
-                  </div>
-                  <div className="ml-auto">
-                    <span className="px-2 py-1 text-xs rounded-full bg-sage-100 text-sage-700">
-                      Score: {9 - i}/10
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Propriétés Populaires</h2>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-lg hover:bg-sage-50 transition-colors">
-                  <div className="w-16 h-12 rounded-lg bg-sage-200" />
-                  <div>
-                    <p className="font-medium">Appartement {i}</p>
-                    <p className="text-sm text-muted-foreground">{3 + i} pièces - {60 + i * 10}m²</p>
-                  </div>
-                  <div className="ml-auto">
-                    <p className="font-semibold">{300 + i * 50}k€</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <LeadScraper />
+          <EmailCampaign />
         </div>
       </div>
     </AppLayout>
