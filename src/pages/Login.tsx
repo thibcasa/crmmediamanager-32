@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Building2, Sparkles, Key, Mail } from 'lucide-react';
+import { Building2, Sparkles, Linkedin } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -97,7 +97,7 @@ export default function Login() {
               },
             }}
             theme="light"
-            providers={[]}
+            providers={['linkedin']}
           />
         </div>
 
