@@ -18,12 +18,14 @@ export const LinkedInConnect = () => {
         throw new Error("Vous devez être connecté pour utiliser LinkedIn");
       }
 
+      // Fixed: Using the correct callback URL path
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      console.log("Using redirect URI:", redirectUri);
+
       const { data, error } = await supabase.functions.invoke('linkedin-integration', {
         body: { 
           action: 'auth-url',
-          data: {
-            redirectUri: window.location.origin + '/auth/callback'
-          }
+          data: { redirectUri }
         }
       });
 
@@ -37,14 +39,13 @@ export const LinkedInConnect = () => {
         throw new Error("URL d'authentification invalide");
       }
 
-      console.log("Received auth URL:", data.url.substring(0, 50) + "...");
+      console.log("Received auth URL:", data.url);
       console.log("State:", data.state);
-      console.log("Redirect URI:", window.location.origin + '/auth/callback');
       
-      // Stocker l'état pour la vérification CSRF
+      // Store state for CSRF verification
       localStorage.setItem('linkedin_oauth_state', data.state);
       
-      // Rediriger vers l'URL d'authentification LinkedIn
+      // Redirect to LinkedIn auth URL
       window.location.href = data.url;
     } catch (error) {
       console.error('Erreur de connexion LinkedIn:', error);

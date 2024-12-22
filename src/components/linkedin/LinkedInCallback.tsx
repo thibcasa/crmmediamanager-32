@@ -22,8 +22,7 @@ export const LinkedInCallback = () => {
         code: code ? `${code.substring(0, 10)}...` : 'missing',
         state,
         savedState,
-        currentUrl: window.location.href,
-        origin: window.location.origin
+        currentUrl: window.location.href
       });
 
       if (!code) {
@@ -56,14 +55,16 @@ export const LinkedInCallback = () => {
           throw new Error("Utilisateur non authentifié");
         }
 
-        console.log("Exchanging code for token with user:", user.id);
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        console.log("Using redirect URI for token exchange:", redirectUri);
+
         const { error: exchangeError } = await supabase.functions.invoke('linkedin-integration', {
           body: { 
             action: 'exchange-code',
             data: { 
               code,
               userId: user.id,
-              redirectUri: window.location.origin + '/auth/callback'
+              redirectUri
             }
           }
         });
