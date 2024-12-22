@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Platform } from "@/services/SocialCampaignService";
-import { Building2, Users, Target, Megaphone, Share2, MessageCircle } from "lucide-react";
+import { Building2, Users, Target, Megaphone, Share2, MessageCircle, Facebook, Twitter, TiktokIcon, MessageSquare } from "lucide-react";
 
 interface StrategyStepProps {
   platform: Platform;
@@ -69,6 +69,12 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         title: "Engagement direct",
         description: "Interagissez avec les propriétaires potentiels",
         icon: <MessageCircle className="w-6 h-6" />
+      },
+      {
+        id: "local_trends",
+        title: "Tendances locales",
+        description: "Analysez le marché des Alpes-Maritimes",
+        icon: <Target className="w-6 h-6" />
       }
     ],
     facebook: [
@@ -83,6 +89,12 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         title: "Animation de communauté",
         description: "Créez du contenu engageant pour votre audience",
         icon: <Users className="w-6 h-6" />
+      },
+      {
+        id: "property_ads",
+        title: "Publicités ciblées",
+        description: "Campagnes publicitaires pour propriétaires",
+        icon: <Megaphone className="w-6 h-6" />
       }
     ],
     tiktok: [
@@ -97,6 +109,12 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         title: "Conseils et astuces",
         description: "Partagez votre expertise de manière dynamique",
         icon: <MessageCircle className="w-6 h-6" />
+      },
+      {
+        id: "behind_scenes",
+        title: "Coulisses immobilières",
+        description: "Montrez les aspects exclusifs du métier",
+        icon: <Target className="w-6 h-6" />
       }
     ],
     whatsapp: [
@@ -111,6 +129,12 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         title: "Mises à jour groupées",
         description: "Partagez des opportunités avec votre réseau",
         icon: <Users className="w-6 h-6" />
+      },
+      {
+        id: "property_alerts",
+        title: "Alertes propriétés",
+        description: "Notifications personnalisées pour votre audience",
+        icon: <MessageSquare className="w-6 h-6" />
       }
     ]
   };
