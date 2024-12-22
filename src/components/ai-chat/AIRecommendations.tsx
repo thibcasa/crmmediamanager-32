@@ -85,4 +85,4 @@ export const AIRecommendations = () => {
       </div>
     </div>
   );
-});
+};
