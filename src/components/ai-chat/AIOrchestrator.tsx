@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { CalendarService } from "@/services/CalendarService";
+import { AIService } from '@/services/AIService';
 
 interface WorkflowResult {
   visualData?: any;
@@ -12,61 +13,100 @@ interface WorkflowResult {
   calendarData?: any;
 }
 
+interface WorkflowConfig {
+  platform: string;
+  targetAudience: string;
+  location: string;
+  messageType: string;
+  frequency: string;
+}
+
 export const useAIOrchestrator = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const executeWorkflow = async (aiResponse: string, platform: string) => {
+  const generateContent = async (prompt: string, config: WorkflowConfig) => {
     try {
-      console.log(`Starting workflow execution for ${platform}`);
-      
-      // 1. Générer une image avec HuggingFace
-      const { data: visualData, error: visualError } = await supabase.functions.invoke('huggingface-integration', {
-        body: { 
-          action: 'generate-image',
-          data: { prompt: `Professional real estate photo in Nice, French Riviera, modern style, optimized for ${platform}` }
-        }
+      console.log('Generating content with config:', config);
+      const content = await AIService.generateContent('social', prompt, {
+        platform: config.platform,
+        targetAudience: config.targetAudience,
+        location: config.location
       });
+      return content;
+    } catch (error) {
+      console.error('Error generating content:', error);
+      throw error;
+    }
+  };
 
-      if (visualError) throw visualError;
-      console.log('Visual generated successfully');
+  const createVisual = async (prompt: string, platform: string) => {
+    try {
+      console.log('Generating visual for platform:', platform);
+      const visualData = await AIService.generateImage(
+        `Professional real estate photo in Nice, French Riviera, modern style, optimized for ${platform}`
+      );
+      return visualData;
+    } catch (error) {
+      console.error('Error generating visual:', error);
+      throw error;
+    }
+  };
 
-      // 2. Créer une campagne sociale
+  const createCampaign = async (content: string, config: WorkflowConfig) => {
+    try {
+      console.log('Creating campaign with config:', config);
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data: campaignData, error: campaignError } = await supabase
         .from('social_campaigns')
         .insert({
-          name: `Campagne ${platform} Nice - Propriétaires`,
-          platform: platform.toLowerCase(),
+          name: `Campagne ${config.platform} Nice - Propriétaires`,
+          platform: config.platform.toLowerCase(),
           status: 'active',
           targeting_criteria: {
-            location: "Nice, Alpes-Maritimes",
+            location: config.location,
             age_range: "35-65",
             job_titles: ["Cadre", "Manager", "Directeur"],
             interests: ["Immobilier", "Investissement"]
           },
-          message_template: aiResponse,
+          message_template: content,
           schedule: {
-            frequency: "daily",
+            frequency: config.frequency,
             times: ["09:00", "12:00", "17:00"],
             days: ["monday", "wednesday", "friday"]
-          }
+          },
+          user_id: userData.user.id
         })
         .select()
         .single();
 
       if (campaignError) throw campaignError;
-      console.log('Campaign created successfully');
+      return campaignData;
+    } catch (error) {
+      console.error('Error creating campaign:', error);
+      throw error;
+    }
+  };
 
-      // 3. Créer un pipeline de suivi
+  const createPipeline = async (config: WorkflowConfig) => {
+    try {
+      console.log('Creating pipeline for config:', config);
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data: pipelineData, error: pipelineError } = await supabase
         .from('pipelines')
         .insert({
-          name: `Pipeline ${platform} Nice`,
-          description: `Suivi des prospects ${platform} - Propriétaires Nice`,
+          name: `Pipeline ${config.platform} Nice`,
+          description: `Suivi des prospects ${config.platform} - Propriétaires Nice`,
+          user_id: userData.user.id,
           stages: [
             {
               name: "Premier contact",
-              criteria: { source: platform.toLowerCase(), status: "new" }
+              criteria: { source: config.platform.toLowerCase(), status: "new" }
             },
             {
               name: "Intéressé",
@@ -86,19 +126,30 @@ export const useAIOrchestrator = () => {
         .single();
 
       if (pipelineError) throw pipelineError;
-      console.log('Pipeline created successfully');
+      return pipelineData;
+    } catch (error) {
+      console.error('Error creating pipeline:', error);
+      throw error;
+    }
+  };
 
-      // 4. Créer une automatisation
+  const createAutomation = async (config: WorkflowConfig) => {
+    try {
+      console.log('Creating automation for config:', config);
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+
       const { data: automationData, error: automationError } = await supabase
         .from('automations')
         .insert({
-          name: `Suivi ${platform} Nice`,
+          name: `Suivi ${config.platform} Nice`,
+          user_id: userData.user.id,
           trigger_type: "lead_created",
-          trigger_config: { source: platform.toLowerCase() },
+          trigger_config: { source: config.platform.toLowerCase() },
           actions: [
             {
               type: "send_message",
-              template: `follow_up_${platform.toLowerCase()}`,
+              template: `follow_up_${config.platform.toLowerCase()}`,
               delay: "2d"
             },
             {
@@ -120,18 +171,51 @@ export const useAIOrchestrator = () => {
         .single();
 
       if (automationError) throw automationError;
+      return automationData;
+    } catch (error) {
+      console.error('Error creating automation:', error);
+      throw error;
+    }
+  };
+
+  const executeWorkflow = async (aiResponse: string, platform: string) => {
+    setIsProcessing(true);
+    try {
+      console.log(`Starting workflow execution for ${platform}`);
+      
+      const config: WorkflowConfig = {
+        platform,
+        targetAudience: "Propriétaires 35-65 ans",
+        location: "Nice, Alpes-Maritimes",
+        messageType: "prospection",
+        frequency: "daily"
+      };
+
+      // 1. Générer une image avec HuggingFace
+      const visualData = await createVisual(aiResponse, platform);
+      console.log('Visual generated successfully');
+
+      // 2. Créer une campagne sociale
+      const campaignData = await createCampaign(aiResponse, config);
+      console.log('Campaign created successfully');
+
+      // 3. Créer un pipeline de suivi
+      const pipelineData = await createPipeline(config);
+      console.log('Pipeline created successfully');
+
+      // 4. Créer une automatisation
+      const automationData = await createAutomation(config);
       console.log('Automation created successfully');
 
       // 5. Planifier dans le calendrier
       const calendarData = await CalendarService.createMeeting({
         title: `Campagne ${platform} - Revue de performance`,
         description: `Analyse des résultats de la campagne ${platform} et ajustements stratégiques`,
-        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
+        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         duration: 60,
         type: 'strategy_review',
         status: 'scheduled'
       });
-
       console.log('Calendar event created successfully');
 
       // 6. Poster sur la plateforme sociale
@@ -151,7 +235,6 @@ export const useAIOrchestrator = () => {
           }
         }
       });
-
       console.log(`Content scheduled on ${platform} successfully`);
 
       // 7. Rafraîchir les données
@@ -181,8 +264,10 @@ export const useAIOrchestrator = () => {
         variant: "destructive"
       });
       throw error;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  return { executeWorkflow };
+  return { executeWorkflow, isProcessing };
 };
