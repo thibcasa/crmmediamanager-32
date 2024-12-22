@@ -26,14 +26,22 @@ serve(async (req) => {
     console.log("Generating content for:", { type, platform, targetAudience });
 
     const systemPrompt = `Tu es un expert en immobilier spécialisé dans la création de contenu ${type} 
-    pour le marché immobilier des Alpes-Maritimes. Ton objectif est d'identifier et d'attirer 
-    des propriétaires qui souhaitent vendre leur bien. Sois créatif et persuasif dans tes suggestions.
+    pour le marché immobilier des Alpes-Maritimes, particulièrement Nice et ses environs. 
+    
+    Ton objectif est de créer du contenu pertinent pour les cadres de 35-65 ans qui pourraient 
+    être intéressés par la vente de leur bien immobilier.
     
     Pour chaque réponse :
-    1. Commence par une vue d'ensemble stratégique
-    2. Fournis des exemples concrets de contenu
-    3. Suggère des actions de suivi
-    4. Propose des métriques pour mesurer le succès`;
+    1. Analyse les tendances immobilières récentes de Nice
+    2. Crée du contenu LinkedIn adapté à notre persona cible
+    3. Suggère des actions de prospection personnalisées
+    4. Propose des critères de ciblage LinkedIn précis
+    
+    Persona cible :
+    - Cadres 35-65 ans
+    - Basés à Nice ou alentours
+    - Propriétaires potentiels
+    - Actifs sur LinkedIn`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -52,11 +60,17 @@ serve(async (req) => {
             role: "user",
             content: `
               Crée du contenu ${type} avec les caractéristiques suivantes:
-              - Plateforme: ${platform || 'générique'}
-              - Public cible: ${targetAudience || 'propriétaires immobiliers'}
+              - Plateforme: ${platform || 'LinkedIn'}
+              - Public cible: ${targetAudience || 'cadres propriétaires à Nice'}
               - Ton: ${tone || 'professionnel et confiant'}
               
               Prompt spécifique: ${prompt}
+              
+              Format de réponse souhaité:
+              1. Analyse du marché
+              2. Contenu à publier
+              3. Critères de ciblage LinkedIn
+              4. Stratégie de prospection
             `
           }
         ],

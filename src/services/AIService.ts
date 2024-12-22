@@ -28,18 +28,19 @@ export class AIService {
     return data;
   }
 
-  static async generateContent(type: 'email' | 'social' | 'description', prompt: string) {
+  static async generateContent(type: 'email' | 'social' | 'description', prompt: string, options = {}) {
     console.log('Generating content with prompt:', prompt);
     
     const { data, error } = await supabase.functions.invoke('content-generator', {
       body: { 
         type,
         prompt,
-        targetAudience: "propriétaires immobiliers des Alpes-Maritimes",
-        tone: "professionnel, stratégique et orienté résultats",
+        targetAudience: "cadres 35-65 ans à Nice",
+        tone: "professionnel et stratégique",
         outputFormat: "markdown",
-        platforms: ["linkedin", "instagram"],
-        includeMetrics: true
+        platforms: ["linkedin"],
+        includeMetrics: true,
+        ...options
       }
     });
 
@@ -50,5 +51,29 @@ export class AIService {
 
     console.log('Generated content:', data);
     return data?.content || data;
+  }
+
+  static async generateAndPostToLinkedIn(prompt: string) {
+    const content = await this.generateContent('social', prompt, {
+      platform: 'linkedin',
+      targetAudience: "cadres 35-65 ans à Nice",
+      tone: "professionnel et confiant"
+    });
+
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase.functions.invoke('linkedin-integration', {
+      body: {
+        action: 'post',
+        data: {
+          userId: userData.user.id,
+          content: content
+        }
+      }
+    });
+
+    if (error) throw error;
+    return data;
   }
 }
