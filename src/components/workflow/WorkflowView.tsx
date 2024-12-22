@@ -11,9 +11,13 @@ export const WorkflowView = () => {
   const { data: automations, isLoading } = useQuery({
     queryKey: ["automations"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("automations")
         .select("*")
+        .eq('user_id', user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -23,9 +27,20 @@ export const WorkflowView = () => {
 
   const handleNewAutomation = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer une automatisation.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("automations")
         .insert({
+          user_id: user.id,
           name: "Nouvelle automatisation",
           trigger_type: "lead_created",
           trigger_config: {},
