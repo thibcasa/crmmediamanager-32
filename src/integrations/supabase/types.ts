@@ -274,6 +274,48 @@ export type Database = {
           },
         ]
       }
+      linkedin_connections: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_in: number
+          id: string
+          linkedin_id: string
+          refresh_token: string
+          status:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_in: number
+          id?: string
+          linkedin_id: string
+          refresh_token: string
+          status?:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_in?: number
+          id?: string
+          linkedin_id?: string
+          refresh_token?: string
+          status?:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           created_at: string | null
@@ -455,6 +497,7 @@ export type Database = {
         | "campaign_engagement"
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"
+      linkedin_connection_status: "active" | "expired" | "revoked"
       social_platform:
         | "linkedin"
         | "twitter"

@@ -8,27 +8,28 @@ import { AIService } from "@/services/AIService";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabaseClient";
 
 const EXAMPLE_PROMPTS = [
   {
-    title: "Campagne Instagram Reels",
-    prompt: "Crée une campagne Instagram Reels pour obtenir 8 mandats de vente cette semaine dans les Alpes-Maritimes",
-    description: "Génère une stratégie complète de contenu Reels avec scripts et actions"
+    title: "Campagne LinkedIn Ciblée",
+    prompt: "Crée une stratégie de prospection sur LinkedIn pour contacter 50 propriétaires immobiliers dans les Alpes-Maritimes",
+    description: "Génère une stratégie complète de messages et connexions LinkedIn"
   },
   {
-    title: "Workflow Complet",
-    prompt: "Génère un workflow complet pour convertir les leads immobiliers en mandats",
-    description: "Création d'un parcours automatisé de nurturing et conversion"
+    title: "Campagne Multi-Réseaux",
+    prompt: "Crée une stratégie marketing combinant LinkedIn et Instagram pour obtenir 8 mandats cette semaine",
+    description: "Orchestration de messages cohérents sur LinkedIn et Instagram"
   },
   {
-    title: "Campagne Multi-Canal",
-    prompt: "Crée une stratégie marketing multi-canal (email, WhatsApp, réseaux sociaux) pour toucher les propriétaires",
-    description: "Orchestration de messages cohérents sur tous les canaux"
+    title: "Workflow Automatisé",
+    prompt: "Génère un workflow complet de nurturing LinkedIn pour convertir les prospects en mandats",
+    description: "Création d'un parcours automatisé de conversion"
   },
   {
-    title: "Contenu Créatif TikTok",
-    prompt: "Propose une série de vidéos TikTok ciblant les propriétaires immobiliers des Alpes-Maritimes",
-    description: "Concepts créatifs et scripts pour TikTok"
+    title: "Contenu Engageant",
+    prompt: "Propose une série de posts LinkedIn et Instagram ciblant les propriétaires immobiliers",
+    description: "Concepts créatifs et scripts pour les réseaux sociaux"
   }
 ];
 
@@ -38,6 +39,23 @@ const AiChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const checkLinkedInConnection = async () => {
+    const { data: connection, error } = await supabase
+      .from('linkedin_connections')
+      .select('*')
+      .single();
+
+    if (error || !connection) {
+      toast({
+        title: "LinkedIn non connecté",
+        description: "Connectez votre compte LinkedIn pour activer toutes les fonctionnalités.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,27 +67,40 @@ const AiChat = () => {
     setIsLoading(true);
 
     try {
-      const systemPrompt = `Tu es un expert en marketing immobilier et stratégie de prospection dans les Alpes-Maritimes.
+      // Vérifier la connexion LinkedIn si nécessaire
+      if (userMessage.toLowerCase().includes('linkedin')) {
+        const isConnected = await checkLinkedInConnection();
+        if (!isConnected) {
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const systemPrompt = `Tu es un expert en stratégie immobilière et marketing digital pour les Alpes-Maritimes.
       Pour chaque demande, tu dois :
-      1. Analyser l'objectif et proposer une stratégie claire
-      2. Détailler les actions concrètes à mettre en place
-      3. Fournir des exemples de contenu et messages
-      4. Définir les automatisations et workflows nécessaires
-      5. Suggérer des métriques de suivi
+      1. Analyser l'objectif et proposer une stratégie détaillée
+      2. Créer un plan d'action concret avec :
+         - Messages et contenus spécifiques pour chaque réseau social
+         - Séquences d'automatisation et workflows
+         - Templates de messages personnalisés
+         - Suggestions de visuels et créatifs
+      3. Définir les KPIs et métriques de suivi
+      4. Proposer un calendrier d'actions
       
-      Sois précis et actionnable dans tes recommandations.`;
+      Sois précis et actionnable dans tes recommandations.
+      Priorise les actions à fort impact et propose des modèles de messages.`;
       
       const response = await AIService.generateContent('description', `${systemPrompt}\n\nObjectif: ${userMessage}`);
       
-      // Ensure we have a string response
       const assistantMessage = typeof response === 'string' ? response : 
         (response?.content ? response.content : JSON.stringify(response));
       
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-      // Invalidate relevant queries to refresh data
+      // Invalider les requêtes pertinentes
       queryClient.invalidateQueries({ queryKey: ['automations'] });
       queryClient.invalidateQueries({ queryKey: ['social-campaigns'] });
+      queryClient.invalidateQueries({ queryKey: ['linkedin-connections'] });
 
       toast({
         title: "Stratégie générée",
@@ -97,7 +128,7 @@ const AiChat = () => {
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight">Assistant Stratégique Immobilier</h1>
           <p className="text-muted-foreground mt-2">
-            Je vous aide à créer et orchestrer vos stratégies de prospection immobilière
+            Je coordonne vos stratégies de prospection et génère du contenu pour tous vos canaux
           </p>
         </div>
 
@@ -154,7 +185,7 @@ const AiChat = () => {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ex: Crée une campagne Instagram pour obtenir des mandats..."
+              placeholder="Ex: Crée une stratégie LinkedIn pour obtenir des mandats..."
               disabled={isLoading}
               className="flex-1"
             />

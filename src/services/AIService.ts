@@ -36,8 +36,10 @@ export class AIService {
         type,
         prompt,
         targetAudience: "propriétaires immobiliers des Alpes-Maritimes",
-        tone: "professionnel, directif et stratégique",
-        outputFormat: "markdown"
+        tone: "professionnel, stratégique et orienté résultats",
+        outputFormat: "markdown",
+        platforms: ["linkedin", "instagram"],
+        includeMetrics: true
       }
     });
 
