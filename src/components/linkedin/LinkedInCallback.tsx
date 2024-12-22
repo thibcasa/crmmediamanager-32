@@ -3,62 +3,113 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export const LinkedInCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log("Starting LinkedIn callback handling");
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const state = params.get('state');
       const savedState = localStorage.getItem('linkedin_oauth_state');
 
-      if (!code || !state || state !== savedState) {
-        setError("Erreur d'authentification");
+      console.log("Received params:", { code: code?.substring(0, 10) + "...", state, savedState });
+
+      if (!code) {
+        setError("Code d'autorisation manquant");
+        toast({
+          title: "Erreur d'authentification",
+          description: "Code d'autorisation LinkedIn manquant",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!state || state !== savedState) {
+        setError("État de sécurité invalide");
+        toast({
+          title: "Erreur de sécurité",
+          description: "Validation de l'état LinkedIn échouée",
+          variant: "destructive"
+        });
         return;
       }
 
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Non authentifié");
+        if (!user) {
+          throw new Error("Utilisateur non authentifié");
+        }
 
-        const { error } = await supabase.functions.invoke('linkedin-integration', {
+        console.log("Exchanging code for token...");
+        const { error: exchangeError } = await supabase.functions.invoke('linkedin-integration', {
           body: { 
             action: 'exchange-code',
             data: { 
               code,
-              userId: user.id
+              userId: user.id,
+              redirectUri: window.location.origin + '/linkedin-callback'
             }
           }
         });
 
-        if (error) throw error;
+        if (exchangeError) {
+          console.error("Exchange error:", exchangeError);
+          throw exchangeError;
+        }
+
+        console.log("LinkedIn connection successful");
+        toast({
+          title: "Connexion réussie",
+          description: "Votre compte LinkedIn est maintenant connecté",
+        });
 
         // Nettoyer et rediriger
         localStorage.removeItem('linkedin_oauth_state');
         navigate('/ai-chat');
       } catch (err) {
         console.error('Erreur callback LinkedIn:', err);
-        setError("Impossible de finaliser la connexion");
+        setError("Impossible de finaliser la connexion LinkedIn");
+        toast({
+          title: "Erreur de connexion",
+          description: "Impossible de finaliser la connexion LinkedIn. Veuillez réessayer.",
+          variant: "destructive"
+        });
       }
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   if (error) {
     return (
-      <Card className="p-4 max-w-md mx-auto mt-8">
-        <p className="text-red-500">{error}</p>
+      <Card className="p-6 max-w-md mx-auto mt-8">
+        <p className="text-red-500 text-center">{error}</p>
+        <button 
+          onClick={() => navigate('/ai-chat')}
+          className="mt-4 w-full bg-sage-600 text-white px-4 py-2 rounded hover:bg-sage-700"
+        >
+          Retour
+        </button>
       </Card>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <Card className="p-6 w-full max-w-md">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
+          <p className="text-sage-700 text-center">
+            Connexion à LinkedIn en cours...
+          </p>
+        </div>
+      </Card>
     </div>
   );
 };
