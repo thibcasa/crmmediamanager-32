@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LeadList } from "@/components/leads/LeadList";
+import { SocialCampaigns } from "@/components/SocialCampaigns";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
           </p>
         </div>
 
+        <SocialCampaigns />
         <LeadList />
       </div>
     </AppLayout>
