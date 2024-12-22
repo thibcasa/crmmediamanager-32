@@ -12,14 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 2000; // 2 secondes
+const RETRY_DELAY = 2000;
 
 const AiChat = () => {
-  console.log('Rendering AiChat component');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [activeTab, setActiveTab] = useState("chat");
   const { executeWorkflow } = useAIOrchestrator();
   const { toast } = useToast();
 
@@ -191,13 +191,13 @@ const AiChat = () => {
         )}
       </div>
 
-      <Tabs defaultValue="chat" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat">
+        <TabsContent value="chat" className="space-y-4">
           <Card className="p-6 bg-white shadow-sm border-sage-200">
             <h2 className="text-xl font-semibold text-sage-800 mb-4">Statut des connexions</h2>
             <LinkedInStatus />
@@ -216,7 +216,7 @@ const AiChat = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="recommendations">
+        <TabsContent value="recommendations" className="mt-4">
           <AIRecommendations />
         </TabsContent>
       </Tabs>
