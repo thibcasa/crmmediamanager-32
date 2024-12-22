@@ -200,6 +200,53 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_interactions: {
+        Row: {
+          channel: string | null
+          completed_at: string | null
+          content: string | null
+          created_at: string | null
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          scheduled_at: string | null
+          status: string | null
+          type: string
+        }
+        Insert: {
+          channel?: string | null
+          completed_at?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          scheduled_at?: string | null
+          status?: string | null
+          type: string
+        }
+        Update: {
+          channel?: string | null
+          completed_at?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          scheduled_at?: string | null
+          status?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           consent_details: Json | null
@@ -366,6 +413,90 @@ export type Database = {
           },
         ]
       }
+      multichannel_campaigns: {
+        Row: {
+          channels: Json | null
+          content: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          metrics: Json | null
+          name: string
+          schedule: Json | null
+          status: string | null
+          targeting: Json | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channels?: Json | null
+          content?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          name: string
+          schedule?: Json | null
+          status?: string | null
+          targeting?: Json | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channels?: Json | null
+          content?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          name?: string
+          schedule?: Json | null
+          status?: string | null
+          targeting?: Json | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      objection_scripts: {
+        Row: {
+          category: string
+          created_at: string | null
+          effectiveness_score: number | null
+          id: string
+          objection: string
+          response: string
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          objection: string
+          response: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          objection?: string
+          response?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       pipeline_stages: {
         Row: {
           automation_rules: Json | null
@@ -466,6 +597,42 @@ export type Database = {
           schedule?: Json | null
           status?: string | null
           targeting_criteria?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      workflow_templates: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          triggers: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          triggers?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          triggers?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
