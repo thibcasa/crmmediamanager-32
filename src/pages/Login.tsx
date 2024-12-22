@@ -83,10 +83,6 @@ export default function Login() {
                   email_input_placeholder: 'votre@email.com',
                   password_input_placeholder: 'Votre mot de passe',
                   link_text: 'Déjà inscrit ? Connectez-vous',
-                  password_required: 'Veuillez entrer votre mot de passe',
-                  email_required: 'Veuillez entrer votre email',
-                  email_invalid: 'Email invalide',
-                  forgot_password_label: 'Mot de passe oublié ?',
                 },
                 sign_up: {
                   email_label: 'Adresse email professionnelle',
@@ -97,8 +93,6 @@ export default function Login() {
                   password_input_placeholder: 'Minimum 8 caractères',
                   confirmation_text: 'En créant un compte, vous acceptez nos conditions d\'utilisation',
                   link_text: 'Nouveau sur ImmoAI ? Inscrivez-vous',
-                  minimum_password_message: 'Le mot de passe doit contenir au moins 8 caractères',
-                  password_mismatch: 'Les mots de passe ne correspondent pas',
                 },
               },
             }}
