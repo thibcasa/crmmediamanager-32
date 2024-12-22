@@ -58,6 +58,16 @@ export const SocialCampaigns = () => {
 
   const handleCreateCampaign = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer une campagne",
+          variant: "destructive"
+        });
+        return;
+      }
+
       await SocialCampaignService.createCampaign({
         name,
         platform,
@@ -81,7 +91,7 @@ export const SocialCampaigns = () => {
       console.error('Error creating campaign:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la campagne",
+        description: error.message || "Impossible de créer la campagne",
         variant: "destructive"
       });
     }

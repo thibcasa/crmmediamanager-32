@@ -19,16 +19,40 @@ serve(async (req) => {
 
     switch (action) {
       case 'generate-image':
-        const image = await hf.textToImage({
-          inputs: data.prompt,
-          model: 'stabilityai/stable-diffusion-xl-base-1.0',
-          parameters: {
-            negative_prompt: "low quality, blurry",
+        try {
+          console.log('Generating image with prompt:', data.prompt)
+          const image = await hf.textToImage({
+            inputs: data.prompt,
+            model: 'stabilityai/stable-diffusion-xl-base-1.0',
+            parameters: {
+              negative_prompt: "low quality, blurry",
+            }
+          })
+          
+          const arrayBuffer = await image.arrayBuffer()
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+          result = { image: `data:image/png;base64,${base64}` }
+        } catch (imageError) {
+          console.error('Image generation error:', imageError)
+          if (imageError.message?.includes('Max requests')) {
+            return new Response(
+              JSON.stringify({ 
+                error: 'Limite de requêtes atteinte',
+                details: 'Veuillez patienter une minute avant de réessayer.',
+                retry_after: 60
+              }),
+              { 
+                status: 429,
+                headers: { 
+                  ...corsHeaders, 
+                  'Content-Type': 'application/json',
+                  'Retry-After': '60'
+                } 
+              }
+            )
           }
-        })
-        const arrayBuffer = await image.arrayBuffer()
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-        result = { image: `data:image/png;base64,${base64}` }
+          throw imageError
+        }
         break
 
       case 'analyze-sentiment':
@@ -77,7 +101,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: 'Une erreur est survenue', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

@@ -6,41 +6,46 @@ export type Platform = Database['public']['Enums']['social_platform'];
 
 export class SocialCampaignService {
   static async createCampaign(campaign: Omit<SocialCampaign, 'id' | 'created_at' | 'updated_at' | 'user_id'>) {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('User not authenticated');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-    // First create the campaign in the database
+    console.log('Creating campaign for user:', user.id);
+
     const { data: campaignData, error: dbError } = await supabase
       .from('social_campaigns')
-      .insert([{ ...campaign, user_id: userData.user.id }])
+      .insert([{ 
+        ...campaign, 
+        user_id: user.id,
+        status: campaign.status || 'draft'
+      }])
       .select()
       .single();
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error('Database error:', dbError);
+      throw dbError;
+    }
 
-    // Then trigger the social media integration
-    const { error: integrationError } = await supabase.functions.invoke('social-media-integration', {
-      body: {
-        platform: campaign.platform,
-        action: 'create_campaign',
-        data: {
-          ...campaign,
-          userId: userData.user.id
-        }
-      }
-    });
-
-    if (integrationError) throw integrationError;
     return campaignData;
   }
 
   static async getCampaigns() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    console.log('Fetching campaigns for user:', user.id);
+    
     const { data, error } = await supabase
       .from('social_campaigns')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching campaigns:', error);
+      throw error;
+    }
+
     return data;
   }
 
