@@ -19,7 +19,7 @@ interface StepConfig {
 export const WorkflowSteps = () => {
   const { toast } = useToast();
   const { executeWorkflow, isProcessing } = useAIOrchestrator();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState('step1');
   const [config, setConfig] = useState<StepConfig>({
     platform: 'linkedin',
     strategy: '',
@@ -28,17 +28,17 @@ export const WorkflowSteps = () => {
 
   const handlePlatformSelect = (platform: Platform) => {
     setConfig(prev => ({ ...prev, platform }));
-    setCurrentStep(2);
+    setCurrentStep('step2');
   };
 
   const handleStrategySelect = (strategy: string) => {
     setConfig(prev => ({ ...prev, strategy }));
-    setCurrentStep(3);
+    setCurrentStep('step3');
   };
 
   const handleFormatSelect = (format: string) => {
     setConfig(prev => ({ ...prev, format }));
-    setCurrentStep(4);
+    setCurrentStep('step4');
   };
 
   const handleLaunchCampaign = async () => {
@@ -64,7 +64,7 @@ export const WorkflowSteps = () => {
 
   return (
     <Card className="p-6">
-      <Tabs value={`step${currentStep}`} className="w-full">
+      <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="step1" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
