@@ -21,12 +21,6 @@ serve(async (req) => {
       throw new Error('La clé API OpenAI n\'est pas configurée. Veuillez l\'ajouter dans les paramètres.');
     }
 
-    // Validate API key format (should start with "sk-")
-    if (!OPENAI_API_KEY.startsWith('sk-')) {
-      console.error('Invalid OpenAI API key format');
-      throw new Error('Format de la clé API OpenAI invalide. La clé doit commencer par "sk-".');
-    }
-
     const { type = 'social', prompt, platform = 'linkedin', options = {} } = await req.json();
     
     console.log(`Generating ${type} content for ${platform}`);
@@ -61,9 +55,8 @@ serve(async (req) => {
       const error = await response.text();
       console.error('OpenAI API error:', error);
       
-      // Check for specific error types
       if (error.includes('invalid_api_key')) {
-        throw new Error('La clé API OpenAI est invalide. Veuillez vérifier que vous avez copié la bonne clé.');
+        throw new Error('La clé API OpenAI est invalide. Veuillez vérifier votre clé sur https://platform.openai.com/api-keys');
       }
       
       throw new Error('Erreur lors de la communication avec l\'API OpenAI. Veuillez réessayer.');
@@ -80,7 +73,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in content-generator function:', error);
     
-    // Provide specific error messages based on the error type
     let errorMessage = "Une erreur est survenue lors de la génération du contenu. Veuillez réessayer.";
     
     if (error.message.includes('API OpenAI')) {
