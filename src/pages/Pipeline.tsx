@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { PipelineView } from "@/components/pipeline/PipelineView";
+import { PipelineBoard } from "@/components/pipeline/PipelineBoard";
 
 const Pipeline = () => {
   return (
@@ -11,7 +11,7 @@ const Pipeline = () => {
             Gérez vos prospects à travers les différentes étapes de votre processus de vente.
           </p>
         </div>
-        <PipelineView />
+        <PipelineBoard />
       </div>
     </AppLayout>
   );
