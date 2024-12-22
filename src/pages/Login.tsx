@@ -82,15 +82,6 @@ export default function Login() {
                 message: 'text-sm text-sage-600 flex items-center gap-2',
               },
             }}
-            providers={['linkedin']}
-            socialLayout="vertical"
-            onError={(error) => {
-              toast({
-                variant: "destructive",
-                title: "Erreur de connexion",
-                description: error.message,
-              });
-            }}
           />
         </div>
 
