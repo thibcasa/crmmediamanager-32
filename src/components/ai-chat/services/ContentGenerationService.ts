@@ -24,28 +24,28 @@ export class ContentGenerationService {
 
   static async createVisual(prompt: string, platform: string, retryCount = 0) {
     try {
-      console.log('Generating visual for platform:', platform);
+      console.log('Generating visual with DALL-E for platform:', platform);
       
-      const { data, error } = await supabase.functions.invoke('huggingface-integration', {
-        body: { prompt }
+      const { data, error } = await supabase.functions.invoke('openai-image-generation', {
+        body: { 
+          prompt: `Professional real estate photo in Nice, French Riviera, modern style, optimized for ${platform}. ${prompt}`,
+          size: "1024x1024",
+          quality: "standard",
+          style: "natural"
+        }
       });
 
       if (error) {
-        // Si on a une erreur de rate limit
-        if (error.status === 429) {
-          if (retryCount < MAX_RETRIES) {
-            console.log(`Tentative ${retryCount + 1}/${MAX_RETRIES} - Attente de ${RETRY_DELAY}ms`);
-            
-            // Notification à l'utilisateur
-            toast({
-              title: "Limite atteinte",
-              description: `Nouvelle tentative dans ${RETRY_DELAY/1000} secondes...`,
-            });
-            
-            // Attendre avant de réessayer
-            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-            return this.createVisual(prompt, platform, retryCount + 1);
-          }
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Tentative ${retryCount + 1}/${MAX_RETRIES} - Attente de ${RETRY_DELAY}ms`);
+          
+          toast({
+            title: "Erreur de génération",
+            description: `Nouvelle tentative dans ${RETRY_DELAY/1000} secondes...`,
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          return this.createVisual(prompt, platform, retryCount + 1);
         }
         throw error;
       }
@@ -54,7 +54,6 @@ export class ContentGenerationService {
     } catch (error) {
       console.error('Error generating visual:', error);
       
-      // Si on a épuisé toutes les tentatives
       if (retryCount >= MAX_RETRIES) {
         toast({
           title: "Erreur",
