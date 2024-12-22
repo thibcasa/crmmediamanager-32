@@ -1,8 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -16,10 +14,11 @@ serve(async (req) => {
 
   try {
     console.log('Starting content generation...');
-
-    if (!OPENAI_API_KEY) {
-      console.error('OpenAI API key is not configured');
-      throw new Error('OpenAI API key is not configured');
+    
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    if (!OPENAI_API_KEY || OPENAI_API_KEY.includes('https://')) {
+      console.error('Invalid OpenAI API key configuration');
+      throw new Error('La clé API OpenAI est invalide. Veuillez vérifier la configuration.');
     }
 
     const { type = 'social', prompt, platform = 'linkedin', options = {} } = await req.json();
@@ -35,6 +34,7 @@ serve(async (req) => {
     3. Suggérer des actions de prospection
     4. Proposer des critères de ciblage précis`;
 
+    console.log('Making request to OpenAI API...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -54,7 +54,7 @@ serve(async (req) => {
     if (!response.ok) {
       const error = await response.text();
       console.error('OpenAI API error:', error);
-      throw new Error(`Erreur OpenAI: ${error}`);
+      throw new Error(`Erreur de l'API OpenAI. Veuillez vérifier votre clé API et réessayer.`);
     }
 
     const data = await response.json();
@@ -68,9 +68,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in content-generator function:', error);
     
+    // Provide a more user-friendly error message
+    const errorMessage = error.message.includes('OpenAI') 
+      ? error.message 
+      : "Une erreur est survenue lors de la génération du contenu. Veuillez réessayer.";
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: errorMessage,
         details: error.stack,
         timestamp: new Date().toISOString()
       }),
