@@ -9,26 +9,34 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Vérifier la clé API OpenAI
     if (!OPENAI_API_KEY) {
-      console.error("OPENAI_API_KEY non configurée");
+      console.error("OPENAI_API_KEY manquante");
       throw new Error("Configuration OpenAI manquante");
     }
 
-    const { type = 'social', prompt, platform = 'linkedin', targetAudience, tone } = await req.json();
+    const { prompt, type = 'social', platform = 'linkedin' } = await req.json();
     
-    console.log("Début de la génération de contenu:", {
-      type,
-      platform,
-      targetAudience,
-      hasPrompt: !!prompt
-    });
+    console.log("Génération de contenu pour:", { type, platform, prompt: prompt.substring(0, 100) + "..." });
+
+    const systemPrompt = `Tu es un expert en immobilier spécialisé dans la création de contenu pour le marché des Alpes-Maritimes.
+    Ton objectif est de créer du contenu pertinent et professionnel pour les propriétaires de biens immobiliers.
+    
+    Pour chaque demande, tu dois :
+    1. Analyser les tendances du marché local
+    2. Créer du contenu adapté à la plateforme ${platform}
+    3. Suggérer des actions de prospection
+    4. Proposer des critères de ciblage précis
+    
+    Format de réponse :
+    1. Analyse du marché
+    2. Contenu à publier
+    3. Critères de ciblage
+    4. Actions recommandées`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -41,8 +49,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Tu es un expert en immobilier spécialisé dans la création de contenu pour le marché des Alpes-Maritimes.
-            Ton objectif est de créer du contenu pertinent pour les propriétaires de biens immobiliers.`
+            content: systemPrompt
           },
           {
             role: "user",
@@ -70,11 +77,11 @@ serve(async (req) => {
   } catch (error) {
     console.error("Erreur détaillée:", error);
     
-    // Retourner une réponse d'erreur plus détaillée
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack
+        details: error.stack,
+        timestamp: new Date().toISOString()
       }),
       { 
         status: 500,
