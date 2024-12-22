@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import Prospects from './pages/Prospects';
+import Pipeline from './pages/Pipeline';
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/prospects" element={<Prospects />} />
+          <Route path="/pipeline" element={<Pipeline />} />
         </Routes>
       </Router>
     </QueryClientProvider>

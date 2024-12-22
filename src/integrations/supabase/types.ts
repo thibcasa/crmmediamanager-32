@@ -163,6 +163,7 @@ export type Database = {
           notes: string | null
           persona_type: string | null
           phone: string | null
+          pipeline_stage_id: string | null
           score: number
           source: Database["public"]["Enums"]["lead_source"]
           source_campaign: string | null
@@ -183,6 +184,7 @@ export type Database = {
           notes?: string | null
           persona_type?: string | null
           phone?: string | null
+          pipeline_stage_id?: string | null
           score?: number
           source: Database["public"]["Enums"]["lead_source"]
           source_campaign?: string | null
@@ -203,12 +205,57 @@ export type Database = {
           notes?: string | null
           persona_type?: string | null
           phone?: string | null
+          pipeline_stage_id?: string | null
           score?: number
           source?: Database["public"]["Enums"]["lead_source"]
           source_campaign?: string | null
           source_platform?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_pipeline_stage_id_fkey"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_stages: {
+        Row: {
+          automation_rules: Json | null
+          created_at: string | null
+          id: string
+          name: string
+          next_stage_conditions: Json | null
+          order_index: number
+          required_actions: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          automation_rules?: Json | null
+          created_at?: string | null
+          id?: string
+          name: string
+          next_stage_conditions?: Json | null
+          order_index: number
+          required_actions?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          automation_rules?: Json | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          next_stage_conditions?: Json | null
+          order_index?: number
+          required_actions?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
