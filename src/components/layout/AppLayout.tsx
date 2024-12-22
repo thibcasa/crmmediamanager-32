@@ -1,5 +1,5 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
-import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch } from "lucide-react";
+import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch, Calendar, Workflow } from "lucide-react";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -7,6 +7,8 @@ const menuItems = [
   { icon: GitBranch, label: "Pipeline", path: "/pipeline" },
   { icon: Building2, label: "Propriétés", path: "/properties" },
   { icon: MessageSquare, label: "Chat IA", path: "/ai-chat" },
+  { icon: Calendar, label: "Calendrier", path: "/calendar" },
+  { icon: Workflow, label: "Workflow", path: "/workflow" },
   { icon: BarChart3, label: "Analyses", path: "/analytics" },
 ];
 

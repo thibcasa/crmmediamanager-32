@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Pipeline from "./pages/Pipeline";
 import Prospects from "./pages/Prospects";
 import AiChat from "./pages/AiChat";
+import Calendar from "./pages/Calendar";
+import Workflow from "./pages/Workflow";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +27,8 @@ function App() {
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/prospects" element={<Prospects />} />
           <Route path="/ai-chat" element={<AiChat />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/workflow" element={<Workflow />} />
         </Routes>
       </Router>
     </QueryClientProvider>
