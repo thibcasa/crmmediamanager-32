@@ -4,13 +4,24 @@ import { supabase } from '@/lib/supabaseClient';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Building2, Sparkles, Linkedin } from 'lucide-react';
+import { Building2, Sparkles } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/');
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      }
+    });
+
+    // Check current session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate('/');
       }
@@ -21,10 +32,8 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
-      {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-sage-50 via-sage-100 to-sage-200 animate-gradient" />
       
-      {/* Decorative elements */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-10 left-10 w-20 h-20 bg-sage-300 rounded-full blur-xl animate-pulse" />
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-sage-400 rounded-full blur-xl animate-pulse delay-300" />
@@ -73,34 +82,15 @@ export default function Login() {
                 message: 'text-sm text-sage-600 flex items-center gap-2',
               },
             }}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: 'Adresse email',
-                  password_label: 'Mot de passe',
-                  button_label: 'Se connecter',
-                  loading_button_label: 'Connexion en cours...',
-                  email_input_placeholder: 'agence@immobilier.com',
-                  password_input_placeholder: 'Votre mot de passe sécurisé',
-                  link_text: 'Pas encore de compte ? Inscrivez-vous',
-                  social_provider_text: 'Continuer avec {{provider}}',
-                },
-                sign_up: {
-                  email_label: 'Adresse email professionnelle',
-                  password_label: 'Choisissez un mot de passe sécurisé',
-                  button_label: 'Créer mon compte',
-                  loading_button_label: 'Création en cours...',
-                  email_input_placeholder: 'votre-agence@immobilier.com',
-                  password_input_placeholder: '8 caractères minimum avec chiffres et lettres',
-                  confirmation_text: 'En créant un compte, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité',
-                  link_text: 'Déjà un compte ? Connectez-vous',
-                  social_provider_text: 'Continuer avec {{provider}}',
-                },
-              },
-            }}
-            theme="light"
             providers={['linkedin']}
             socialLayout="vertical"
+            onError={(error) => {
+              toast({
+                variant: "destructive",
+                title: "Erreur de connexion",
+                description: error.message,
+              });
+            }}
           />
         </div>
 
