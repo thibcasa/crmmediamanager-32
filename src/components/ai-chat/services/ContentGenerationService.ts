@@ -38,7 +38,6 @@ export class ContentGenerationService {
       if (error) {
         console.error('Error from OpenAI function:', error);
         
-        // Check if we should retry
         if (retryCount < MAX_RETRIES) {
           console.log(`Retry attempt ${retryCount + 1}/${MAX_RETRIES} - Waiting ${RETRY_DELAY}ms`);
           
