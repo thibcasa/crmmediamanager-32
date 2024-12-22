@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,25 +8,29 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { prompt, size = "1024x1024", quality = "standard", style = "natural" } = await req.json()
-    
-    console.log('Starting image generation with DALL-E:', { prompt, size, quality, style })
-    
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured')
-      throw new Error('OpenAI API key is not configured')
+
+    if (!prompt) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
+
+    console.log('Generating image with prompt:', prompt)
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
       },
       body: JSON.stringify({
         model: "dall-e-3",
@@ -39,32 +42,32 @@ serve(async (req) => {
       }),
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('OpenAI API error response:', errorText)
-      throw new Error(`OpenAI API error: ${errorText}`)
-    }
-
     const data = await response.json()
-    console.log('Image generated successfully')
 
-    if (!data.data?.[0]?.url) {
-      console.error('Invalid response format from OpenAI:', data)
-      throw new Error('Invalid response format from OpenAI')
+    if (!response.ok) {
+      console.error('OpenAI API error:', data)
+      return new Response(
+        JSON.stringify({ error: data.error?.message || 'Failed to generate image' }),
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
+    console.log('Image generated successfully')
+    
     return new Response(
       JSON.stringify({ image: data.data[0].url }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
     )
 
   } catch (error) {
-    console.error('Error in image generation:', error)
+    console.error('Edge function error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: 'Error generating image',
-        details: error.message 
-      }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
