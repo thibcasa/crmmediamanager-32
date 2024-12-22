@@ -3,7 +3,7 @@ import { WorkflowConfig } from '../types/workflow';
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/components/ui/use-toast";
 
-const RETRY_DELAY = 2000; // 2 secondes
+const RETRY_DELAY = 2000; // 2 seconds
 const MAX_RETRIES = 3;
 
 export class ContentGenerationService {
@@ -24,7 +24,7 @@ export class ContentGenerationService {
 
   static async createVisual(prompt: string, platform: string, retryCount = 0) {
     try {
-      console.log('Generating visual with DALL-E for platform:', platform);
+      console.log('Starting visual generation for platform:', platform);
       
       const { data, error } = await supabase.functions.invoke('openai-image-generation', {
         body: { 
@@ -36,23 +36,31 @@ export class ContentGenerationService {
       });
 
       if (error) {
+        console.error('Error from OpenAI function:', error);
+        
+        // Check if we should retry
         if (retryCount < MAX_RETRIES) {
-          console.log(`Tentative ${retryCount + 1}/${MAX_RETRIES} - Attente de ${RETRY_DELAY}ms`);
+          console.log(`Retry attempt ${retryCount + 1}/${MAX_RETRIES} - Waiting ${RETRY_DELAY}ms`);
           
           toast({
-            title: "Erreur de génération",
+            title: "Génération en cours",
             description: `Nouvelle tentative dans ${RETRY_DELAY/1000} secondes...`,
           });
           
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
           return this.createVisual(prompt, platform, retryCount + 1);
         }
+        
         throw error;
+      }
+
+      if (!data?.image) {
+        throw new Error('Invalid response format: missing image URL');
       }
 
       return data;
     } catch (error) {
-      console.error('Error generating visual:', error);
+      console.error('Error in createVisual:', error);
       
       if (retryCount >= MAX_RETRIES) {
         toast({

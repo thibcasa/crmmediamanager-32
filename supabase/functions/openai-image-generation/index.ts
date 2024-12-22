@@ -14,10 +14,11 @@ serve(async (req) => {
   try {
     const { prompt, size = "1024x1024", quality = "standard", style = "natural" } = await req.json()
     
-    console.log('Generating image with DALL-E:', { prompt, size, quality, style })
+    console.log('Starting image generation with DALL-E:', { prompt, size, quality, style })
     
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
+      console.error('OpenAI API key not configured')
       throw new Error('OpenAI API key is not configured')
     }
 
@@ -38,13 +39,18 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('OpenAI API error:', error)
-      throw new Error('Error generating image with DALL-E')
+      const errorText = await response.text()
+      console.error('OpenAI API error response:', errorText)
+      throw new Error(`OpenAI API error: ${errorText}`)
     }
 
     const data = await response.json()
     console.log('Image generated successfully')
+
+    if (!data.data?.[0]?.url) {
+      console.error('Invalid response format from OpenAI:', data)
+      throw new Error('Invalid response format from OpenAI')
+    }
 
     return new Response(
       JSON.stringify({ image: data.data[0].url }),
