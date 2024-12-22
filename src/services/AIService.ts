@@ -29,11 +29,23 @@ export class AIService {
   }
 
   static async generateContent(type: 'email' | 'social' | 'description', prompt: string) {
-    const { data, error } = await supabase.functions.invoke('huggingface-integration', {
-      body: { action: 'generate-content', data: { type, prompt } }
+    console.log('Generating content with prompt:', prompt);
+    
+    const { data, error } = await supabase.functions.invoke('content-generator', {
+      body: { 
+        type,
+        prompt,
+        targetAudience: "propriétaires immobiliers des Alpes-Maritimes",
+        tone: "professionnel et persuasif"
+      }
     });
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('Error generating content:', error);
+      throw error;
+    }
+
+    console.log('Generated content:', data);
+    return data?.content || data;
   }
 }
