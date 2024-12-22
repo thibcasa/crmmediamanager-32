@@ -18,17 +18,15 @@ export const LinkedInConnect = () => {
         throw new Error("Vous devez être connecté pour utiliser LinkedIn");
       }
 
-      // Ensure we're using the correct origin for the redirect URI
       const redirectUri = `${window.location.origin}/auth/callback`;
       console.log("Using redirect URI:", redirectUri);
 
-      // Call the LinkedIn integration Edge Function
       const { data, error } = await supabase.functions.invoke('linkedin-integration', {
         body: { 
           action: 'auth-url',
           data: { 
             redirectUri,
-            userId: user.id // Add user ID to the request
+            userId: user.id
           }
         }
       });
@@ -46,10 +44,7 @@ export const LinkedInConnect = () => {
       console.log("Received LinkedIn auth URL:", data.url);
       console.log("LinkedIn state token:", data.state);
       
-      // Store state for CSRF verification
       localStorage.setItem('linkedin_oauth_state', data.state);
-      
-      // Redirect to LinkedIn auth URL
       window.location.href = data.url;
 
     } catch (error) {
