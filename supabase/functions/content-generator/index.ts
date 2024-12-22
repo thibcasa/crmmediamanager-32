@@ -7,17 +7,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ContentRequest {
+  prompt: string;
+  type: 'social' | 'email' | 'blog';
+  platform?: string;
+  targetAudience?: string;
+  tone?: string;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, type } = await req.json();
+    const { prompt, type, platform, targetAudience, tone }: ContentRequest = await req.json();
 
-    const systemPrompt = type === 'email' 
-      ? "Tu es un expert en immobilier qui écrit des emails personnalisés et professionnels."
-      : "Tu es un expert en immobilier qui crée du contenu engageant pour les réseaux sociaux.";
+    console.log("Generating content for:", { type, platform, targetAudience });
+
+    const systemPrompt = `Tu es un expert en immobilier spécialisé dans la création de contenu ${type} 
+    pour le marché immobilier des Alpes-Maritimes. Ton objectif est d'identifier et d'attirer 
+    des propriétaires qui souhaitent vendre leur bien.`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -26,7 +36,7 @@ serve(async (req) => {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -34,7 +44,14 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: prompt
+            content: `
+              Crée du contenu ${type} avec les caractéristiques suivantes:
+              - Plateforme: ${platform || 'générique'}
+              - Public cible: ${targetAudience || 'propriétaires immobiliers'}
+              - Ton: ${tone || 'professionnel et confiant'}
+              
+              Prompt spécifique: ${prompt}
+            `
           }
         ],
         temperature: 0.7,
