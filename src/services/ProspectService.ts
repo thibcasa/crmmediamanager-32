@@ -17,6 +17,53 @@ export interface Prospect {
 }
 
 export class ProspectService {
+  static async getProspects() {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { data, error } = await supabase
+      .from('leads')
+      .select(`
+        *,
+        lead_interactions (
+          type,
+          content,
+          metadata
+        )
+      `)
+      .eq('user_id', userData.user.id)
+      .order('score', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching prospects:', error);
+      throw new Error('Failed to fetch prospects');
+    }
+
+    return data;
+  }
+
+  static async getSuccessfulStrategies(qualification: 'lead' | 'prospect' | 'client') {
+    const { data, error } = await supabase
+      .from('lead_interactions')
+      .select(`
+        *,
+        leads!inner (qualification)
+      `)
+      .eq('type', 'ai_strategy')
+      .eq('leads.qualification', qualification)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching successful strategies:', error);
+      throw new Error('Failed to fetch successful strategies');
+    }
+
+    return data;
+  }
+
   static async createProspect(prospectData: Omit<Prospect, 'id' | 'created_at' | 'user_id'>) {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) {
@@ -85,26 +132,6 @@ export class ProspectService {
       console.error('Error in lead scoring function:', error);
       throw new Error('Failed to process lead scoring');
     }
-  }
-
-  static async getProspects() {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      throw new Error('User not authenticated');
-    }
-
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('user_id', userData.user.id)
-      .order('score', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching prospects:', error);
-      throw new Error('Failed to fetch prospects');
-    }
-
-    return data;
   }
 
   static async getProspectById(id: string) {
