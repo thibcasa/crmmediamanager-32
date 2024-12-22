@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SENDINBLUE_API_KEY = Deno.env.get("SENDINBLUE_API_KEY");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,28 +25,27 @@ serve(async (req) => {
       throw new Error('Champs requis manquants')
     }
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    if (!RESEND_API_KEY) {
-      throw new Error('Clé API Resend manquante')
+    const SENDINBLUE_API_KEY = Deno.env.get('SENDINBLUE_API_KEY')
+    if (!SENDINBLUE_API_KEY) {
+      throw new Error('Clé API SendinBlue manquante')
     }
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'api-key': SENDINBLUE_API_KEY,
       },
       body: JSON.stringify({
-        from: 'Estimation Express <contact@estimationexpress.com>',
-        to,
+        sender: {
+          name: "Estimation Express",
+          email: "contact@estimationexpress.com"
+        },
+        to: [{ email: to }],
         subject,
-        html,
-        text: html.replace(/<[^>]*>/g, ''), // Version texte pour meilleure délivrabilité
-        tags: [{ name: 'type', value: 'estimation' }],
-        headers: {
-          'List-Unsubscribe': '<{{unsubscribe}}>', // Requis par la loi française
-          'Content-Language': 'fr-FR'
-        }
+        htmlContent: html,
+        tags: ['estimation'],
       }),
     })
 
