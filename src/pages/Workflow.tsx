@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { WorkflowView } from "@/components/workflow/WorkflowView";
+import { WorkflowSteps } from "@/components/workflow/WorkflowSteps";
 
 const Workflow = () => {
   return (
@@ -8,10 +8,10 @@ const Workflow = () => {
         <div>
           <h1 className="text-4xl font-bold tracking-tight">Workflow</h1>
           <p className="text-muted-foreground mt-2">
-            Gérez vos processus et automatisations.
+            Créez et gérez vos campagnes marketing étape par étape.
           </p>
         </div>
-        <WorkflowView />
+        <WorkflowSteps />
       </div>
     </AppLayout>
   );

@@ -6,133 +6,108 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Rate limiting configuration
+// Configuration des limites
 const RATE_LIMIT_WINDOW = 60000 // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 3 // Reduced to match HuggingFace's limit
+const MAX_REQUESTS_PER_WINDOW = 3 // Limite HuggingFace
 const requestTimestamps: number[] = []
 
 function isRateLimited(): boolean {
   const now = Date.now()
-  // Remove timestamps older than the window
+  // Nettoyer les anciennes requêtes
   while (requestTimestamps.length > 0 && requestTimestamps[0] < now - RATE_LIMIT_WINDOW) {
     requestTimestamps.shift()
   }
-  // Check if we're over the limit
-  if (requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
-    return true
-  }
-  // Add current timestamp
-  requestTimestamps.push(now)
-  return false
+  return requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Gestion CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Check rate limit before processing
+    // Vérification des limites
     if (isRateLimited()) {
-      console.log('Local rate limit exceeded')
+      console.log('Limite de requêtes atteinte')
       return new Response(
         JSON.stringify({
           error: 'Rate limit exceeded',
-          details: 'Please wait a minute before trying again',
-          retryAfter: RATE_LIMIT_WINDOW / 1000 // seconds
+          details: 'Veuillez patienter une minute',
+          retryAfter: 60
         }),
         {
           status: 429,
           headers: { 
             ...corsHeaders, 
             'Content-Type': 'application/json',
-            'Retry-After': (RATE_LIMIT_WINDOW / 1000).toString()
+            'Retry-After': '60'
           }
         }
       )
     }
 
-    const { action, data } = await req.json()
+    const { prompt } = await req.json()
     const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
 
-    console.log('Processing request:', { action, data })
-
-    if (action === 'generate-image') {
-      try {
-        console.log('Generating image with prompt:', data.prompt)
-        const image = await hf.textToImage({
-          inputs: data.prompt,
-          model: 'black-forest-labs/FLUX.1-schnell',
-          parameters: {
-            num_inference_steps: 30,
-            guidance_scale: 7.5
-          }
-        })
-
-        // Convert the blob to a base64 string
-        const arrayBuffer = await image.arrayBuffer()
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-
-        console.log('Image generated successfully')
-        return new Response(
-          JSON.stringify({ image: `data:image/png;base64,${base64}` }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      } catch (error) {
-        console.error('Error generating image:', error)
-        
-        // Check for various rate limit error messages
-        if (
-          error.message?.includes('Rate limit') ||
-          error.message?.includes('Max requests') ||
-          error.message?.includes('Too Many Requests')
-        ) {
-          return new Response(
-            JSON.stringify({
-              error: 'Rate limit exceeded',
-              details: 'HuggingFace rate limit reached. Please wait a minute before trying again.',
-              retryAfter: 60 // HuggingFace's typical rate limit window
-            }),
-            {
-              status: 429,
-              headers: { 
-                ...corsHeaders, 
-                'Content-Type': 'application/json',
-                'Retry-After': '60'
-              }
-            }
-          )
+    try {
+      console.log('Génération d\'image pour:', prompt)
+      const image = await hf.textToImage({
+        inputs: prompt,
+        model: 'stabilityai/stable-diffusion-xl-base-1.0',
+        parameters: {
+          negative_prompt: "low quality, blurry, distorted",
+          num_inference_steps: 30,
+          guidance_scale: 7.5
         }
+      })
 
-        // For other errors, throw to be caught by the outer try-catch
-        throw error
+      // Ajout du timestamp pour le rate limiting
+      requestTimestamps.push(Date.now())
+
+      // Conversion en base64
+      const arrayBuffer = await image.arrayBuffer()
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+
+      return new Response(
+        JSON.stringify({ image: `data:image/png;base64,${base64}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+    } catch (error) {
+      console.error('Erreur HuggingFace:', error)
+      
+      if (error.message?.includes('Rate limit') || error.message?.includes('Max requests')) {
+        return new Response(
+          JSON.stringify({
+            error: 'Rate limit exceeded',
+            details: 'Limite HuggingFace atteinte',
+            retryAfter: 60
+          }),
+          {
+            status: 429,
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json',
+              'Retry-After': '60'
+            }
+          }
+        )
       }
+
+      throw error
     }
 
-    return new Response(
-      JSON.stringify({ error: 'Invalid action' }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
-
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('Erreur générale:', error)
     return new Response(
       JSON.stringify({
-        error: 'An unexpected error occurred',
-        details: error.message,
-        retryAfter: 60 // Suggest retry after 1 minute for any unexpected errors
+        error: 'Erreur inattendue',
+        details: error.message
       }),
       {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Retry-After': '60'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
