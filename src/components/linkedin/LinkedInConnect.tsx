@@ -8,6 +8,7 @@ export const LinkedInConnect = () => {
 
   const handleConnect = async () => {
     try {
+      console.log('Démarrage de la connexion LinkedIn...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
@@ -16,21 +17,25 @@ export const LinkedInConnect = () => {
         }
       });
 
+      console.log('Réponse de signInWithOAuth:', { data, error });
+
       if (error) {
-        console.error('LinkedIn connection error:', error);
+        console.error('Erreur de connexion LinkedIn:', error);
         toast({
           title: "Erreur de connexion",
           description: error.message || "Impossible de se connecter à LinkedIn",
           variant: "destructive",
         });
+        return;
       }
 
       if (!data) {
+        console.error('Aucune donnée reçue de LinkedIn');
         throw new Error('Aucune donnée reçue de LinkedIn');
       }
 
     } catch (error) {
-      console.error('Error connecting to LinkedIn:', error);
+      console.error('Erreur lors de la connexion LinkedIn:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la connexion",
