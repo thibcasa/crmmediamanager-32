@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 60000 // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 10
+const MAX_REQUESTS_PER_WINDOW = 3 // Reduced to match HuggingFace's limit
 const requestTimestamps: number[] = []
 
 function isRateLimited(): boolean {
@@ -33,17 +33,22 @@ serve(async (req) => {
   }
 
   try {
-    // Check rate limit
+    // Check rate limit before processing
     if (isRateLimited()) {
-      console.log('Rate limit exceeded')
+      console.log('Local rate limit exceeded')
       return new Response(
         JSON.stringify({
           error: 'Rate limit exceeded',
-          details: 'Please wait a minute before trying again'
+          details: 'Please wait a minute before trying again',
+          retryAfter: RATE_LIMIT_WINDOW / 1000 // seconds
         }),
         {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': (RATE_LIMIT_WINDOW / 1000).toString()
+          }
         }
       )
     }
@@ -77,19 +82,30 @@ serve(async (req) => {
       } catch (error) {
         console.error('Error generating image:', error)
         
-        if (error.message?.includes('Rate limit')) {
+        // Check for various rate limit error messages
+        if (
+          error.message?.includes('Rate limit') ||
+          error.message?.includes('Max requests') ||
+          error.message?.includes('Too Many Requests')
+        ) {
           return new Response(
             JSON.stringify({
               error: 'Rate limit exceeded',
-              details: 'Please wait a minute before trying again'
+              details: 'HuggingFace rate limit reached. Please wait a minute before trying again.',
+              retryAfter: 60 // HuggingFace's typical rate limit window
             }),
             {
               status: 429,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              headers: { 
+                ...corsHeaders, 
+                'Content-Type': 'application/json',
+                'Retry-After': '60'
+              }
             }
           )
         }
 
+        // For other errors, throw to be caught by the outer try-catch
         throw error
       }
     }
@@ -107,11 +123,16 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: 'An unexpected error occurred',
-        details: error.message
+        details: error.message,
+        retryAfter: 60 // Suggest retry after 1 minute for any unexpected errors
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': '60'
+        }
       }
     )
   }
