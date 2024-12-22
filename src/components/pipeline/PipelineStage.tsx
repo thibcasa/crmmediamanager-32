@@ -23,10 +23,14 @@ export const PipelineStage = ({ stage }: PipelineStageProps) => {
   const { data: leads } = useQuery({
     queryKey: ["stage-leads", stage.id],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("leads")
         .select("*")
         .eq("pipeline_stage_id", stage.id)
+        .eq("user_id", user.id)
         .order("last_contact_date", { ascending: false });
       
       if (error) throw error;

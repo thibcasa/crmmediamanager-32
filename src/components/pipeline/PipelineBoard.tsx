@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PipelineStage } from "./PipelineStage";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { PipelineHeader } from "./PipelineHeader";
 
 export const PipelineBoard = () => {
   const { toast } = useToast();
@@ -13,9 +14,13 @@ export const PipelineBoard = () => {
   const { data: stages, isLoading: isLoadingStages } = useQuery({
     queryKey: ["pipeline-stages"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from("pipeline_stages")
         .select("*")
+        .eq('user_id', user.id)
         .order("order_index");
       
       if (error) throw error;
@@ -62,31 +67,40 @@ export const PipelineBoard = () => {
 
   if (isLoadingStages) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Skeleton key={i} className="h-[600px] w-full" />
-        ))}
+      <div className="space-y-8">
+        <PipelineHeader />
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="h-[600px] w-full" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!stages?.length) {
     return (
-      <Card className="p-6 text-center">
-        <p className="mb-4">Aucun pipeline n'a été configuré.</p>
-        <Button onClick={handleGeneratePipeline}>
-          <Plus className="w-4 h-4 mr-2" />
-          Générer un pipeline avec l'IA
-        </Button>
-      </Card>
+      <div className="space-y-8">
+        <PipelineHeader />
+        <Card className="p-6 text-center">
+          <p className="mb-4">Aucun pipeline n'a été configuré.</p>
+          <Button onClick={handleGeneratePipeline}>
+            <Plus className="w-4 h-4 mr-2" />
+            Générer un pipeline avec l'IA
+          </Button>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {stages.map((stage) => (
-        <PipelineStage key={stage.id} stage={stage} />
-      ))}
+    <div className="space-y-8">
+      <PipelineHeader />
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {stages.map((stage) => (
+          <PipelineStage key={stage.id} stage={stage} />
+        ))}
+      </div>
     </div>
   );
 };
