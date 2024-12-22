@@ -10,11 +10,14 @@ export const LinkedInCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const { data: authData, error: authError } = await supabase.auth.getSession();
-        
-        if (authError) throw authError;
-        
-        if (authData?.session) {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (error) throw error;
+          
           console.log('LinkedIn authentication successful');
           toast({
             title: "Connexion réussie",
@@ -22,13 +25,7 @@ export const LinkedInCallback = () => {
           });
           navigate('/ai-chat');
         } else {
-          console.error('No session found after LinkedIn callback');
-          toast({
-            title: "Erreur de connexion",
-            description: "La connexion avec LinkedIn a échoué",
-            variant: "destructive",
-          });
-          navigate('/login');
+          throw new Error('No code parameter found');
         }
       } catch (error) {
         console.error('Error in LinkedIn callback:', error);

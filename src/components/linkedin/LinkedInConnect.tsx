@@ -9,10 +9,10 @@ export const LinkedInConnect = () => {
   const handleConnect = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'linkedin',
+        provider: 'linkedin_oidc',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'w_member_social',
+          scopes: 'openid profile email w_member_social',
         }
       });
 
