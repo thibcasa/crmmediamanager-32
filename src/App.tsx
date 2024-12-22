@@ -1,19 +1,53 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { LinkedInCallback } from '@/components/linkedin/LinkedInCallback';
+import { Toaster } from '@/components/ui/toaster';
+import Login from '@/pages/Login';
 import AiChat from '@/pages/AiChat';
-import { Toaster } from "@/components/ui/toaster";
+import { useAuthStatus } from '@/hooks/useAuthStatus';
+import { AppLayout } from '@/components/layout/AppLayout';
 
-function App() {
+export default function App() {
+  const { isAuthenticated, isLoading } = useAuthStatus();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-sage-500" />
+      </div>
+    );
+  }
+
   return (
     <Router>
-      <AppLayout>
-        <Routes>
-          <Route path="/ai-chat" element={<AiChat />} />
-        </Routes>
-      </AppLayout>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<LinkedInCallback />} />
+        <Route 
+          path="/" 
+          element={
+            isAuthenticated ? (
+              <AppLayout>
+                <AiChat />
+              </AppLayout>
+            ) : (
+              <Login />
+            )
+          } 
+        />
+        <Route 
+          path="/ai-chat" 
+          element={
+            isAuthenticated ? (
+              <AppLayout>
+                <AiChat />
+              </AppLayout>
+            ) : (
+              <Login />
+            )
+          } 
+        />
+      </Routes>
       <Toaster />
     </Router>
   );
 }
-
-export default App;

@@ -1,4 +1,3 @@
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { AIService } from "@/services/AIService";
 import { useState, useEffect } from "react";
@@ -45,7 +44,6 @@ const AiChat = () => {
       
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-      // Exécuter le workflow pour chaque plateforme
       for (const platform of SUPPORTED_PLATFORMS) {
         console.log(`Executing workflow for ${platform}`);
         try {
