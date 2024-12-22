@@ -12,14 +12,17 @@ export const LinkedInStatus = () => {
   useEffect(() => {
     const checkLinkedInConnection = async () => {
       try {
+        console.log('Vérification de la connexion LinkedIn...');
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
+          console.log('Aucun utilisateur connecté');
           setIsConnected(false);
           setIsLoading(false);
           return;
         }
 
+        console.log('Recherche de la connexion LinkedIn pour l\'utilisateur:', user.id);
         const { data: connection, error } = await supabase
           .from('linkedin_connections')
           .select('*')
@@ -28,7 +31,7 @@ export const LinkedInStatus = () => {
           .single();
 
         if (error) {
-          console.error('Error checking LinkedIn connection:', error);
+          console.error('Erreur lors de la vérification de la connexion LinkedIn:', error);
           toast({
             title: "Erreur",
             description: "Impossible de vérifier la connexion LinkedIn",
@@ -36,9 +39,10 @@ export const LinkedInStatus = () => {
           });
         }
 
+        console.log('Statut de la connexion LinkedIn:', !!connection);
         setIsConnected(!!connection);
       } catch (error) {
-        console.error('Error in LinkedIn status check:', error);
+        console.error('Erreur lors de la vérification du statut LinkedIn:', error);
       } finally {
         setIsLoading(false);
       }

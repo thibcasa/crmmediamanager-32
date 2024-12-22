@@ -9,11 +9,19 @@ export const LinkedInConnect = () => {
   const handleConnect = async () => {
     try {
       console.log('Démarrage de la connexion LinkedIn...');
+      
+      // Vérifier si l'URL de redirection est correcte
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      console.log('URL de redirection:', redirectUrl);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
           scopes: 'openid profile email w_member_social',
+          queryParams: {
+            prompt: 'consent'
+          }
         }
       });
 
@@ -33,6 +41,11 @@ export const LinkedInConnect = () => {
         console.error('Aucune donnée reçue de LinkedIn');
         throw new Error('Aucune donnée reçue de LinkedIn');
       }
+
+      toast({
+        title: "Redirection en cours",
+        description: "Vous allez être redirigé vers LinkedIn pour l'authentification",
+      });
 
     } catch (error) {
       console.error('Erreur lors de la connexion LinkedIn:', error);
