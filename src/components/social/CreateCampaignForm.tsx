@@ -69,6 +69,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         targeting_criteria: JSON.parse(targetingCriteria || '{}'),
         status: 'draft',
         schedule: schedule ? JSON.parse(schedule) : null,
+        ai_feedback: null // Add this line to include the ai_feedback field
       });
       
       onSuccess();
