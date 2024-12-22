@@ -16,7 +16,11 @@ serve(async (req) => {
     const linkedinClientId = Deno.env.get('LINKEDIN_CLIENT_ID');
     const linkedinClientSecret = Deno.env.get('LINKEDIN_CLIENT_SECRET');
 
-    console.log('LinkedIn Integration - Action:', action, 'Data:', data);
+    console.log('LinkedIn Integration - Action:', action, 'Data:', {
+      ...data,
+      code: data.code ? '***' : undefined,
+      access_token: data.access_token ? '***' : undefined
+    });
 
     if (!linkedinClientId || !linkedinClientSecret) {
       throw new Error('LinkedIn credentials missing');
@@ -28,14 +32,16 @@ serve(async (req) => {
     );
 
     switch (action) {
-      case 'auth-url':
-        const redirectUri = data.redirectUri;
-        // Mise à jour des scopes selon la configuration
+      case 'auth-url': {
+        const { redirectUri } = data;
         const scope = 'openid profile w_member_social email';
         const state = crypto.randomUUID();
         
-        console.log('Generating auth URL with redirect:', redirectUri);
-        console.log('Using scopes:', scope);
+        console.log('Generating auth URL with:', {
+          redirectUri,
+          scope,
+          state: state.substring(0, 8) + '...'
+        });
         
         const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
           `response_type=code&` +
@@ -44,14 +50,27 @@ serve(async (req) => {
           `state=${state}&` +
           `scope=${encodeURIComponent(scope)}`;
 
+        console.log('Generated auth URL:', authUrl.substring(0, 100) + '...');
+
         return new Response(
           JSON.stringify({ url: authUrl, state }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
 
-      case 'exchange-code':
-        console.log('Exchanging code for token');
-        const { code, userId } = data;
+      case 'exchange-code': {
+        console.log('Starting code exchange process');
+        const { code, userId, redirectUri } = data;
+
+        if (!code || !userId || !redirectUri) {
+          throw new Error('Missing required parameters for code exchange');
+        }
+
+        console.log('Exchanging code for token with params:', {
+          userId,
+          redirectUri,
+          code: code.substring(0, 8) + '...'
+        });
 
         const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
           method: 'POST',
@@ -63,7 +82,7 @@ serve(async (req) => {
             code,
             client_id: linkedinClientId,
             client_secret: linkedinClientSecret,
-            redirect_uri: `${req.headers.get('origin')}/linkedin-callback`,
+            redirect_uri: redirectUri,
           }),
         });
 
@@ -71,8 +90,10 @@ serve(async (req) => {
         
         if (!tokenResponse.ok) {
           console.error('Token exchange error:', tokenData);
-          throw new Error('Failed to exchange code for token');
+          throw new Error(`Failed to exchange code: ${tokenData.error_description || 'Unknown error'}`);
         }
+
+        console.log('Successfully obtained token');
 
         // Get LinkedIn profile
         const profileResponse = await fetch('https://api.linkedin.com/v2/me', {
@@ -82,6 +103,12 @@ serve(async (req) => {
         });
 
         const profileData = await profileResponse.json();
+        
+        if (!profileResponse.ok) {
+          console.error('Profile fetch error:', profileData);
+          throw new Error('Failed to fetch LinkedIn profile');
+        }
+
         console.log('Retrieved LinkedIn profile:', profileData.id);
 
         // Store connection in database
@@ -101,20 +128,27 @@ serve(async (req) => {
           throw new Error('Failed to store LinkedIn connection');
         }
 
+        console.log('Successfully stored LinkedIn connection');
+
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
 
-      case 'post':
-        console.log('Attempting to post to LinkedIn');
-        const { content, userId: postUserId } = data;
+      case 'post': {
+        console.log('Starting LinkedIn post process');
+        const { content, userId } = data;
         
+        if (!content || !userId) {
+          throw new Error('Missing required parameters for post');
+        }
+
         // Fetch user's LinkedIn connection
         const { data: connection, error: fetchError } = await supabaseClient
           .from('linkedin_connections')
           .select('*')
-          .eq('user_id', postUserId)
+          .eq('user_id', userId)
           .eq('status', 'active')
           .single();
 
@@ -122,6 +156,8 @@ serve(async (req) => {
           console.error('Error fetching LinkedIn connection:', fetchError);
           throw new Error('LinkedIn connection not found or inactive');
         }
+
+        console.log('Found active LinkedIn connection');
 
         // Create the post
         const postResponse = await fetch('https://api.linkedin.com/v2/ugcPosts', {
@@ -155,12 +191,13 @@ serve(async (req) => {
           throw new Error(`Failed to post to LinkedIn: ${postResult.message || 'Unknown error'}`);
         }
 
-        console.log('Successfully posted to LinkedIn:', postResult);
+        console.log('Successfully posted to LinkedIn');
 
         return new Response(
           JSON.stringify({ success: true, data: postResult }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
 
       default:
         throw new Error(`Action non supportée: ${action}`);
