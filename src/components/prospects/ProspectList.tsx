@@ -1,43 +1,43 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
-import { useAuth } from '@/hooks/useAuth';
-import { ProspectStats } from './ProspectStats';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { 
-  CalendarIcon, 
-  MailIcon, 
-  PhoneIcon, 
-  PencilIcon, 
-  TrashIcon,
-  UserIcon
-} from "lucide-react";
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { supabase } from '@/lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
+import { Users, Calendar, MessageSquare } from 'lucide-react';
 
 export const ProspectList = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    checkAuth();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      if (session) {
+        loadProspects();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+    if (user) {
       loadProspects();
     }
-  }, [isAuthenticated]);
+  };
 
   const loadProspects = async () => {
+    if (!isAuthenticated) return;
+    
     setIsLoading(true);
     try {
       const data = await ProspectService.getProspects();
@@ -86,30 +86,6 @@ export const ProspectList = () => {
     }
   };
 
-  const handleDeleteProspect = async (prospectId: string) => {
-    try {
-      await ProspectService.deleteProspect(prospectId);
-      toast({
-        title: "Succès",
-        description: "Prospect supprimé",
-      });
-      loadProspects();
-    } catch (error) {
-      console.error('Error deleting prospect:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le prospect",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 50) return "text-yellow-600";
-    return "text-red-600";
-  };
-
   if (!isAuthenticated) {
     return (
       <Card className="p-6">
@@ -120,103 +96,65 @@ export const ProspectList = () => {
 
   return (
     <div className="space-y-6">
-      <ProspectStats prospects={prospects} />
-      
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Liste des Prospects</h2>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <MailIcon className="h-4 w-4 mr-2" />
-              Campagne Email
-            </Button>
-            <Button>
-              <UserIcon className="h-4 w-4 mr-2" />
-              Nouveau Prospect
-            </Button>
-          </div>
-        </div>
+      {/* Navigation Buttons */}
+      <div className="flex gap-4 flex-wrap">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/prospects')}
+        >
+          <Users className="h-4 w-4" />
+          Liste des Prospects
+        </Button>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/calendar')}
+        >
+          <Calendar className="h-4 w-4" />
+          Calendrier des RDV
+        </Button>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/ai-chat')}
+        >
+          <MessageSquare className="h-4 w-4" />
+          Campagnes
+        </Button>
+      </div>
 
+      <Card className="p-6 space-y-6">
+        <h2 className="text-2xl font-semibold">Liste des Prospects</h2>
         {isLoading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
+          <div>Chargement...</div>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Dernier contact</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {prospects.map((prospect) => (
-                  <TableRow key={prospect.id}>
-                    <TableCell className="font-medium">
-                      {prospect.first_name} {prospect.last_name}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="flex items-center text-sm">
-                          <MailIcon className="h-3 w-3 mr-1" />
-                          {prospect.email}
-                        </span>
-                        {prospect.phone && (
-                          <span className="flex items-center text-sm">
-                            <PhoneIcon className="h-3 w-3 mr-1" />
-                            {prospect.phone}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{prospect.source}</TableCell>
-                    <TableCell>
-                      <span className={getScoreColor(prospect.score)}>
-                        {prospect.score}
+          <div className="space-y-4">
+            {prospects.map((prospect) => (
+              <Card key={prospect.id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{prospect.first_name} {prospect.last_name}</p>
+                    <p className="text-sm text-gray-600">{prospect.email}</p>
+                    <div className="mt-2 flex gap-2">
+                      <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                        Score: {prospect.score}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100">
-                        {prospect.status}
+                      <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                        Status: {prospect.status}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(prospect.last_contact_date), 'dd MMM yyyy', { locale: fr })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleScheduleMeeting(prospect.id)}
-                        >
-                          <CalendarIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteProspect(prospect.id)}
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => handleScheduleMeeting(prospect.id)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Programmer RDV
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
       </Card>
