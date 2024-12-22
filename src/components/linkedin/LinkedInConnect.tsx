@@ -12,6 +12,12 @@ export const LinkedInConnect = () => {
     setIsLoading(true);
     try {
       console.log("Initiating LinkedIn connection...");
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("Vous devez être connecté pour utiliser LinkedIn");
+      }
+
       const { data, error } = await supabase.functions.invoke('linkedin-integration', {
         body: { 
           action: 'auth-url',
@@ -44,7 +50,7 @@ export const LinkedInConnect = () => {
       console.error('Erreur de connexion LinkedIn:', error);
       toast({
         title: "Erreur de connexion",
-        description: "Impossible de se connecter à LinkedIn. Veuillez réessayer.",
+        description: error instanceof Error ? error.message : "Impossible de se connecter à LinkedIn. Veuillez réessayer.",
         variant: "destructive"
       });
     } finally {
