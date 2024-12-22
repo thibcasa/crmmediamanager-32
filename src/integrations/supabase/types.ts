@@ -11,46 +11,103 @@ export type Database = {
     Tables: {
       leads: {
         Row: {
+          consent_details: Json | null
           created_at: string
           email: string
           first_name: string
+          gdpr_consent: boolean | null
+          gdpr_consent_date: string | null
           id: string
           last_contact_date: string
           last_name: string
           notes: string | null
+          persona_type: string | null
           phone: string | null
           score: number
           source: Database["public"]["Enums"]["lead_source"]
+          source_campaign: string | null
+          source_platform: string | null
           status: Database["public"]["Enums"]["lead_status"]
           user_id: string
         }
         Insert: {
+          consent_details?: Json | null
           created_at?: string
           email: string
           first_name: string
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
           id?: string
           last_contact_date?: string
           last_name: string
           notes?: string | null
+          persona_type?: string | null
           phone?: string | null
           score?: number
           source: Database["public"]["Enums"]["lead_source"]
+          source_campaign?: string | null
+          source_platform?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           user_id: string
         }
         Update: {
+          consent_details?: Json | null
           created_at?: string
           email?: string
           first_name?: string
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
           id?: string
           last_contact_date?: string
           last_name?: string
           notes?: string | null
+          persona_type?: string | null
           phone?: string | null
           score?: number
           source?: Database["public"]["Enums"]["lead_source"]
+          source_campaign?: string | null
+          source_platform?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      social_campaigns: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_template: string | null
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          schedule: Json | null
+          status: string | null
+          targeting_criteria: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_template?: string | null
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          schedule?: Json | null
+          status?: string | null
+          targeting_criteria?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_template?: string | null
+          name?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          schedule?: Json | null
+          status?: string | null
+          targeting_criteria?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -64,6 +121,7 @@ export type Database = {
     Enums: {
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"
+      social_platform: "linkedin" | "twitter" | "facebook" | "instagram"
     }
     CompositeTypes: {
       [_ in never]: never

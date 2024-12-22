@@ -4,6 +4,7 @@ import { Users, Building2, TrendingUp, Brain } from "lucide-react";
 import { LeadScraper } from "@/components/LeadScraper";
 import { EmailCampaign } from "@/components/EmailCampaign";
 import { ProspectList } from "@/components/ProspectList";
+import { SocialCampaigns } from "@/components/SocialCampaigns";
 
 const stats = [
   {
@@ -68,10 +69,11 @@ const Index = () => {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <LeadScraper />
-          <EmailCampaign />
+          <SocialCampaigns />
         </div>
 
-        <div className="w-full">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <EmailCampaign />
           <ProspectList />
         </div>
       </div>
