@@ -22,7 +22,7 @@ export const LinkedInConnect = () => {
         body: { 
           action: 'auth-url',
           data: {
-            redirectUri: window.location.origin + '/linkedin-callback'
+            redirectUri: window.location.origin + '/auth/callback'
           }
         }
       });
@@ -39,7 +39,7 @@ export const LinkedInConnect = () => {
 
       console.log("Received auth URL:", data.url.substring(0, 50) + "...");
       console.log("State:", data.state);
-      console.log("Redirect URI:", window.location.origin + '/linkedin-callback');
+      console.log("Redirect URI:", window.location.origin + '/auth/callback');
       
       // Stocker l'état pour la vérification CSRF
       localStorage.setItem('linkedin_oauth_state', data.state);

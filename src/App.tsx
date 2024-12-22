@@ -20,7 +20,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/linkedin-callback" element={<LinkedInCallback />} />
+        <Route path="/auth/callback" element={<LinkedInCallback />} />
         <Route path="/" element={isAuthenticated ? <AiChat /> : <Login />} />
         <Route path="/ai-chat" element={isAuthenticated ? <AiChat /> : <Login />} />
       </Routes>

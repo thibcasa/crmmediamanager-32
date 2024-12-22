@@ -63,7 +63,7 @@ export const LinkedInCallback = () => {
             data: { 
               code,
               userId: user.id,
-              redirectUri: window.location.origin + '/linkedin-callback'
+              redirectUri: window.location.origin + '/auth/callback'
             }
           }
         });
