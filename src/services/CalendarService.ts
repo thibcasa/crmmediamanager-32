@@ -1,18 +1,19 @@
 import { supabase } from '@/lib/supabaseClient';
 import { GetSecretsResponse } from '@/types/supabase';
+import { Meeting, MeetingType } from '@/types/meetings';
 
-export interface Meeting {
-  id: string;
-  prospectId: string;
+export interface CreateMeetingParams {
+  title: string;
   date: Date;
   duration: number;
-  type: 'discovery' | 'follow_up' | 'closing';
+  type: MeetingType;
   status: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
+  description?: string;
+  lead_id?: string;
 }
 
 export class CalendarService {
-  static async createMeeting(meeting: Omit<Meeting, 'id'>) {
+  static async createMeeting(meeting: CreateMeetingParams) {
     const { data: secrets } = await supabase.functions.invoke<GetSecretsResponse>('get-secrets');
     
     if (!secrets?.data?.GOOGLE_CALENDAR_API_KEY) {
@@ -27,7 +28,8 @@ export class CalendarService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        summary: `Meeting with Prospect ${meeting.prospectId}`,
+        summary: meeting.title,
+        description: meeting.description,
         start: {
           dateTime: meeting.date.toISOString()
         },
