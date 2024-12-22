@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PipelineStageProps {
   stage: {
@@ -23,7 +24,9 @@ interface PipelineStageProps {
 }
 
 export const PipelineStage = ({ stage }: PipelineStageProps) => {
-  const { data: leads } = useQuery({
+  const { toast } = useToast();
+
+  const { data: leads, isLoading } = useQuery({
     queryKey: ["stage-leads", stage.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -36,10 +39,51 @@ export const PipelineStage = ({ stage }: PipelineStageProps) => {
         .eq("user_id", user.id)
         .order("last_contact_date", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching leads:", error);
+        throw error;
+      }
       return data;
     },
   });
+
+  const handleMoveToNextStage = async (leadId: string) => {
+    try {
+      const { data: stages } = await supabase
+        .from("pipeline_stages")
+        .select("id, order_index")
+        .eq("order_index", stage.order_index + 1)
+        .single();
+
+      if (!stages) {
+        toast({
+          title: "Erreur",
+          description: "Aucune étape suivante trouvée",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("leads")
+        .update({ pipeline_stage_id: stages.id })
+        .eq("id", leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Lead déplacé à l'étape suivante",
+      });
+    } catch (error) {
+      console.error("Error moving lead:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de déplacer le lead",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";
@@ -67,48 +111,62 @@ export const PipelineStage = ({ stage }: PipelineStageProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {leads?.map((lead) => (
-          <Card key={lead.id} className="p-4 hover:shadow-md transition-shadow">
-            <div className="space-y-2">
-              <div className="flex items-start justify-between">
-                <div className="font-medium flex items-center gap-2">
-                  <UserIcon className="w-4 h-4" />
-                  {lead.first_name} {lead.last_name}
-                </div>
-                <span className={`${getScoreColor(lead.score)} font-medium`}>
-                  {lead.score}
-                </span>
-              </div>
-              
-              <div className="text-sm space-y-1 text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MailIcon className="w-3 h-3" />
-                  {lead.email}
-                </div>
-                {lead.phone && (
-                  <div className="flex items-center gap-2">
-                    <PhoneIcon className="w-3 h-3" />
-                    {lead.phone}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-32">
+            <span className="text-muted-foreground">Chargement...</span>
+          </div>
+        ) : leads && leads.length > 0 ? (
+          leads.map((lead) => (
+            <Card key={lead.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="font-medium flex items-center gap-2">
+                    <UserIcon className="w-4 h-4" />
+                    {lead.first_name} {lead.last_name}
                   </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-3 h-3" />
-                  {format(new Date(lead.last_contact_date), 'dd MMM yyyy', { locale: fr })}
+                  <span className={`${getScoreColor(lead.score)} font-medium`}>
+                    {lead.score}
+                  </span>
+                </div>
+                
+                <div className="text-sm space-y-1 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <MailIcon className="w-3 h-3" />
+                    {lead.email}
+                  </div>
+                  {lead.phone && (
+                    <div className="flex items-center gap-2">
+                      <PhoneIcon className="w-3 h-3" />
+                      {lead.phone}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-3 h-3" />
+                    {format(new Date(lead.last_contact_date), 'dd MMM yyyy', { locale: fr })}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-2">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Détails
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleMoveToNextStage(lead.id)}
+                  >
+                    <ArrowRightIcon className="w-4 h-4 mr-2" />
+                    Étape suivante
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex gap-2 mt-2">
-                <Button variant="outline" size="sm" className="w-full">
-                  Détails
-                </Button>
-                <Button size="sm" className="w-full">
-                  <ArrowRightIcon className="w-4 h-4 mr-2" />
-                  Étape suivante
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        ) : (
+          <div className="text-center text-muted-foreground">
+            Aucun lead dans cette étape
+          </div>
+        )}
       </CardContent>
     </Card>
   );
