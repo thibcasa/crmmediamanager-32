@@ -18,6 +18,7 @@ export const LinkedInConnect = () => {
         throw new Error("Vous devez être connecté pour utiliser LinkedIn");
       }
 
+      // Get the current domain for the redirect URI
       const redirectUri = `${window.location.origin}/auth/callback`;
       console.log("Using redirect URI:", redirectUri);
 

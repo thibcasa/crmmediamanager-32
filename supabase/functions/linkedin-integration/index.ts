@@ -31,6 +31,7 @@ serve(async (req) => {
       case 'auth-url': {
         const { redirectUri } = data;
         const state = crypto.randomUUID();
+        console.log('Generating auth URL with redirect URI:', redirectUri);
         const authUrl = linkedInAuth.generateAuthUrl(linkedinClientId, redirectUri, state);
         
         return new Response(
@@ -41,6 +42,7 @@ serve(async (req) => {
 
       case 'exchange-code': {
         const { code, userId, redirectUri } = data;
+        console.log('Exchanging code with redirect URI:', redirectUri);
         
         const tokenData = await linkedInApi.getAccessToken(
           code,
