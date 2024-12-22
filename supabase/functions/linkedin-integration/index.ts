@@ -29,11 +29,13 @@ serve(async (req) => {
 
     switch (action) {
       case 'auth-url':
-        const redirectUri = `${req.headers.get('origin')}/linkedin-callback`;
-        const scope = 'r_liteprofile w_member_social r_emailaddress w_member_social';
+        const redirectUri = data.redirectUri;
+        // Mise à jour des scopes selon la configuration
+        const scope = 'openid profile w_member_social email';
         const state = crypto.randomUUID();
         
         console.log('Generating auth URL with redirect:', redirectUri);
+        console.log('Using scopes:', scope);
         
         const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
           `response_type=code&` +
