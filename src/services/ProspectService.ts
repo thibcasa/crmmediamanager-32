@@ -18,7 +18,9 @@ export interface Prospect {
 export class ProspectService {
   static async createProspect(prospectData: Omit<Prospect, 'id' | 'created_at' | 'user_id'>) {
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('User not authenticated');
+    if (!userData.user) {
+      throw new Error('User not authenticated');
+    }
 
     const { data, error } = await supabase
       .from('leads')
@@ -26,11 +28,12 @@ export class ProspectService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating prospect:', error);
+      throw new Error('Failed to create prospect');
+    }
 
-    // Calculer le score initial
     await this.updateProspectScore(data.id);
-
     return data;
   }
 
@@ -42,9 +45,11 @@ export class ProspectService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating prospect:', error);
+      throw new Error('Failed to update prospect');
+    }
 
-    // Recalculer le score si des données importantes sont modifiées
     if (updates.email || updates.phone || updates.source || updates.notes || updates.status) {
       await this.updateProspectScore(id);
     }
@@ -53,33 +58,51 @@ export class ProspectService {
   }
 
   static async updateProspectScore(id: string) {
-    const { data: lead, error } = await supabase
+    const { data: lead, error: leadError } = await supabase
       .from('leads')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error) throw error;
+    if (leadError) {
+      console.error('Error fetching lead for scoring:', leadError);
+      throw new Error('Failed to fetch lead for scoring');
+    }
 
-    const response = await supabase.functions.invoke('lead-scoring', {
-      body: { lead }
-    });
+    try {
+      const response = await supabase.functions.invoke('lead-scoring', {
+        body: { lead }
+      });
 
-    if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Error calculating lead score:', response.error);
+        throw new Error('Failed to calculate lead score');
+      }
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      console.error('Error in lead scoring function:', error);
+      throw new Error('Failed to process lead scoring');
+    }
   }
 
   static async getProspects() {
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error('User not authenticated');
+    if (!userData.user) {
+      throw new Error('User not authenticated');
+    }
 
     const { data, error } = await supabase
       .from('leads')
       .select('*')
+      .eq('user_id', userData.user.id)
       .order('score', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching prospects:', error);
+      throw new Error('Failed to fetch prospects');
+    }
+
     return data;
   }
 
@@ -90,7 +113,23 @@ export class ProspectService {
       .eq('id', id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching prospect:', error);
+      throw new Error('Failed to fetch prospect');
+    }
+
     return data;
+  }
+
+  static async deleteProspect(id: string) {
+    const { error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting prospect:', error);
+      throw new Error('Failed to delete prospect');
+    }
   }
 }
