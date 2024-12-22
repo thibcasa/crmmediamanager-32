@@ -11,18 +11,20 @@ import { AIRecommendations } from "@/components/ai-chat/AIRecommendations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 secondes
+
 const AiChat = () => {
   console.log('Rendering AiChat component');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { executeWorkflow } = useAIOrchestrator();
   const { toast } = useToast();
 
-  // Automatically launch campaign on component mount
-  useEffect(() => {
-    const launchCampaign = async () => {
-      const campaignPrompt = `Crée une stratégie complète de prospection immobilière sur LinkedIn pour Nice avec :
+  const launchCampaignWithRetry = async (attempt = 0) => {
+    const campaignPrompt = `Crée une stratégie complète de prospection immobilière sur LinkedIn pour Nice avec :
       1. Un template de message personnalisé pour les propriétaires
       2. Des critères de ciblage précis (cadres 35-65 ans à Nice)
       3. Un planning de publication optimal (3 posts par semaine)
@@ -30,52 +32,92 @@ const AiChat = () => {
       5. Un pipeline de conversion avec les étapes clés
       6. Des visuels professionnels optimisés`;
 
-      setInput(campaignPrompt);
-      setMessages(prev => [...prev, { role: 'user', content: campaignPrompt }]);
-      setIsLoading(true);
+    setInput(campaignPrompt);
+    setMessages(prev => [...prev, { role: 'user', content: campaignPrompt }]);
+    setIsLoading(true);
+    setRetryCount(attempt);
 
-      try {
-        const response = await AIService.generateContent('description', `${getSystemPrompt()}\n\nObjectif: ${campaignPrompt}`);
-        console.log('AI response received:', response);
-        
-        const assistantMessage = typeof response === 'string' ? response : 
-          (response?.content ? response.content : JSON.stringify(response));
-        
-        setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+    try {
+      const response = await AIService.generateContent(
+        'description', 
+        `${getSystemPrompt()}\n\nObjectif: ${campaignPrompt}`
+      );
+      
+      console.log('AI response received:', response);
+      
+      const assistantMessage = typeof response === 'string' ? response : 
+        (response?.content ? response.content : JSON.stringify(response));
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-        const platforms = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
-        
-        for (const platform of platforms) {
-          console.log(`Executing workflow for ${platform}`);
-          try {
-            await executeWorkflow(assistantMessage, platform);
-            toast({
-              title: `Campagne ${platform} créée`,
-              description: "La campagne a été configurée avec succès"
-            });
-          } catch (error) {
-            console.error(`Error executing workflow for ${platform}:`, error);
-            toast({
-              title: `Erreur - ${platform}`,
-              description: `Une erreur est survenue lors de l'exécution du workflow pour ${platform}`,
-              variant: "destructive"
-            });
-          }
+      const platforms = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
+      let hasError = false;
+      
+      for (const platform of platforms) {
+        console.log(`Executing workflow for ${platform}`);
+        try {
+          await executeWorkflow(assistantMessage, platform);
+          toast({
+            title: `Campagne ${platform} créée`,
+            description: "La campagne a été configurée avec succès"
+          });
+        } catch (error) {
+          console.error(`Error executing workflow for ${platform}:`, error);
+          hasError = true;
+          toast({
+            title: `Erreur - ${platform}`,
+            description: `Une erreur est survenue lors de l'exécution du workflow pour ${platform}`,
+            variant: "destructive"
+          });
         }
+      }
 
-      } catch (error) {
-        console.error("Error generating strategy:", error);
+      // Si on a une erreur et qu'on n'a pas dépassé le nombre max de tentatives
+      if (hasError && attempt < MAX_RETRIES) {
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la génération de la stratégie",
+          title: "Nouvelle tentative",
+          description: `Relance automatique de la campagne (tentative ${attempt + 1}/${MAX_RETRIES})`,
+        });
+        
+        // Attendre un peu avant de réessayer
+        setTimeout(() => {
+          launchCampaignWithRetry(attempt + 1);
+        }, RETRY_DELAY);
+      } else if (hasError) {
+        toast({
+          title: "Échec des tentatives",
+          description: "Le nombre maximum de tentatives a été atteint. Veuillez vérifier les connexions aux réseaux sociaux.",
           variant: "destructive"
         });
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    launchCampaign();
+    } catch (error) {
+      console.error("Error generating strategy:", error);
+      
+      if (attempt < MAX_RETRIES) {
+        toast({
+          title: "Nouvelle tentative",
+          description: `Relance automatique de la génération (tentative ${attempt + 1}/${MAX_RETRIES})`,
+        });
+        
+        setTimeout(() => {
+          launchCampaignWithRetry(attempt + 1);
+        }, RETRY_DELAY);
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de générer la stratégie après plusieurs tentatives",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Lancer automatiquement la campagne au montage du composant
+  useEffect(() => {
+    launchCampaignWithRetry();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +131,11 @@ const AiChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await AIService.generateContent('description', `${getSystemPrompt()}\n\nObjectif: ${userMessage}`);
+      const response = await AIService.generateContent(
+        'description', 
+        `${getSystemPrompt()}\n\nObjectif: ${userMessage}`
+      );
+      
       console.log('AI response received:', response);
       
       const assistantMessage = typeof response === 'string' ? response : 
@@ -103,6 +149,10 @@ const AiChat = () => {
         console.log(`Executing workflow for ${platform}`);
         try {
           await executeWorkflow(assistantMessage, platform);
+          toast({
+            title: `Campagne ${platform} créée`,
+            description: "La campagne a été configurée avec succès"
+          });
         } catch (error) {
           console.error(`Error executing workflow for ${platform}:`, error);
           toast({
@@ -134,6 +184,11 @@ const AiChat = () => {
         <p className="text-sage-600 mt-3 text-lg">
           Je coordonne vos stratégies de prospection sur tous les réseaux sociaux et génère du contenu adapté
         </p>
+        {retryCount > 0 && (
+          <p className="text-sage-500 mt-2">
+            Tentative {retryCount}/{MAX_RETRIES}
+          </p>
+        )}
       </div>
 
       <Tabs defaultValue="chat" className="w-full">
