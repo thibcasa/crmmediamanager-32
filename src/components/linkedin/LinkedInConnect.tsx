@@ -21,13 +21,19 @@ export const LinkedInConnect = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("LinkedIn auth URL error:", error);
+        throw error;
+      }
       
       if (!data?.url || !data?.state) {
+        console.error("Invalid auth URL response:", data);
         throw new Error("URL d'authentification invalide");
       }
 
-      console.log("Received auth URL, redirecting...");
+      console.log("Received auth URL:", data.url.substring(0, 50) + "...");
+      console.log("State:", data.state);
+      console.log("Redirect URI:", window.location.origin + '/linkedin-callback');
       
       // Stocker l'état pour la vérification CSRF
       localStorage.setItem('linkedin_oauth_state', data.state);
@@ -38,7 +44,7 @@ export const LinkedInConnect = () => {
       console.error('Erreur de connexion LinkedIn:', error);
       toast({
         title: "Erreur de connexion",
-        description: "Impossible de se connecter à LinkedIn pour le moment.",
+        description: "Impossible de se connecter à LinkedIn. Veuillez réessayer.",
         variant: "destructive"
       });
     } finally {
