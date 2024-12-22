@@ -27,7 +27,7 @@ export const LinkedInStatus = () => {
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
         if (fetchError) {
           console.error("Error fetching LinkedIn connection:", fetchError);
