@@ -7,30 +7,37 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser(
-      req.headers.get('Authorization')?.split('Bearer ')[1] ?? ''
-    )
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization')?.split('Bearer ')[1]
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
 
-    if (!user) {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader)
+    if (userError || !user) {
       throw new Error('Not authenticated')
     }
 
-    // Création des étapes du pipeline par défaut
+    console.log('Creating pipeline stages for user:', user.id)
+
+    // Create default pipeline stages
     const { data: stages, error: stagesError } = await supabaseClient
       .from('pipeline_stages')
       .insert([
         {
-          name: 'Nouveau contact',
+          name: 'Premier contact',
           order_index: 0,
           user_id: user.id,
           automation_rules: [],
@@ -44,29 +51,22 @@ serve(async (req) => {
           required_actions: ['property_evaluation'],
         },
         {
-          name: 'Rendez-vous planifié',
-          order_index: 2,
-          user_id: user.id,
-          automation_rules: [],
-          required_actions: ['meeting_scheduled'],
-        },
-        {
           name: 'Proposition',
-          order_index: 3,
+          order_index: 2,
           user_id: user.id,
           automation_rules: [],
           required_actions: ['proposal_sent'],
         },
         {
           name: 'Négociation',
-          order_index: 4,
+          order_index: 3,
           user_id: user.id,
           automation_rules: [],
           required_actions: ['follow_up_call'],
         },
         {
-          name: 'Gagné',
-          order_index: 5,
+          name: 'Signature',
+          order_index: 4,
           user_id: user.id,
           automation_rules: [],
           required_actions: ['contract_signed'],
@@ -74,9 +74,14 @@ serve(async (req) => {
       ])
       .select()
 
-    if (stagesError) throw stagesError
+    if (stagesError) {
+      console.error('Error creating stages:', stagesError)
+      throw stagesError
+    }
 
-    // Création des automatisations par défaut
+    console.log('Creating automations for user:', user.id)
+
+    // Create default automations
     const { data: automations, error: automationsError } = await supabaseClient
       .from('automations')
       .insert([
@@ -93,13 +98,6 @@ serve(async (req) => {
                 subject: 'Bienvenue chez Estimation Express',
                 content: 'Merci de nous faire confiance pour votre projet immobilier.'
               }
-            },
-            {
-              type: 'update_pipeline_stage',
-              config: {
-                from_stage: null,
-                to_stage: stages[0].id
-              }
             }
           ],
           is_active: true
@@ -109,7 +107,6 @@ serve(async (req) => {
           name: 'Suivi après qualification',
           trigger_type: 'pipeline_stage_changed',
           trigger_config: {
-            stage_id: stages[1].id,
             delay: 24
           },
           actions: [
@@ -137,13 +134,6 @@ serve(async (req) => {
                 subject: 'Rappel de notre rendez-vous',
                 content: 'Je vous rappelle notre rendez-vous prévu demain.'
               }
-            },
-            {
-              type: 'update_pipeline_stage',
-              config: {
-                from_stage: stages[1].id,
-                to_stage: stages[2].id
-              }
             }
           ],
           is_active: true
@@ -151,12 +141,16 @@ serve(async (req) => {
       ])
       .select()
 
-    if (automationsError) throw automationsError
+    if (automationsError) {
+      console.error('Error creating automations:', automationsError)
+      throw automationsError
+    }
 
     return new Response(
       JSON.stringify({ success: true, stages, automations }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+
   } catch (error) {
     console.error('Error:', error)
     return new Response(
