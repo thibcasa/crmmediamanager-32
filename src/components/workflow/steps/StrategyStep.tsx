@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Platform } from "@/services/SocialCampaignService";
-import { Building2, Users, Target, Megaphone } from "lucide-react";
+import { Building2, Users, Target, Megaphone, Share2, MessageCircle } from "lucide-react";
 
 interface StrategyStepProps {
   platform: Platform;
@@ -55,6 +55,62 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         title: "Mise en valeur immobilière",
         description: "Présentez des biens et succès immobiliers",
         icon: <Megaphone className="w-6 h-6" />
+      }
+    ],
+    twitter: [
+      {
+        id: "market_updates",
+        title: "Actualités du marché",
+        description: "Partagez les dernières tendances immobilières",
+        icon: <Share2 className="w-6 h-6" />
+      },
+      {
+        id: "engagement",
+        title: "Engagement direct",
+        description: "Interagissez avec les propriétaires potentiels",
+        icon: <MessageCircle className="w-6 h-6" />
+      }
+    ],
+    facebook: [
+      {
+        id: "local_targeting",
+        title: "Ciblage local",
+        description: "Atteignez les propriétaires de votre région",
+        icon: <Target className="w-6 h-6" />
+      },
+      {
+        id: "community_engagement",
+        title: "Animation de communauté",
+        description: "Créez du contenu engageant pour votre audience",
+        icon: <Users className="w-6 h-6" />
+      }
+    ],
+    tiktok: [
+      {
+        id: "property_trends",
+        title: "Tendances immobilières",
+        description: "Créez des contenus viraux sur l'immobilier",
+        icon: <Share2 className="w-6 h-6" />
+      },
+      {
+        id: "tips_tricks",
+        title: "Conseils et astuces",
+        description: "Partagez votre expertise de manière dynamique",
+        icon: <MessageCircle className="w-6 h-6" />
+      }
+    ],
+    whatsapp: [
+      {
+        id: "direct_messaging",
+        title: "Messagerie directe",
+        description: "Communiquez directement avec les prospects",
+        icon: <MessageCircle className="w-6 h-6" />
+      },
+      {
+        id: "group_updates",
+        title: "Mises à jour groupées",
+        description: "Partagez des opportunités avec votre réseau",
+        icon: <Users className="w-6 h-6" />
       }
     ]
   };
