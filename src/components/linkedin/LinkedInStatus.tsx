@@ -19,11 +19,21 @@ export const LinkedInStatus = () => {
       const { data: connection, error } = await supabase
         .from('linkedin_connections')
         .select('*')
-        .single();
+        .maybeSingle();
 
-      setIsConnected(!!connection && !error);
+      if (error) {
+        console.error('Error checking LinkedIn connection:', error);
+        throw error;
+      }
+
+      setIsConnected(!!connection);
     } catch (error) {
-      console.error('Erreur vérification connexion:', error);
+      console.error('Error checking connection:', error);
+      toast({
+        title: "Erreur de vérification",
+        description: "Impossible de vérifier la connexion LinkedIn.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -31,20 +41,29 @@ export const LinkedInStatus = () => {
 
   const handleDisconnect = async () => {
     try {
-      const { error } = await supabase
+      const { data: connection, error: fetchError } = await supabase
         .from('linkedin_connections')
-        .delete()
-        .single();
+        .select('*')
+        .maybeSingle();
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
-      setIsConnected(false);
-      toast({
-        title: "Déconnecté",
-        description: "Votre compte LinkedIn a été déconnecté.",
-      });
+      if (connection) {
+        const { error: deleteError } = await supabase
+          .from('linkedin_connections')
+          .delete()
+          .eq('id', connection.id);
+
+        if (deleteError) throw deleteError;
+
+        setIsConnected(false);
+        toast({
+          title: "Déconnecté",
+          description: "Votre compte LinkedIn a été déconnecté.",
+        });
+      }
     } catch (error) {
-      console.error('Erreur déconnexion:', error);
+      console.error('Error disconnecting:', error);
       toast({
         title: "Erreur",
         description: "Impossible de déconnecter le compte LinkedIn.",
