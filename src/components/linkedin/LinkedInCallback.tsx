@@ -18,20 +18,30 @@ export const LinkedInCallback = () => {
       const state = params.get('state');
       const savedState = localStorage.getItem('linkedin_oauth_state');
 
-      console.log("Received params:", { code: code?.substring(0, 10) + "...", state, savedState });
+      console.log("LinkedIn callback details:", {
+        code: code ? `${code.substring(0, 10)}...` : 'missing',
+        state,
+        savedState,
+        currentUrl: window.location.href,
+        origin: window.location.origin
+      });
 
       if (!code) {
-        setError("Code d'autorisation manquant");
+        const errorMessage = "Code d'autorisation LinkedIn manquant";
+        console.error(errorMessage);
+        setError(errorMessage);
         toast({
           title: "Erreur d'authentification",
-          description: "Code d'autorisation LinkedIn manquant",
+          description: errorMessage,
           variant: "destructive"
         });
         return;
       }
 
       if (!state || state !== savedState) {
-        setError("État de sécurité invalide");
+        const errorMessage = "État de sécurité LinkedIn invalide";
+        console.error(errorMessage, { receivedState: state, savedState });
+        setError(errorMessage);
         toast({
           title: "Erreur de sécurité",
           description: "Validation de l'état LinkedIn échouée",
@@ -46,7 +56,7 @@ export const LinkedInCallback = () => {
           throw new Error("Utilisateur non authentifié");
         }
 
-        console.log("Exchanging code for token...");
+        console.log("Exchanging code for token with user:", user.id);
         const { error: exchangeError } = await supabase.functions.invoke('linkedin-integration', {
           body: { 
             action: 'exchange-code',
@@ -59,7 +69,7 @@ export const LinkedInCallback = () => {
         });
 
         if (exchangeError) {
-          console.error("Exchange error:", exchangeError);
+          console.error("LinkedIn token exchange error:", exchangeError);
           throw exchangeError;
         }
 
@@ -69,7 +79,6 @@ export const LinkedInCallback = () => {
           description: "Votre compte LinkedIn est maintenant connecté",
         });
 
-        // Nettoyer et rediriger
         localStorage.removeItem('linkedin_oauth_state');
         navigate('/ai-chat');
       } catch (err) {
