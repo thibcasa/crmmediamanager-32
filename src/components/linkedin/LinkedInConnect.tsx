@@ -11,21 +11,25 @@ export const LinkedInConnect = () => {
   const handleConnect = async () => {
     setIsLoading(true);
     try {
-      console.log("Initiating LinkedIn connection...");
+      console.log("Initiating LinkedIn connection process...");
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error("Vous devez être connecté pour utiliser LinkedIn");
       }
 
-      // Fixed: Using the correct callback URL path
+      // Ensure we're using the correct origin for the redirect URI
       const redirectUri = `${window.location.origin}/auth/callback`;
       console.log("Using redirect URI:", redirectUri);
 
+      // Call the LinkedIn integration Edge Function
       const { data, error } = await supabase.functions.invoke('linkedin-integration', {
         body: { 
           action: 'auth-url',
-          data: { redirectUri }
+          data: { 
+            redirectUri,
+            userId: user.id // Add user ID to the request
+          }
         }
       });
 
@@ -36,21 +40,22 @@ export const LinkedInConnect = () => {
       
       if (!data?.url || !data?.state) {
         console.error("Invalid auth URL response:", data);
-        throw new Error("URL d'authentification invalide");
+        throw new Error("URL d'authentification LinkedIn invalide");
       }
 
-      console.log("Received auth URL:", data.url);
-      console.log("State:", data.state);
+      console.log("Received LinkedIn auth URL:", data.url);
+      console.log("LinkedIn state token:", data.state);
       
       // Store state for CSRF verification
       localStorage.setItem('linkedin_oauth_state', data.state);
       
       // Redirect to LinkedIn auth URL
       window.location.href = data.url;
+
     } catch (error) {
       console.error('Erreur de connexion LinkedIn:', error);
       toast({
-        title: "Erreur de connexion",
+        title: "Erreur de connexion LinkedIn",
         description: error instanceof Error ? error.message : "Impossible de se connecter à LinkedIn. Veuillez réessayer.",
         variant: "destructive"
       });

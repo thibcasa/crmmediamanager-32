@@ -18,8 +18,8 @@ export const LinkedInCallback = () => {
       const state = params.get('state');
       const savedState = localStorage.getItem('linkedin_oauth_state');
 
-      console.log("LinkedIn callback details:", {
-        code: code ? `${code.substring(0, 10)}...` : 'missing',
+      console.log("LinkedIn callback parameters:", {
+        hasCode: !!code,
         state,
         savedState,
         currentUrl: window.location.href
@@ -58,7 +58,7 @@ export const LinkedInCallback = () => {
         const redirectUri = `${window.location.origin}/auth/callback`;
         console.log("Using redirect URI for token exchange:", redirectUri);
 
-        const { error: exchangeError } = await supabase.functions.invoke('linkedin-integration', {
+        const { data, error: exchangeError } = await supabase.functions.invoke('linkedin-integration', {
           body: { 
             action: 'exchange-code',
             data: { 
@@ -74,13 +74,16 @@ export const LinkedInCallback = () => {
           throw exchangeError;
         }
 
-        console.log("LinkedIn connection successful");
+        console.log("LinkedIn connection successful:", data);
         toast({
           title: "Connexion réussie",
           description: "Votre compte LinkedIn est maintenant connecté",
         });
 
+        // Clean up
         localStorage.removeItem('linkedin_oauth_state');
+        
+        // Redirect back to the main page
         navigate('/ai-chat');
       } catch (err) {
         console.error('Erreur callback LinkedIn:', err);
