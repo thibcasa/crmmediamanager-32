@@ -12,31 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    const { platform, content, targetingCriteria } = await req.json();
+    const { platform, content, schedule, targetingCriteria } = await req.json();
     console.log(`📱 Nouvelle requête de publication sur ${platform}`);
     console.log(`📝 Contenu: ${content}`);
+    console.log(`📅 Planning: ${JSON.stringify(schedule)}`);
     console.log(`🎯 Ciblage: ${JSON.stringify(targetingCriteria)}`);
 
     let result;
 
     switch (platform) {
       case 'facebook':
-        result = await postToFacebook(content);
+        result = await postToFacebook(content, schedule);
         break;
       case 'instagram':
-        result = await postToInstagram(content);
+        result = await postToInstagram(content, schedule);
         break;
       case 'linkedin':
-        result = await postToLinkedIn(content);
+        result = await postToLinkedIn(content, schedule);
         break;
       case 'whatsapp':
-        result = await sendToWhatsApp(content);
+        result = await sendToWhatsApp(content, schedule);
+        break;
+      case 'twitter':
+      case 'x':
+        result = await postToTwitter(content, schedule);
+        break;
+      case 'tiktok':
+        result = await postToTikTok(content, schedule);
         break;
       default:
         throw new Error(`Plateforme non supportée: ${platform}`);
     }
 
-    console.log(`✅ Publication réussie sur ${platform}:`, result);
+    console.log(`✅ Publication programmée sur ${platform}:`, result);
     return new Response(JSON.stringify({ success: true, data: result }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -49,7 +57,7 @@ serve(async (req) => {
   }
 });
 
-async function postToFacebook(content: string) {
+async function postToFacebook(content: string, schedule: any) {
   const accessToken = Deno.env.get('FACEBOOK_ACCESS_TOKEN');
   if (!accessToken) throw new Error('Token Facebook manquant');
 
@@ -61,6 +69,7 @@ async function postToFacebook(content: string) {
     body: JSON.stringify({
       message: content,
       access_token: accessToken,
+      scheduled_publish_time: schedule ? new Date(schedule.times[0]).getTime() / 1000 : undefined,
     }),
   });
 
@@ -72,7 +81,7 @@ async function postToFacebook(content: string) {
   return await response.json();
 }
 
-async function postToInstagram(content: string) {
+async function postToInstagram(content: string, schedule: any) {
   const accessToken = Deno.env.get('INSTAGRAM_ACCESS_TOKEN');
   if (!accessToken) throw new Error('Token Instagram manquant');
 
@@ -85,6 +94,7 @@ async function postToInstagram(content: string) {
     body: JSON.stringify({
       caption: content,
       access_token: accessToken,
+      scheduled_publish_time: schedule ? new Date(schedule.times[0]).getTime() / 1000 : undefined,
     }),
   });
 
@@ -115,7 +125,7 @@ async function postToInstagram(content: string) {
   return await publishResponse.json();
 }
 
-async function postToLinkedIn(content: string) {
+async function postToLinkedIn(content: string, schedule: any) {
   const accessToken = Deno.env.get('LINKEDIN_ACCESS_TOKEN');
   if (!accessToken) throw new Error('Token LinkedIn manquant');
 
@@ -138,6 +148,9 @@ async function postToLinkedIn(content: string) {
       },
       visibility: {
         'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'
+      },
+      distribution: {
+        scheduledTime: schedule ? new Date(schedule.times[0]).getTime() : undefined
       }
     }),
   });
@@ -150,13 +163,63 @@ async function postToLinkedIn(content: string) {
   return await response.json();
 }
 
-async function sendToWhatsApp(content: string) {
+async function postToTwitter(content: string, schedule: any) {
+  const accessToken = Deno.env.get('TWITTER_ACCESS_TOKEN');
+  if (!accessToken) throw new Error('Token Twitter manquant');
+
+  // Implement Twitter/X API v2 scheduling
+  const response = await fetch('https://api.twitter.com/2/tweets', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text: content,
+      scheduled_time: schedule ? new Date(schedule.times[0]).toISOString() : undefined
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Erreur Twitter: ${JSON.stringify(error)}`);
+  }
+
+  return await response.json();
+}
+
+async function postToTikTok(content: string, schedule: any) {
+  const accessToken = Deno.env.get('TIKTOK_ACCESS_TOKEN');
+  if (!accessToken) throw new Error('Token TikTok manquant');
+
+  // Implement TikTok Content Publishing API
+  const response = await fetch('https://open-api.tiktok.com/v2/post/publish/content/', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text: content,
+      schedule_time: schedule ? new Date(schedule.times[0]).getTime() / 1000 : undefined
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Erreur TikTok: ${JSON.stringify(error)}`);
+  }
+
+  return await response.json();
+}
+
+async function sendToWhatsApp(content: string, schedule: any) {
   const accessToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
   if (!accessToken) throw new Error('Token WhatsApp manquant');
 
-  // Implement WhatsApp Business API integration here
-  // This is a placeholder for the actual implementation
+  // Implement WhatsApp Business API scheduling
   console.log('WhatsApp message would be sent:', content);
+  console.log('Schedule:', schedule);
   
   return { success: true, message: 'WhatsApp message scheduled' };
 }

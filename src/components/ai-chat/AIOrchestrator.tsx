@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
-import { AIService } from "@/services/AIService";
+import { CalendarService } from "@/services/CalendarService";
 
 interface WorkflowResult {
   visualData?: any;
   campaignData?: any;
   pipelineData?: any;
   automationData?: any;
+  calendarData?: any;
 }
 
 export const useAIOrchestrator = () => {
@@ -43,7 +44,12 @@ export const useAIOrchestrator = () => {
             job_titles: ["Cadre", "Manager", "Directeur"],
             interests: ["Immobilier", "Investissement"]
           },
-          message_template: aiResponse
+          message_template: aiResponse,
+          schedule: {
+            frequency: "daily",
+            times: ["09:00", "12:00", "17:00"],
+            days: ["monday", "wednesday", "friday"]
+          }
         })
         .select()
         .single();
@@ -99,9 +105,16 @@ export const useAIOrchestrator = () => {
               type: "create_task",
               template: "qualification_call",
               delay: "4d"
+            },
+            {
+              type: "schedule_meeting",
+              template: "discovery_call",
+              delay: "7d",
+              conditions: { engagement_score: ">70" }
             }
           ],
-          is_active: true
+          is_active: true,
+          ai_enabled: true
         })
         .select()
         .single();
@@ -109,11 +122,28 @@ export const useAIOrchestrator = () => {
       if (automationError) throw automationError;
       console.log('Automation created successfully');
 
-      // 5. Poster sur la plateforme sociale
+      // 5. Planifier dans le calendrier
+      const calendarData = await CalendarService.createMeeting({
+        title: `Campagne ${platform} - Revue de performance`,
+        description: `Analyse des résultats de la campagne ${platform} et ajustements stratégiques`,
+        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Dans 7 jours
+        duration: 60,
+        type: 'strategy_review',
+        status: 'scheduled'
+      });
+
+      console.log('Calendar event created successfully');
+
+      // 6. Poster sur la plateforme sociale
       await supabase.functions.invoke('social-media-integration', {
         body: {
           platform: platform.toLowerCase(),
           content: aiResponse,
+          schedule: {
+            frequency: "daily",
+            times: ["09:00", "12:00", "17:00"],
+            days: ["monday", "wednesday", "friday"]
+          },
           targetingCriteria: {
             location: "Nice",
             ageRange: "35-65",
@@ -122,12 +152,13 @@ export const useAIOrchestrator = () => {
         }
       });
 
-      console.log(`Content posted to ${platform} successfully`);
+      console.log(`Content scheduled on ${platform} successfully`);
 
-      // 6. Rafraîchir les données
+      // 7. Rafraîchir les données
       queryClient.invalidateQueries({ queryKey: ['social-campaigns'] });
       queryClient.invalidateQueries({ queryKey: ['pipelines'] });
       queryClient.invalidateQueries({ queryKey: ['automations'] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
 
       toast({
         title: "Workflow complet exécuté",
@@ -138,7 +169,8 @@ export const useAIOrchestrator = () => {
         visualData,
         campaignData,
         pipelineData,
-        automationData
+        automationData,
+        calendarData
       };
 
     } catch (error) {
