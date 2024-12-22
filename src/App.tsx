@@ -1,17 +1,30 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Prospects from "./pages/Prospects";
-import Login from "./pages/Login";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Index from './pages/Index';
+import Login from './pages/Login';
+import Prospects from './pages/Prospects';
+import './App.css';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/prospects" element={<Prospects />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/prospects" element={<Prospects />} />
+        </Routes>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
