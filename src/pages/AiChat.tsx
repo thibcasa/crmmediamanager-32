@@ -1,37 +1,14 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 import { AIService } from "@/services/AIService";
-import { Send, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinkedInStatus } from "@/components/linkedin/LinkedInStatus";
-
-const EXAMPLE_PROMPTS = [
-  {
-    title: "Campagne LinkedIn Ciblée",
-    prompt: "Crée une stratégie de prospection sur LinkedIn pour contacter 50 propriétaires immobiliers dans les Alpes-Maritimes",
-    description: "Génère une stratégie complète de messages et connexions LinkedIn"
-  },
-  {
-    title: "Campagne Multi-Réseaux",
-    prompt: "Crée une stratégie marketing combinant LinkedIn et Instagram pour obtenir 8 mandats cette semaine",
-    description: "Orchestration de messages cohérents sur LinkedIn et Instagram"
-  },
-  {
-    title: "Workflow Automatisé",
-    prompt: "Génère un workflow complet de nurturing LinkedIn pour convertir les prospects en mandats",
-    description: "Création d'un parcours automatisé de conversion"
-  },
-  {
-    title: "Contenu Engageant",
-    prompt: "Propose une série de posts LinkedIn et Instagram ciblant les propriétaires immobiliers",
-    description: "Concepts créatifs et scripts pour les réseaux sociaux"
-  }
-];
+import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
+import { ChatMessages } from "@/components/ai-chat/ChatMessages";
+import { ChatInput } from "@/components/ai-chat/ChatInput";
+import { supabase } from "@/lib/supabaseClient";
 
 const AiChat = () => {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
@@ -67,7 +44,6 @@ const AiChat = () => {
     setIsLoading(true);
 
     try {
-      // Vérifier la connexion LinkedIn si nécessaire
       if (userMessage.toLowerCase().includes('linkedin')) {
         const isConnected = await checkLinkedInConnection();
         if (!isConnected) {
@@ -97,7 +73,6 @@ const AiChat = () => {
       
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-      // Invalider les requêtes pertinentes
       queryClient.invalidateQueries({ queryKey: ['automations'] });
       queryClient.invalidateQueries({ queryKey: ['social-campaigns'] });
       queryClient.invalidateQueries({ queryKey: ['linkedin-connections'] });
@@ -118,10 +93,6 @@ const AiChat = () => {
     }
   };
 
-  const handleExampleClick = (prompt: string) => {
-    setInput(prompt);
-  };
-
   return (
     <AppLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
@@ -137,67 +108,16 @@ const AiChat = () => {
           <LinkedInStatus />
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {EXAMPLE_PROMPTS.map((prompt, index) => (
-            <Card 
-              key={index}
-              className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => handleExampleClick(prompt.prompt)}
-            >
-              <div className="flex items-start space-x-2">
-                <Sparkles className="h-5 w-5 text-primary mt-1" />
-                <div>
-                  <h3 className="font-semibold">{prompt.title}</h3>
-                  <p className="text-sm text-muted-foreground">{prompt.description}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <ExamplePrompts onPromptClick={setInput} />
 
         <Card className="flex flex-col h-[600px]">
-          <ScrollArea className="flex-1 p-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`mb-4 ${
-                  message.role === 'assistant'
-                    ? 'bg-primary/10 rounded-lg p-4'
-                    : 'bg-white border rounded-lg p-4'
-                }`}
-              >
-                <p className="text-sm font-semibold mb-2">
-                  {message.role === 'assistant' ? 'Assistant Stratégique' : 'Vous'}
-                </p>
-                <div className="text-sm prose prose-sm max-w-none">
-                  {message.content.split('\n').map((line, i) => (
-                    <p key={i} className="mb-2">{line}</p>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="bg-primary/10 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <p className="text-sm">Génération de la stratégie...</p>
-                </div>
-              </div>
-            )}
-          </ScrollArea>
-
-          <form onSubmit={handleSubmit} className="p-4 border-t flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ex: Crée une stratégie LinkedIn pour obtenir des mandats..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button type="submit" disabled={isLoading}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+          <ChatMessages messages={messages} isLoading={isLoading} />
+          <ChatInput 
+            input={input}
+            isLoading={isLoading}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+          />
         </Card>
       </div>
     </AppLayout>
