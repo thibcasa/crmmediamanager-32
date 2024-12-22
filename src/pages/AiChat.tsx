@@ -25,7 +25,9 @@ const AiChat = () => {
 
     try {
       const response = await AIService.generateContent('description', userMessage);
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+      // Make sure response is a string
+      const assistantMessage = typeof response === 'string' ? response : JSON.stringify(response);
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
       toast({
         title: "Erreur",
@@ -61,7 +63,7 @@ const AiChat = () => {
                 <p className="text-sm font-semibold mb-1">
                   {message.role === 'assistant' ? 'Assistant' : 'Vous'}
                 </p>
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
             ))}
             {isLoading && (
