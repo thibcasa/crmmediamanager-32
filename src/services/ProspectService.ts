@@ -17,9 +17,12 @@ export interface Prospect {
 
 export class ProspectService {
   static async createProspect(prospectData: Omit<Prospect, 'id' | 'created_at' | 'user_id'>) {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
     const { data, error } = await supabase
       .from('leads')
-      .insert([{ ...prospectData, user_id: (await supabase.auth.getUser()).data.user?.id }])
+      .insert([{ ...prospectData, user_id: userData.user.id }])
       .select()
       .single();
 
@@ -40,6 +43,9 @@ export class ProspectService {
   }
 
   static async getProspects() {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
     const { data, error } = await supabase
       .from('leads')
       .select('*')

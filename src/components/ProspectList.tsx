@@ -4,17 +4,37 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
+import { supabase } from '@/lib/supabaseClient';
 
 export const ProspectList = () => {
   const { toast } = useToast();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadProspects();
+    checkAuth();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      if (session) {
+        loadProspects();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+    if (user) {
+      loadProspects();
+    }
+  };
+
   const loadProspects = async () => {
+    if (!isAuthenticated) return;
+    
     setIsLoading(true);
     try {
       const data = await ProspectService.getProspects();
@@ -32,6 +52,15 @@ export const ProspectList = () => {
   };
 
   const handleScheduleMeeting = async (prospectId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour programmer un rendez-vous",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await CalendarService.createMeeting({
         prospectId,
@@ -53,6 +82,14 @@ export const ProspectList = () => {
       });
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="p-6">
+        <p className="text-center">Veuillez vous connecter pour voir vos prospects</p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 space-y-6">
