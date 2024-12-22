@@ -45,6 +45,39 @@ export type Database = {
         }
         Relationships: []
       }
+      content_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          name: string
+          seo_metadata: Json | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          name: string
+          seo_metadata?: Json | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          seo_metadata?: Json | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_analytics: {
         Row: {
           analyzed_at: string | null
@@ -82,6 +115,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      generated_visuals: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          metadata: Json | null
+          platform: string
+          prompt: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          metadata?: Json | null
+          platform: string
+          prompt: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          metadata?: Json | null
+          platform?: string
+          prompt?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       leads: {
         Row: {
