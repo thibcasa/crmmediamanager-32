@@ -121,7 +121,13 @@ export type Database = {
     Enums: {
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"
-      social_platform: "linkedin" | "twitter" | "facebook" | "instagram"
+      social_platform:
+        | "linkedin"
+        | "twitter"
+        | "facebook"
+        | "instagram"
+        | "tiktok"
+        | "whatsapp"
     }
     CompositeTypes: {
       [_ in never]: never

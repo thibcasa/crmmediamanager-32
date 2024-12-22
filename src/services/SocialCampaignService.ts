@@ -9,14 +9,29 @@ export class SocialCampaignService {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    // First create the campaign in the database
+    const { data: campaignData, error: dbError } = await supabase
       .from('social_campaigns')
       .insert([{ ...campaign, user_id: userData.user.id }])
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (dbError) throw dbError;
+
+    // Then trigger the social media integration
+    const { error: integrationError } = await supabase.functions.invoke('social-media-integration', {
+      body: {
+        platform: campaign.platform,
+        action: 'create_campaign',
+        data: {
+          ...campaign,
+          userId: userData.user.id
+        }
+      }
+    });
+
+    if (integrationError) throw integrationError;
+    return campaignData;
   }
 
   static async getCampaigns() {
@@ -30,14 +45,35 @@ export class SocialCampaignService {
   }
 
   static async updateCampaign(id: string, updates: Partial<SocialCampaign>) {
-    const { data, error } = await supabase
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error('User not authenticated');
+
+    const { data: campaignData, error: dbError } = await supabase
       .from('social_campaigns')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (dbError) throw dbError;
+
+    // Trigger the social media integration update
+    if (campaignData) {
+      const { error: integrationError } = await supabase.functions.invoke('social-media-integration', {
+        body: {
+          platform: campaignData.platform,
+          action: 'update_campaign',
+          data: {
+            ...updates,
+            id,
+            userId: userData.user.id
+          }
+        }
+      });
+
+      if (integrationError) throw integrationError;
+    }
+
+    return campaignData;
   }
 }
