@@ -15,7 +15,13 @@ export const CalendarView = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meetings")
-        .select("*")
+        .select(`
+          *,
+          leads (
+            first_name,
+            last_name
+          )
+        `)
         .order("date", { ascending: true });
 
       if (error) throw error;
@@ -84,7 +90,14 @@ export const CalendarView = () => {
                 <Card key={event.id} className="p-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{event.title}</h4>
+                      <h4 className="font-medium">
+                        {event.title}
+                        {event.leads && (
+                          <span className="text-sm text-muted-foreground ml-2">
+                            avec {event.leads.first_name} {event.leads.last_name}
+                          </span>
+                        )}
+                      </h4>
                       <Badge className={getStatusColor(event.status)}>
                         {event.status === "scheduled"
                           ? "Planifié"

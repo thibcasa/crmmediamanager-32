@@ -281,6 +281,7 @@ export type Database = {
           description: string | null
           duration: number
           id: string
+          lead_id: string | null
           status: string
           title: string
           type: string
@@ -293,6 +294,7 @@ export type Database = {
           description?: string | null
           duration?: number
           id?: string
+          lead_id?: string | null
           status?: string
           title: string
           type?: string
@@ -305,13 +307,22 @@ export type Database = {
           description?: string | null
           duration?: number
           id?: string
+          lead_id?: string | null
           status?: string
           title?: string
           type?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meetings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pipeline_stages: {
         Row: {
