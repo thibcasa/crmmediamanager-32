@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Users, Building2, TrendingUp, Brain } from "lucide-react";
 import { LeadScraper } from "@/components/LeadScraper";
 import { EmailCampaign } from "@/components/EmailCampaign";
+import { ProspectList } from "@/components/ProspectList";
 
 const stats = [
   {
@@ -68,6 +69,10 @@ const Index = () => {
         <div className="grid gap-6 lg:grid-cols-2">
           <LeadScraper />
           <EmailCampaign />
+        </div>
+
+        <div className="w-full">
+          <ProspectList />
         </div>
       </div>
     </AppLayout>
