@@ -11,20 +11,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignList } from './social/CampaignList';
 import { CampaignAnalytics } from './social/CampaignAnalytics';
 import { Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
+import { LinkedInStatus } from './linkedin/LinkedInStatus';
 
 const platformTemplates = {
-  linkedin: `Bonjour {first_name},\n\nJe suis agent immobilier dans les Alpes-Maritimes...`,
+  linkedin: `Bonjour {first_name},
+
+Je suis agent immobilier dans les Alpes-Maritimes et je remarque que vous êtes propriétaire dans la région.
+
+Avez-vous déjà pensé à faire estimer votre bien ? Je propose une estimation gratuite et détaillée, basée sur une analyse approfondie du marché local.
+
+Je reste à votre disposition pour échanger à ce sujet.
+
+Cordialement,
+{agent_name}`,
   whatsapp: `Bonjour {first_name},\n\nJe suis {agent_name}, agent immobilier...`,
   facebook: `🏠 Propriétaire dans les Alpes-Maritimes ?\n\nDécouvrez la valeur...`,
 };
 
 export const SocialCampaigns = () => {
   const { toast } = useToast();
-  const [name, setName] = useState('');
+  const [name, setName] = useState('Test LinkedIn - Propriétaires Nice');
   const [platform, setPlatform] = useState<Platform>('linkedin');
-  const [messageTemplate, setMessageTemplate] = useState('');
-  const [targetingCriteria, setTargetingCriteria] = useState('');
-  const [schedule, setSchedule] = useState('');
+  const [messageTemplate, setMessageTemplate] = useState(platformTemplates.linkedin);
+  const [targetingCriteria, setTargetingCriteria] = useState(JSON.stringify({
+    location: "Nice, Alpes-Maritimes",
+    jobTitles: ["Propriétaire", "Investisseur immobilier"],
+    industries: ["Real Estate", "Property Management"],
+    keywords: ["propriétaire", "immobilier", "investissement"]
+  }, null, 2));
+  const [schedule, setSchedule] = useState(JSON.stringify({
+    frequency: "daily",
+    times: ["09:00", "14:00", "17:00"],
+    days: ["monday", "wednesday", "friday"]
+  }, null, 2));
   const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
 
   const { data: campaigns, refetch } = useQuery({
@@ -80,6 +99,8 @@ export const SocialCampaigns = () => {
         </TabsList>
 
         <TabsContent value="create" className="space-y-4">
+          <LinkedInStatus />
+
           <div>
             <label className="block text-sm font-medium mb-2">Nom de la campagne</label>
             <Input
@@ -139,7 +160,6 @@ export const SocialCampaigns = () => {
             <Textarea
               value={targetingCriteria}
               onChange={(e) => setTargetingCriteria(e.target.value)}
-              placeholder='{"location": "Alpes-Maritimes", "interests": ["immobilier", "investissement"]}'
               className="font-mono text-sm"
             />
           </div>
@@ -149,13 +169,12 @@ export const SocialCampaigns = () => {
             <Textarea
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
-              placeholder='{"frequency": "daily", "time": "09:00", "days": ["monday", "wednesday", "friday"]}'
               className="font-mono text-sm"
             />
           </div>
 
           <Button onClick={handleCreateCampaign} className="w-full">
-            Créer la campagne
+            Créer la campagne test
           </Button>
         </TabsContent>
 
