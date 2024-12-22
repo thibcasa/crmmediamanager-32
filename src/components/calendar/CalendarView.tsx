@@ -15,7 +15,7 @@ export const CalendarView = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meetings")
-        .select("*, leads(first_name, last_name)")
+        .select("*")
         .order("date", { ascending: true });
 
       if (error) throw error;
