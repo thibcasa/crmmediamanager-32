@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { GetSecretsResponse } from '@/types/supabase';
 
 export interface Meeting {
   id: string;
@@ -12,13 +13,13 @@ export interface Meeting {
 
 export class CalendarService {
   static async createMeeting(meeting: Omit<Meeting, 'id'>) {
-    const { GOOGLE_CALENDAR_API_KEY } = await supabase.functions.invoke('get-secrets');
+    const { data: secrets } = await supabase.functions.invoke<GetSecretsResponse>('get-secrets');
     
     // Implement Google Calendar event creation
     const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GOOGLE_CALENDAR_API_KEY}`,
+        'Authorization': `Bearer ${secrets.GOOGLE_CALENDAR_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

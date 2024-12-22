@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { GetSecretsResponse } from '@/types/supabase';
 
 export interface EmailTemplate {
   id: string;
@@ -19,13 +20,13 @@ export interface EmailCampaign {
 
 export class EmailService {
   static async sendEmail(to: string, templateId: string, data: Record<string, any>) {
-    const { SENDGRID_API_KEY } = await supabase.functions.invoke('get-secrets');
+    const { data: secrets } = await supabase.functions.invoke<GetSecretsResponse>('get-secrets');
     
     // Implement SendGrid email sending logic here
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${secrets.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
