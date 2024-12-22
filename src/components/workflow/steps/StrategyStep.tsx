@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Platform } from "@/services/SocialCampaignService";
-import { Building2, Users, Target, Megaphone, Share2, MessageCircle, Facebook, Twitter, TiktokIcon, MessageSquare } from "lucide-react";
+import { Building2, Users, Target, Megaphone, Share2, MessageCircle, Facebook, Twitter, Video, MessageSquare } from "lucide-react";
 
 interface StrategyStepProps {
   platform: Platform;
@@ -97,12 +97,13 @@ export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) 
         icon: <Megaphone className="w-6 h-6" />
       }
     ],
+
     tiktok: [
       {
         id: "property_trends",
         title: "Tendances immobilières",
         description: "Créez des contenus viraux sur l'immobilier",
-        icon: <Share2 className="w-6 h-6" />
+        icon: <Video className="w-6 h-6" />
       },
       {
         id: "tips_tricks",
