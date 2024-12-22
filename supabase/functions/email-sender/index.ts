@@ -37,12 +37,12 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Property Prospect AI <contact@votredomaine.fr>', // Remplacez par votre domaine vérifié
+        from: 'Estimation Express <contact@estimationexpress.com>',
         to,
         subject,
         html,
         text: html.replace(/<[^>]*>/g, ''), // Version texte pour meilleure délivrabilité
-        tags: [{ name: 'type', value: 'prospection' }],
+        tags: [{ name: 'type', value: 'estimation' }],
         headers: {
           'List-Unsubscribe': '<{{unsubscribe}}>', // Requis par la loi française
           'Content-Language': 'fr-FR'
