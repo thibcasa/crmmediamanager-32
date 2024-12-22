@@ -11,8 +11,6 @@ import { AIRecommendations } from "@/components/ai-chat/AIRecommendations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
-const SUPPORTED_PLATFORMS = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
-
 const AiChat = () => {
   console.log('Rendering AiChat component');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
@@ -21,8 +19,63 @@ const AiChat = () => {
   const { executeWorkflow } = useAIOrchestrator();
   const { toast } = useToast();
 
+  // Automatically launch campaign on component mount
   useEffect(() => {
-    console.log('AiChat component mounted');
+    const launchCampaign = async () => {
+      const campaignPrompt = `Crée une stratégie complète de prospection immobilière sur LinkedIn pour Nice avec :
+      1. Un template de message personnalisé pour les propriétaires
+      2. Des critères de ciblage précis (cadres 35-65 ans à Nice)
+      3. Un planning de publication optimal (3 posts par semaine)
+      4. Des automatisations pour le suivi des leads
+      5. Un pipeline de conversion avec les étapes clés
+      6. Des visuels professionnels optimisés`;
+
+      setInput(campaignPrompt);
+      setMessages(prev => [...prev, { role: 'user', content: campaignPrompt }]);
+      setIsLoading(true);
+
+      try {
+        const response = await AIService.generateContent('description', `${getSystemPrompt()}\n\nObjectif: ${campaignPrompt}`);
+        console.log('AI response received:', response);
+        
+        const assistantMessage = typeof response === 'string' ? response : 
+          (response?.content ? response.content : JSON.stringify(response));
+        
+        setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+
+        const platforms = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
+        
+        for (const platform of platforms) {
+          console.log(`Executing workflow for ${platform}`);
+          try {
+            await executeWorkflow(assistantMessage, platform);
+            toast({
+              title: `Campagne ${platform} créée`,
+              description: "La campagne a été configurée avec succès"
+            });
+          } catch (error) {
+            console.error(`Error executing workflow for ${platform}:`, error);
+            toast({
+              title: `Erreur - ${platform}`,
+              description: `Une erreur est survenue lors de l'exécution du workflow pour ${platform}`,
+              variant: "destructive"
+            });
+          }
+        }
+
+      } catch (error) {
+        console.error("Error generating strategy:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la génération de la stratégie",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    launchCampaign();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +97,9 @@ const AiChat = () => {
       
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-      for (const platform of SUPPORTED_PLATFORMS) {
+      const platforms = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
+      
+      for (const platform of platforms) {
         console.log(`Executing workflow for ${platform}`);
         try {
           await executeWorkflow(assistantMessage, platform);
