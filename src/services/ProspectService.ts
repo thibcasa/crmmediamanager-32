@@ -27,6 +27,10 @@ export class ProspectService {
       .single();
 
     if (error) throw error;
+
+    // Calculer le score initial
+    await this.updateProspectScore(data.id);
+
     return data;
   }
 
@@ -39,7 +43,31 @@ export class ProspectService {
       .single();
 
     if (error) throw error;
+
+    // Recalculer le score si des données importantes sont modifiées
+    if (updates.email || updates.phone || updates.source || updates.notes || updates.status) {
+      await this.updateProspectScore(id);
+    }
+
     return data;
+  }
+
+  static async updateProspectScore(id: string) {
+    const { data: lead, error } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    const response = await supabase.functions.invoke('lead-scoring', {
+      body: { lead }
+    });
+
+    if (response.error) throw response.error;
+
+    return response.data;
   }
 
   static async getProspects() {
@@ -49,7 +77,7 @@ export class ProspectService {
     const { data, error } = await supabase
       .from('leads')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('score', { ascending: false });
 
     if (error) throw error;
     return data;
