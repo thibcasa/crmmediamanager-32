@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      automations: {
+        Row: {
+          actions: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversation_analytics: {
+        Row: {
+          analyzed_at: string | null
+          engagement_score: number | null
+          id: string
+          lead_id: string
+          message_content: string
+          next_actions: Json | null
+          sentiment_score: number | null
+        }
+        Insert: {
+          analyzed_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          lead_id: string
+          message_content: string
+          next_actions?: Json | null
+          sentiment_score?: number | null
+        }
+        Update: {
+          analyzed_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          lead_id?: string
+          message_content?: string
+          next_actions?: Json | null
+          sentiment_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_analytics_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           consent_details: Json | null
@@ -68,6 +142,36 @@ export type Database = {
           source_campaign?: string | null
           source_platform?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pipelines: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          stages: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          stages?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          stages?: Json
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
