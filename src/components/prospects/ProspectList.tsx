@@ -5,15 +5,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
 import { supabase } from '@/lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
-import { Users, Calendar, MessageSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 export const ProspectList = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     checkAuth();
@@ -46,11 +46,29 @@ export const ProspectList = () => {
       console.error('Error loading prospects:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les prospects",
+        description: "Impossible de charger les contacts",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const filteredProspects = prospects.filter(prospect => {
+    if (activeTab === 'all') return true;
+    return prospect.qualification === activeTab;
+  });
+
+  const getQualificationColor = (qualification: string) => {
+    switch (qualification) {
+      case 'lead':
+        return 'bg-blue-100 text-blue-800';
+      case 'prospect':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'client':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -91,45 +109,70 @@ export const ProspectList = () => {
   if (!isAuthenticated) {
     return (
       <Card className="p-6">
-        <p className="text-center">Veuillez vous connecter pour voir vos prospects</p>
+        <p className="text-center">Veuillez vous connecter pour voir vos contacts</p>
       </Card>
     );
   }
 
   return (
     <Card className="p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Liste des Prospects</h2>
-      {isLoading ? (
-        <div>Chargement...</div>
-      ) : (
-        <div className="space-y-4">
-          {prospects.map((prospect) => (
-            <Card key={prospect.id} className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-medium">{prospect.first_name} {prospect.last_name}</p>
-                  <p className="text-sm text-gray-600">{prospect.email}</p>
-                  <div className="mt-2 flex gap-2">
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                      Score: {prospect.score}
-                    </span>
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                      Status: {prospect.status}
-                    </span>
+      <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="all">
+            Tous ({prospects.length})
+          </TabsTrigger>
+          <TabsTrigger value="lead">
+            Leads ({prospects.filter(p => p.qualification === 'lead').length})
+          </TabsTrigger>
+          <TabsTrigger value="prospect">
+            Prospects ({prospects.filter(p => p.qualification === 'prospect').length})
+          </TabsTrigger>
+          <TabsTrigger value="client">
+            Clients ({prospects.filter(p => p.qualification === 'client').length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-6">
+          {isLoading ? (
+            <div>Chargement...</div>
+          ) : (
+            <div className="space-y-4">
+              {filteredProspects.map((prospect) => (
+                <Card key={prospect.id} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{prospect.first_name} {prospect.last_name}</p>
+                        <Badge className={getQualificationColor(prospect.qualification)}>
+                          {prospect.qualification?.charAt(0).toUpperCase() + prospect.qualification?.slice(1)}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">{prospect.email}</p>
+                      <div className="mt-2 flex gap-2">
+                        <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                          Score: {prospect.score}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                          Status: {prospect.status}
+                        </span>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleScheduleMeeting(prospect.id)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Programmer RDV
+                    </Button>
                   </div>
-                </div>
-                <Button 
-                  onClick={() => handleScheduleMeeting(prospect.id)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Programmer RDV
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 };

@@ -262,6 +262,9 @@ export type Database = {
           persona_type: string | null
           phone: string | null
           pipeline_stage_id: string | null
+          qualification:
+            | Database["public"]["Enums"]["contact_qualification"]
+            | null
           score: number
           source: Database["public"]["Enums"]["lead_source"]
           source_campaign: string | null
@@ -283,6 +286,9 @@ export type Database = {
           persona_type?: string | null
           phone?: string | null
           pipeline_stage_id?: string | null
+          qualification?:
+            | Database["public"]["Enums"]["contact_qualification"]
+            | null
           score?: number
           source: Database["public"]["Enums"]["lead_source"]
           source_campaign?: string | null
@@ -304,6 +310,9 @@ export type Database = {
           persona_type?: string | null
           phone?: string | null
           pipeline_stage_id?: string | null
+          qualification?:
+            | Database["public"]["Enums"]["contact_qualification"]
+            | null
           score?: number
           source?: Database["public"]["Enums"]["lead_source"]
           source_campaign?: string | null
@@ -665,6 +674,7 @@ export type Database = {
         | "message_received"
         | "score_changed"
         | "campaign_engagement"
+      contact_qualification: "lead" | "prospect" | "client"
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"
       linkedin_connection_status: "active" | "expired" | "revoked"

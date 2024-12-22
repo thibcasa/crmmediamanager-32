@@ -13,6 +13,7 @@ export interface Prospect {
   notes?: string;
   created_at: Date;
   user_id: string;
+  qualification: 'lead' | 'prospect' | 'client';
 }
 
 export class ProspectService {
