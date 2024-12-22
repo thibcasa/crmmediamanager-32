@@ -22,11 +22,15 @@ export class EmailService {
   static async sendEmail(to: string, templateId: string, data: Record<string, any>) {
     const { data: secrets } = await supabase.functions.invoke<GetSecretsResponse>('get-secrets');
     
+    if (!secrets?.data?.SENDGRID_API_KEY) {
+      throw new Error('SendGrid API key not found');
+    }
+
     // Implement SendGrid email sending logic here
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${secrets.SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${secrets.data.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

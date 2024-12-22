@@ -15,11 +15,15 @@ export class CalendarService {
   static async createMeeting(meeting: Omit<Meeting, 'id'>) {
     const { data: secrets } = await supabase.functions.invoke<GetSecretsResponse>('get-secrets');
     
+    if (!secrets?.data?.GOOGLE_CALENDAR_API_KEY) {
+      throw new Error('Google Calendar API key not found');
+    }
+
     // Implement Google Calendar event creation
     const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${secrets.GOOGLE_CALENDAR_API_KEY}`,
+        'Authorization': `Bearer ${secrets.data.GOOGLE_CALENDAR_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
