@@ -30,18 +30,18 @@ interface ExamplePromptsProps {
 
 export const ExamplePrompts = ({ onPromptClick }: ExamplePromptsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {EXAMPLE_PROMPTS.map((prompt, index) => (
         <Card 
           key={index}
-          className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+          className="p-4 hover:bg-sage-50 transition-colors cursor-pointer border-sage-200"
           onClick={() => onPromptClick(prompt.prompt)}
         >
-          <div className="flex items-start space-x-2">
-            <Sparkles className="h-5 w-5 text-primary mt-1" />
+          <div className="flex items-start space-x-3">
+            <Sparkles className="h-5 w-5 text-sage-600 mt-1" />
             <div>
-              <h3 className="font-semibold">{prompt.title}</h3>
-              <p className="text-sm text-muted-foreground">{prompt.description}</p>
+              <h3 className="font-semibold text-sage-800">{prompt.title}</h3>
+              <p className="text-sm text-sage-600 mt-1">{prompt.description}</p>
             </div>
           </div>
         </Card>

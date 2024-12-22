@@ -95,22 +95,22 @@ const AiChat = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="space-y-8 max-w-5xl mx-auto">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Assistant Stratégique Immobilier</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-4xl font-bold tracking-tight text-sage-900">Assistant Stratégique Immobilier</h1>
+          <p className="text-sage-600 mt-3 text-lg">
             Je coordonne vos stratégies de prospection et génère du contenu pour tous vos canaux
           </p>
         </div>
 
-        <Card className="p-4">
-          <h2 className="text-lg font-semibold mb-4">Connexion LinkedIn</h2>
+        <Card className="p-6 bg-white shadow-sm border-sage-200">
+          <h2 className="text-xl font-semibold text-sage-800 mb-4">Connexion LinkedIn</h2>
           <LinkedInStatus />
         </Card>
 
         <ExamplePrompts onPromptClick={setInput} />
 
-        <Card className="flex flex-col h-[600px]">
+        <Card className="flex flex-col h-[600px] border-sage-200 shadow-sm overflow-hidden">
           <ChatMessages messages={messages} isLoading={isLoading} />
           <ChatInput 
             input={input}

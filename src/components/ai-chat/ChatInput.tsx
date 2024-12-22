@@ -11,17 +11,23 @@ interface ChatInputProps {
 
 export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInputProps) => {
   return (
-    <form onSubmit={onSubmit} className="p-4 border-t flex gap-2">
-      <Input
-        value={input}
-        onChange={(e) => onInputChange(e.target.value)}
-        placeholder="Ex: Crée une stratégie LinkedIn pour obtenir des mandats..."
-        disabled={isLoading}
-        className="flex-1"
-      />
-      <Button type="submit" disabled={isLoading}>
-        <Send className="h-4 w-4" />
-      </Button>
+    <form onSubmit={onSubmit} className="p-4 border-t border-sage-200 bg-white">
+      <div className="flex gap-3">
+        <Input
+          value={input}
+          onChange={(e) => onInputChange(e.target.value)}
+          placeholder="Ex: Crée une stratégie LinkedIn pour obtenir des mandats..."
+          disabled={isLoading}
+          className="flex-1 border-sage-200 focus:ring-sage-500"
+        />
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-sage-600 hover:bg-sage-700 text-white"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
     </form>
   );
 };
