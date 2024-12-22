@@ -8,7 +8,7 @@ export const LinkedInConnect = () => {
 
   const handleConnect = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -20,10 +20,15 @@ export const LinkedInConnect = () => {
         console.error('LinkedIn connection error:', error);
         toast({
           title: "Erreur de connexion",
-          description: "Impossible de se connecter à LinkedIn",
+          description: error.message || "Impossible de se connecter à LinkedIn",
           variant: "destructive",
         });
       }
+
+      if (!data) {
+        throw new Error('Aucune donnée reçue de LinkedIn');
+      }
+
     } catch (error) {
       console.error('Error connecting to LinkedIn:', error);
       toast({

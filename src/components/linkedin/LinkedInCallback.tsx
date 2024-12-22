@@ -12,26 +12,40 @@ export const LinkedInCallback = () => {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get('code');
+        const error = url.searchParams.get('error');
+        const error_description = url.searchParams.get('error_description');
 
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          
-          if (error) throw error;
-          
-          console.log('LinkedIn authentication successful');
-          toast({
-            title: "Connexion réussie",
-            description: "Vous êtes maintenant connecté avec LinkedIn",
-          });
-          navigate('/ai-chat');
-        } else {
-          throw new Error('No code parameter found');
+        if (error || error_description) {
+          console.error('LinkedIn auth error:', error, error_description);
+          throw new Error(error_description || 'Erreur de connexion LinkedIn');
         }
+
+        if (!code) {
+          throw new Error('Code d\'autorisation manquant');
+        }
+
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (exchangeError) {
+          console.error('Exchange code error:', exchangeError);
+          throw exchangeError;
+        }
+
+        if (!data.session) {
+          throw new Error('Session non créée');
+        }
+        
+        console.log('LinkedIn authentication successful');
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté avec LinkedIn",
+        });
+        navigate('/ai-chat');
       } catch (error) {
         console.error('Error in LinkedIn callback:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la connexion avec LinkedIn",
+          title: "Erreur de connexion",
+          description: error.message || "Une erreur est survenue lors de la connexion avec LinkedIn",
           variant: "destructive",
         });
         navigate('/login');
