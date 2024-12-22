@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Building2, Sparkles } from 'lucide-react';
+import { Building2, Sparkles, Key, Mail } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -70,6 +70,7 @@ export default function Login() {
                 input: 'bg-white border-sage-200 focus:border-sage-500 transition-all duration-200',
                 label: 'text-sage-700',
                 anchor: 'text-sage-600 hover:text-sage-700 transition-colors duration-200',
+                message: 'text-sm text-sage-600 flex items-center gap-2',
               },
             }}
             localization={{
@@ -81,14 +82,23 @@ export default function Login() {
                   loading_button_label: 'Connexion en cours...',
                   email_input_placeholder: 'votre@email.com',
                   password_input_placeholder: 'Votre mot de passe',
+                  link_text: 'Déjà inscrit ? Connectez-vous',
+                  password_required: 'Veuillez entrer votre mot de passe',
+                  email_required: 'Veuillez entrer votre email',
+                  email_invalid: 'Email invalide',
+                  forgot_password_label: 'Mot de passe oublié ?',
                 },
                 sign_up: {
-                  email_label: 'Adresse email',
-                  password_label: 'Mot de passe',
-                  button_label: 'Créer un compte',
+                  email_label: 'Adresse email professionnelle',
+                  password_label: 'Choisissez un mot de passe sécurisé',
+                  button_label: 'Créer mon compte',
                   loading_button_label: 'Création en cours...',
-                  email_input_placeholder: 'votre@email.com',
-                  password_input_placeholder: 'Choisissez un mot de passe',
+                  email_input_placeholder: 'agence@immobilier.com',
+                  password_input_placeholder: 'Minimum 8 caractères',
+                  confirmation_text: 'En créant un compte, vous acceptez nos conditions d\'utilisation',
+                  link_text: 'Nouveau sur ImmoAI ? Inscrivez-vous',
+                  minimum_password_message: 'Le mot de passe doit contenir au moins 8 caractères',
+                  password_mismatch: 'Les mots de passe ne correspondent pas',
                 },
               },
             }}
