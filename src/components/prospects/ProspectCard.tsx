@@ -1,69 +1,93 @@
-import { Prospect } from '@/services/ProspectService';
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon } from "lucide-react";
+import { Phone, Mail, Calendar, MessageSquare } from 'lucide-react';
+import { Prospect } from '@/services/ProspectService';
 
 interface ProspectCardProps {
   prospect: Prospect;
   onScheduleMeeting: (prospectId: string) => void;
+  onGenerateStrategy: (prospect: Prospect) => void;
+  isGeneratingStrategy: boolean;
+  getQualificationColor: (qualification: string) => string;
 }
 
-export const ProspectCard = ({ prospect, onScheduleMeeting }: ProspectCardProps) => {
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "bg-green-100 text-green-800";
-    if (score >= 50) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors = {
-      cold: "bg-blue-100 text-blue-800",
-      warm: "bg-yellow-100 text-yellow-800",
-      hot: "bg-red-100 text-red-800",
-      converted: "bg-green-100 text-green-800",
-      lost: "bg-gray-100 text-gray-800"
-    };
-    return colors[status as keyof typeof colors] || colors.cold;
-  };
-
+export const ProspectCard = ({ 
+  prospect, 
+  onScheduleMeeting, 
+  onGenerateStrategy,
+  isGeneratingStrategy,
+  getQualificationColor 
+}: ProspectCardProps) => {
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
+    <Card key={prospect.id} className="p-4">
+      <div className="space-y-4">
+        <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-medium text-lg">
-              {prospect.first_name} {prospect.last_name}
-            </h3>
-            <p className="text-sm text-gray-600">{prospect.email}</p>
-            {prospect.phone && (
-              <p className="text-sm text-gray-600">{prospect.phone}</p>
-            )}
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-lg">
+                {prospect.first_name} {prospect.last_name}
+              </p>
+              <Badge className={getQualificationColor(prospect.qualification)}>
+                {prospect.qualification?.charAt(0).toUpperCase() + prospect.qualification?.slice(1)}
+              </Badge>
+            </div>
+            
+            <div className="mt-2 space-y-1 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                <span>{prospect.email}</span>
+              </div>
+              {prospect.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <span>{prospect.phone}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                Score: {prospect.score}
+              </span>
+              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                Source: {prospect.source}
+              </span>
+              {prospect.notes && (
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
+                  <MessageSquare className="w-3 h-3 inline mr-1" />
+                  Notes disponibles
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <Badge variant="secondary" className={getScoreColor(prospect.score)}>
-              Score: {prospect.score}
-            </Badge>
-            <Badge variant="secondary" className={getStatusColor(prospect.status)}>
-              {prospect.status.charAt(0).toUpperCase() + prospect.status.slice(1)}
-            </Badge>
-            <Badge variant="outline">
-              {prospect.source}
-            </Badge>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => onGenerateStrategy(prospect)}
+              variant="outline"
+              size="sm"
+              disabled={isGeneratingStrategy}
+            >
+              Générer Stratégie
+            </Button>
+            <Button 
+              onClick={() => onScheduleMeeting(prospect.id)}
+              variant="outline"
+              size="sm"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              RDV
+            </Button>
           </div>
-          {prospect.notes && (
-            <p className="text-sm text-gray-600 mt-2">{prospect.notes}</p>
-          )}
         </div>
-        <Button 
-          onClick={() => onScheduleMeeting(prospect.id)}
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <CalendarIcon className="h-4 w-4" />
-          Programmer RDV
-        </Button>
+
+        {prospect.notes && (
+          <div className="mt-3 p-3 bg-gray-50 rounded-md text-sm">
+            <p className="font-medium mb-1">Notes:</p>
+            <p className="text-gray-600">{prospect.notes}</p>
+          </div>
+        )}
       </div>
     </Card>
   );

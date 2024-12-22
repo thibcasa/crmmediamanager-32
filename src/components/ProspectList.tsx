@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
 import { supabase } from '@/lib/supabaseClient';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Phone, Mail, Calendar, MessageSquare } from 'lucide-react';
 import { AIService } from '@/services/AIService';
+import { ProspectCard } from './prospects/ProspectCard';
+import { ProspectTabs } from './prospects/ProspectTabs';
 
 export const ProspectList = () => {
   const { toast } = useToast();
@@ -57,6 +55,40 @@ export const ProspectList = () => {
     }
   };
 
+  const handleScheduleMeeting = async (prospectId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour programmer un rendez-vous",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await CalendarService.createMeeting({
+        title: "Rendez-vous découverte",
+        description: "Premier contact avec le prospect",
+        date: new Date(),
+        duration: 60,
+        type: 'discovery',
+        status: 'scheduled',
+        lead_id: prospectId
+      });
+      toast({
+        title: "Succès",
+        description: "Rendez-vous programmé",
+      });
+    } catch (error) {
+      console.error('Error scheduling meeting:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de programmer le rendez-vous",
+        variant: "destructive",
+      });
+    }
+  };
+
   const generateStrategy = async (prospect: Prospect) => {
     setIsGeneratingStrategy(true);
     try {
@@ -74,7 +106,6 @@ export const ProspectList = () => {
 
       const strategy = await AIService.generateContent('description', prompt);
       
-      // Sauvegarder la stratégie dans la base de données
       await supabase.from('lead_interactions').insert({
         lead_id: prospect.id,
         type: 'ai_strategy',
@@ -135,103 +166,28 @@ export const ProspectList = () => {
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">
-            Tous ({prospects.length})
-          </TabsTrigger>
-          <TabsTrigger value="lead">
-            Leads ({prospects.filter(p => p.qualification === 'lead').length})
-          </TabsTrigger>
-          <TabsTrigger value="prospect">
-            Prospects ({prospects.filter(p => p.qualification === 'prospect').length})
-          </TabsTrigger>
-          <TabsTrigger value="client">
-            Clients ({prospects.filter(p => p.qualification === 'client').length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-6">
-          {isLoading ? (
-            <div>Chargement...</div>
-          ) : (
-            <div className="space-y-4">
-              {filteredProspects.map((prospect) => (
-                <Card key={prospect.id} className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-lg">
-                            {prospect.first_name} {prospect.last_name}
-                          </p>
-                          <Badge className={getQualificationColor(prospect.qualification)}>
-                            {prospect.qualification?.charAt(0).toUpperCase() + prospect.qualification?.slice(1)}
-                          </Badge>
-                        </div>
-                        
-                        <div className="mt-2 space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4" />
-                            <span>{prospect.email}</span>
-                          </div>
-                          {prospect.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
-                              <span>{prospect.phone}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-3 flex gap-2 flex-wrap">
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            Score: {prospect.score}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                            Source: {prospect.source}
-                          </span>
-                          {prospect.notes && (
-                            <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">
-                              <MessageSquare className="w-3 h-3 inline mr-1" />
-                              Notes disponibles
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => generateStrategy(prospect)}
-                          variant="outline"
-                          size="sm"
-                          disabled={isGeneratingStrategy}
-                        >
-                          Générer Stratégie
-                        </Button>
-                        <Button 
-                          onClick={() => handleScheduleMeeting(prospect.id)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          RDV
-                        </Button>
-                      </div>
-                    </div>
-
-                    {prospect.notes && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-md text-sm">
-                        <p className="font-medium mb-1">Notes:</p>
-                        <p className="text-gray-600">{prospect.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      <ProspectTabs
+        prospects={prospects}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      >
+        {isLoading ? (
+          <div>Chargement...</div>
+        ) : (
+          <div className="space-y-4">
+            {filteredProspects.map((prospect) => (
+              <ProspectCard
+                key={prospect.id}
+                prospect={prospect}
+                onScheduleMeeting={handleScheduleMeeting}
+                onGenerateStrategy={generateStrategy}
+                isGeneratingStrategy={isGeneratingStrategy}
+                getQualificationColor={getQualificationColor}
+              />
+            ))}
+          </div>
+        )}
+      </ProspectTabs>
     </Card>
   );
 };
