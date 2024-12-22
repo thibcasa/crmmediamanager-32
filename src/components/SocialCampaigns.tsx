@@ -7,52 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { SocialCampaignService, Platform } from '@/services/SocialCampaignService';
-import { 
-  Facebook, 
-  Instagram, 
-  Linkedin, 
-  Twitter, 
-  MessageCircle, 
-  Send,
-  Users,
-  Target,
-  Calendar 
-} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const platformIcons = {
-  facebook: Facebook,
-  instagram: Instagram,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  tiktok: Send,
-  whatsapp: MessageCircle,
-};
+import { CampaignList } from './social/CampaignList';
+import { CampaignAnalytics } from './social/CampaignAnalytics';
+import { Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
 
 const platformTemplates = {
-  linkedin: `Bonjour {first_name},
-
-Je suis agent immobilier dans les Alpes-Maritimes et je remarque que vous êtes propriétaire dans la région.
-
-Seriez-vous intéressé(e) par une estimation gratuite de votre bien ? Je peux vous fournir une analyse détaillée du marché local.
-
-Bien cordialement`,
-  whatsapp: `Bonjour {first_name},
-
-Je suis {agent_name}, agent immobilier spécialisé dans les Alpes-Maritimes.
-
-Je recherche activement des biens pour mes clients et je me demandais si vous seriez intéressé(e) par une estimation gratuite de votre propriété ?
-
-Bien cordialement`,
-  facebook: `🏠 Propriétaire dans les Alpes-Maritimes ?
-
-Découvrez la valeur de votre bien avec notre estimation gratuite et personnalisée !
-
-✨ Expertise locale
-📊 Analyse de marché détaillée
-💯 Sans engagement
-
-Contactez-nous pour en savoir plus !`,
+  linkedin: `Bonjour {first_name},\n\nJe suis agent immobilier dans les Alpes-Maritimes...`,
+  whatsapp: `Bonjour {first_name},\n\nJe suis {agent_name}, agent immobilier...`,
+  facebook: `🏠 Propriétaire dans les Alpes-Maritimes ?\n\nDécouvrez la valeur...`,
 };
 
 export const SocialCampaigns = () => {
@@ -62,6 +25,7 @@ export const SocialCampaigns = () => {
   const [messageTemplate, setMessageTemplate] = useState('');
   const [targetingCriteria, setTargetingCriteria] = useState('');
   const [schedule, setSchedule] = useState('');
+  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
 
   const { data: campaigns, refetch } = useQuery({
     queryKey: ['social-campaigns'],
@@ -104,19 +68,15 @@ export const SocialCampaigns = () => {
     }
   };
 
-  const getPlatformIcon = (platformName: Platform) => {
-    const Icon = platformIcons[platformName] || Send;
-    return <Icon className="w-4 h-4" />;
-  };
-
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
       
       <Tabs defaultValue="create" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="create">Nouvelle Campagne</TabsTrigger>
           <TabsTrigger value="list">Campagnes Existantes</TabsTrigger>
+          <TabsTrigger value="analytics">Analyse</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create" className="space-y-4">
@@ -200,44 +160,18 @@ export const SocialCampaigns = () => {
         </TabsContent>
 
         <TabsContent value="list">
-          {campaigns && campaigns.length > 0 ? (
-            <div className="space-y-4">
-              {campaigns.map((campaign) => (
-                <Card key={campaign.id} className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      {getPlatformIcon(campaign.platform)}
-                      <div>
-                        <h4 className="font-medium">{campaign.name}</h4>
-                        <div className="flex gap-2 mt-1">
-                          <span className="text-sm text-gray-600 flex items-center gap-1">
-                            <Target className="w-3 h-3" />
-                            {campaign.targeting_criteria ? Object.keys(campaign.targeting_criteria).length : 0} critères
-                          </span>
-                          {campaign.schedule && (
-                            <span className="text-sm text-gray-600 flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              Planifié
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      campaign.status === 'active' ? 'bg-green-100 text-green-800' : 
-                      campaign.status === 'draft' ? 'bg-gray-100 text-gray-800' : 
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {campaign.status}
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
+          <CampaignList 
+            campaigns={campaigns || []} 
+            onSelectCampaign={setSelectedCampaign}
+          />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          {selectedCampaign ? (
+            <CampaignAnalytics campaign={selectedCampaign} />
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Aucune campagne créée pour le moment</p>
+              <p>Sélectionnez une campagne pour voir son analyse</p>
             </div>
           )}
         </TabsContent>

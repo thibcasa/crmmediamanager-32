@@ -1,8 +1,3 @@
-import { Meeting, MeetingType } from '@/types/meetings';
-import { Lead, LeadSource, LeadStatus } from '@/types/leads';
-import { Automation, AutomationTriggerType, AutomationActionType } from '@/types/automations';
-import { SocialCampaign, SocialPlatform, LinkedInConnectionStatus } from '@/types/social';
-
 export type Json =
   | string
   | number
@@ -11,29 +6,9 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      meetings: {
-        Row: Meeting;
-        Insert: Omit<Meeting, 'id'>;
-        Update: Partial<Meeting>;
-      };
-      leads: {
-        Row: Lead;
-        Insert: Omit<Lead, 'id'>;
-        Update: Partial<Lead>;
-      };
-      automations: {
-        Row: Automation;
-        Insert: Omit<Automation, 'id'>;
-        Update: Partial<Automation>;
-      };
-      social_campaigns: {
-        Row: SocialCampaign;
-        Insert: Omit<SocialCampaign, 'id'>;
-        Update: Partial<SocialCampaign>;
-      };
       automation_templates: {
         Row: {
           actions: Json | null
@@ -71,6 +46,55 @@ export interface Database {
           trigger_type?: Database["public"]["Enums"]["automation_trigger_type"]
           updated_at?: string | null
         }
+        Relationships: []
+      }
+      automations: {
+        Row: {
+          actions: Json
+          ai_enabled: boolean | null
+          ai_feedback: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_optimized_at: string | null
+          name: string
+          performance_metrics: Json | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions: Json
+          ai_enabled?: boolean | null
+          ai_feedback?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_optimized_at?: string | null
+          name: string
+          performance_metrics?: Json | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          ai_enabled?: boolean | null
+          ai_feedback?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_optimized_at?: string | null
+          name?: string
+          performance_metrics?: Json | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       content_templates: {
         Row: {
@@ -103,6 +127,7 @@ export interface Database {
           updated_at?: string | null
           user_id?: string
         }
+        Relationships: []
       }
       conversation_analytics: {
         Row: {
@@ -132,6 +157,15 @@ export interface Database {
           next_actions?: Json | null
           sentiment_score?: number | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_analytics_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       generated_visuals: {
         Row: {
@@ -164,6 +198,81 @@ export interface Database {
           status?: string | null
           user_id?: string
         }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          consent_details: Json | null
+          created_at: string
+          email: string
+          first_name: string
+          gdpr_consent: boolean | null
+          gdpr_consent_date: string | null
+          id: string
+          last_contact_date: string
+          last_name: string
+          notes: string | null
+          persona_type: string | null
+          phone: string | null
+          pipeline_stage_id: string | null
+          score: number
+          source: Database["public"]["Enums"]["lead_source"]
+          source_campaign: string | null
+          source_platform: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          user_id: string
+        }
+        Insert: {
+          consent_details?: Json | null
+          created_at?: string
+          email: string
+          first_name: string
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          id?: string
+          last_contact_date?: string
+          last_name: string
+          notes?: string | null
+          persona_type?: string | null
+          phone?: string | null
+          pipeline_stage_id?: string | null
+          score?: number
+          source: Database["public"]["Enums"]["lead_source"]
+          source_campaign?: string | null
+          source_platform?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          user_id: string
+        }
+        Update: {
+          consent_details?: Json | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          gdpr_consent?: boolean | null
+          gdpr_consent_date?: string | null
+          id?: string
+          last_contact_date?: string
+          last_name?: string
+          notes?: string | null
+          persona_type?: string | null
+          phone?: string | null
+          pipeline_stage_id?: string | null
+          score?: number
+          source?: Database["public"]["Enums"]["lead_source"]
+          source_campaign?: string | null
+          source_platform?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_pipeline_stage_id_fkey"
+            columns: ["pipeline_stage_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_stages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       linkedin_connections: {
         Row: {
@@ -173,7 +282,9 @@ export interface Database {
           id: string
           linkedin_id: string
           refresh_token: string
-          status: Database["public"]["Enums"]["linkedin_connection_status"] | null
+          status:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
           updated_at: string | null
           user_id: string
         }
@@ -184,7 +295,9 @@ export interface Database {
           id?: string
           linkedin_id: string
           refresh_token: string
-          status?: Database["public"]["Enums"]["linkedin_connection_status"] | null
+          status?:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
           updated_at?: string | null
           user_id: string
         }
@@ -195,10 +308,63 @@ export interface Database {
           id?: string
           linkedin_id?: string
           refresh_token?: string
-          status?: Database["public"]["Enums"]["linkedin_connection_status"] | null
+          status?:
+            | Database["public"]["Enums"]["linkedin_connection_status"]
+            | null
           updated_at?: string | null
           user_id?: string
         }
+        Relationships: []
+      }
+      meetings: {
+        Row: {
+          created_at: string | null
+          date: string
+          description: string | null
+          duration: number
+          id: string
+          lead_id: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          description?: string | null
+          duration?: number
+          id?: string
+          lead_id?: string | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          lead_id?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pipeline_stages: {
         Row: {
@@ -234,18 +400,211 @@ export interface Database {
           updated_at?: string | null
           user_id?: string | null
         }
+        Relationships: []
       }
-    };
+      pipelines: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          stages: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          stages?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          stages?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_campaigns: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_template: string | null
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          schedule: Json | null
+          status: string | null
+          targeting_criteria: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_template?: string | null
+          name: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          schedule?: Json | null
+          status?: string | null
+          targeting_criteria?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_template?: string | null
+          name?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          schedule?: Json | null
+          status?: string | null
+          targeting_criteria?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
     Enums: {
-      automation_action_type: AutomationActionType;
-      automation_trigger_type: AutomationTriggerType;
-      lead_source: LeadSource;
-      lead_status: LeadStatus;
-      linkedin_connection_status: LinkedInConnectionStatus;
-      social_platform: SocialPlatform;
-    };
-  };
+      automation_action_type:
+        | "send_email"
+        | "send_message"
+        | "update_lead"
+        | "create_task"
+        | "schedule_meeting"
+        | "generate_content"
+        | "analyze_sentiment"
+        | "update_score"
+      automation_trigger_type:
+        | "lead_created"
+        | "lead_updated"
+        | "meeting_scheduled"
+        | "message_received"
+        | "score_changed"
+        | "campaign_engagement"
+      lead_source: "facebook" | "instagram" | "linkedin" | "direct"
+      lead_status: "cold" | "warm" | "hot"
+      linkedin_connection_status: "active" | "expired" | "revoked"
+      social_platform:
+        | "linkedin"
+        | "twitter"
+        | "facebook"
+        | "instagram"
+        | "tiktok"
+        | "whatsapp"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never

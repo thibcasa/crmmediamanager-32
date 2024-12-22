@@ -51,7 +51,7 @@ export const ProspectList = () => {
     }
   };
 
-  const handleScheduleMeeting = async (prospectId: string) => {
+  const handleScheduleMeeting = async (leadId: string) => {
     if (!isAuthenticated) {
       toast({
         title: "Erreur",
@@ -63,11 +63,13 @@ export const ProspectList = () => {
 
     try {
       await CalendarService.createMeeting({
-        prospectId,
+        title: "Rendez-vous découverte",
+        description: "Premier contact avec le prospect",
         date: new Date(),
         duration: 60,
         type: 'discovery',
-        status: 'scheduled'
+        status: 'scheduled',
+        lead_id: leadId
       });
       toast({
         title: "Succès",
