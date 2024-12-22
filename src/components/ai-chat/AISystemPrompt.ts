@@ -35,3 +35,5 @@ Pour chaque demande, tu dois :
 - Ajustements recommandés
 
 Fournis une réponse structurée avec ces sections, en te concentrant sur la prospection immobilière à Nice.`;
+
+export const getSystemPrompt = () => AI_SYSTEM_PROMPT;
