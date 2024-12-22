@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 import { FirecrawlService } from '@/utils/FirecrawlService';
 import { ApiKeyForm } from './lead-scraper/ApiKeyForm';
 import { SearchForm } from './lead-scraper/SearchForm';

@@ -28,6 +28,7 @@ export const SocialCampaigns = () => {
         message_template: messageTemplate,
         targeting_criteria: JSON.parse(targetingCriteria || '{}'),
         status: 'draft',
+        schedule: null, // Add the missing schedule field
       });
       
       toast({
