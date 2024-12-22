@@ -54,12 +54,7 @@ serve(async (req) => {
       console.log('Génération d\'image pour:', prompt)
       const image = await hf.textToImage({
         inputs: prompt,
-        model: 'stabilityai/stable-diffusion-xl-base-1.0',
-        parameters: {
-          negative_prompt: "low quality, blurry, distorted",
-          num_inference_steps: 30,
-          guidance_scale: 7.5
-        }
+        model: "stabilityai/stable-diffusion-xl-base-1.0",
       })
 
       // Ajout du timestamp pour le rate limiting
