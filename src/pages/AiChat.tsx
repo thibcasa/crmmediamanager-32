@@ -8,7 +8,7 @@ import { AIService } from "@/services/AIService";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabaseClient";
+import { LinkedInStatus } from "@/components/linkedin/LinkedInStatus";
 
 const EXAMPLE_PROMPTS = [
   {
@@ -131,6 +131,11 @@ const AiChat = () => {
             Je coordonne vos stratégies de prospection et génère du contenu pour tous vos canaux
           </p>
         </div>
+
+        <Card className="p-4">
+          <h2 className="text-lg font-semibold mb-4">Connexion LinkedIn</h2>
+          <LinkedInStatus />
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {EXAMPLE_PROMPTS.map((prompt, index) => (

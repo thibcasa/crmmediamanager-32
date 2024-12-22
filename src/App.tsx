@@ -1,38 +1,30 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Pipeline from "./pages/Pipeline";
-import Prospects from "./pages/Prospects";
-import AiChat from "./pages/AiChat";
-import Calendar from "./pages/Calendar";
-import Workflow from "./pages/Workflow";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { LinkedInCallback } from '@/components/linkedin/LinkedInCallback';
+import { Toaster } from '@/components/ui/toaster';
+import Login from '@/pages/Login';
+import AiChat from '@/pages/AiChat';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+export default function App() {
+  const { isAuthenticated, isLoading } = useAuthStatus();
 
-function App() {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-sage-500" />
+      </div>
+    );
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/pipeline" element={<Pipeline />} />
-          <Route path="/prospects" element={<Prospects />} />
-          <Route path="/ai-chat" element={<AiChat />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/workflow" element={<Workflow />} />
-        </Routes>
-      </Router>
-    </QueryClientProvider>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/linkedin-callback" element={<LinkedInCallback />} />
+        <Route path="/" element={isAuthenticated ? <AiChat /> : <Login />} />
+        <Route path="/ai-chat" element={isAuthenticated ? <AiChat /> : <Login />} />
+      </Routes>
+      <Toaster />
+    </Router>
   );
 }
-
-export default App;
