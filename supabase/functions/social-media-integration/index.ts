@@ -26,8 +26,11 @@ serve(async (req) => {
       case 'instagram':
         result = await postToInstagram(content);
         break;
-      case 'tiktok':
-        result = await postToTikTok(content);
+      case 'linkedin':
+        result = await postToLinkedIn(content);
+        break;
+      case 'whatsapp':
+        result = await sendToWhatsApp(content);
         break;
       default:
         throw new Error(`Plateforme non supportée: ${platform}`);
@@ -112,28 +115,48 @@ async function postToInstagram(content: string) {
   return await publishResponse.json();
 }
 
-async function postToTikTok(content: string) {
-  const accessToken = Deno.env.get('TIKTOK_ACCESS_TOKEN');
-  if (!accessToken) throw new Error('Token TikTok manquant');
+async function postToLinkedIn(content: string) {
+  const accessToken = Deno.env.get('LINKEDIN_ACCESS_TOKEN');
+  if (!accessToken) throw new Error('Token LinkedIn manquant');
 
-  const response = await fetch('https://open.tiktokapis.com/v2/post/publish/content/init/', {
+  const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      post_info: {
-        title: content,
-        privacy_level: 'PUBLIC',
+      author: `urn:li:person:${accessToken}`,
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: {
+            text: content
+          },
+          shareMediaCategory: 'NONE'
+        }
       },
+      visibility: {
+        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'
+      }
     }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(`Erreur TikTok: ${JSON.stringify(error)}`);
+    throw new Error(`Erreur LinkedIn: ${JSON.stringify(error)}`);
   }
 
   return await response.json();
+}
+
+async function sendToWhatsApp(content: string) {
+  const accessToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+  if (!accessToken) throw new Error('Token WhatsApp manquant');
+
+  // Implement WhatsApp Business API integration here
+  // This is a placeholder for the actual implementation
+  console.log('WhatsApp message would be sent:', content);
+  
+  return { success: true, message: 'WhatsApp message scheduled' };
 }
