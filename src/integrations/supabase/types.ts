@@ -9,13 +9,56 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      automation_templates: {
+        Row: {
+          actions: Json | null
+          ai_generated: boolean | null
+          created_at: string | null
+          description: string | null
+          effectiveness_score: number | null
+          id: string
+          name: string
+          trigger_config: Json | null
+          trigger_type: Database["public"]["Enums"]["automation_trigger_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          ai_generated?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          name: string
+          trigger_config?: Json | null
+          trigger_type: Database["public"]["Enums"]["automation_trigger_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          ai_generated?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          effectiveness_score?: number | null
+          id?: string
+          name?: string
+          trigger_config?: Json | null
+          trigger_type?: Database["public"]["Enums"]["automation_trigger_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       automations: {
         Row: {
           actions: Json
+          ai_enabled: boolean | null
+          ai_feedback: Json | null
           created_at: string | null
           id: string
           is_active: boolean | null
+          last_optimized_at: string | null
           name: string
+          performance_metrics: Json | null
           trigger_config: Json
           trigger_type: string
           updated_at: string | null
@@ -23,10 +66,14 @@ export type Database = {
         }
         Insert: {
           actions: Json
+          ai_enabled?: boolean | null
+          ai_feedback?: Json | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          last_optimized_at?: string | null
           name: string
+          performance_metrics?: Json | null
           trigger_config: Json
           trigger_type: string
           updated_at?: string | null
@@ -34,10 +81,14 @@ export type Database = {
         }
         Update: {
           actions?: Json
+          ai_enabled?: boolean | null
+          ai_feedback?: Json | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          last_optimized_at?: string | null
           name?: string
+          performance_metrics?: Json | null
           trigger_config?: Json
           trigger_type?: string
           updated_at?: string | null
@@ -375,6 +426,22 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      automation_action_type:
+        | "send_email"
+        | "send_message"
+        | "update_lead"
+        | "create_task"
+        | "schedule_meeting"
+        | "generate_content"
+        | "analyze_sentiment"
+        | "update_score"
+      automation_trigger_type:
+        | "lead_created"
+        | "lead_updated"
+        | "meeting_scheduled"
+        | "message_received"
+        | "score_changed"
+        | "campaign_engagement"
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"
       social_platform:

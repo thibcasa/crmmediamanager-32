@@ -1,9 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/components/ui/use-toast";
 
 export const WorkflowView = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const { data: automations, isLoading } = useQuery({
     queryKey: ["automations"],
     queryFn: async () => {
@@ -17,11 +21,40 @@ export const WorkflowView = () => {
     },
   });
 
+  const handleNewAutomation = async () => {
+    try {
+      const { error } = await supabase
+        .from("automations")
+        .insert({
+          name: "Nouvelle automatisation",
+          trigger_type: "lead_created",
+          trigger_config: {},
+          actions: [],
+        });
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["automations"] });
+      
+      toast({
+        title: "Automatisation créée",
+        description: "La nouvelle automatisation a été créée avec succès.",
+      });
+    } catch (error) {
+      console.error("Error creating automation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'automatisation.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Automatisations</h2>
-        <Button>Nouvelle automatisation</Button>
+        <Button onClick={handleNewAutomation}>Nouvelle automatisation</Button>
       </div>
 
       {isLoading ? (
