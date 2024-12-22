@@ -7,11 +7,13 @@ import { PipelineStage } from "./PipelineStage";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { PipelineHeader } from "./PipelineHeader";
+import { useState } from "react";
 
 export const PipelineBoard = () => {
   const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: stages, isLoading: isLoadingStages } = useQuery({
+  const { data: stages, isLoading: isLoadingStages, refetch: refetchStages } = useQuery({
     queryKey: ["pipeline-stages"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -30,6 +32,7 @@ export const PipelineBoard = () => {
 
   const handleGeneratePipeline = async () => {
     try {
+      setIsGenerating(true);
       // Get the session before making the function call
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -51,6 +54,9 @@ export const PipelineBoard = () => {
       
       if (error) throw error;
 
+      // Refresh the stages data after generation
+      await refetchStages();
+
       toast({
         title: "Pipeline généré",
         description: "Le pipeline et les automatisations ont été créés avec succès.",
@@ -62,6 +68,8 @@ export const PipelineBoard = () => {
         description: "Impossible de générer le pipeline.",
         variant: "destructive",
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -69,8 +77,8 @@ export const PipelineBoard = () => {
     return (
       <div className="space-y-8">
         <PipelineHeader />
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-[600px] w-full" />
           ))}
         </div>
@@ -84,9 +92,12 @@ export const PipelineBoard = () => {
         <PipelineHeader />
         <Card className="p-6 text-center">
           <p className="mb-4">Aucun pipeline n'a été configuré.</p>
-          <Button onClick={handleGeneratePipeline}>
+          <Button 
+            onClick={handleGeneratePipeline}
+            disabled={isGenerating}
+          >
             <Plus className="w-4 h-4 mr-2" />
-            Générer un pipeline avec l'IA
+            {isGenerating ? 'Génération en cours...' : 'Générer un pipeline avec l\'IA'}
           </Button>
         </Card>
       </div>
@@ -96,7 +107,7 @@ export const PipelineBoard = () => {
   return (
     <div className="space-y-8">
       <PipelineHeader />
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {stages.map((stage) => (
           <PipelineStage key={stage.id} stage={stage} />
         ))}

@@ -7,15 +7,18 @@ import {
   CalendarIcon, 
   MailIcon, 
   PhoneIcon,
-  UserIcon
+  UserIcon,
+  ArrowRightIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface PipelineStageProps {
   stage: {
     id: string;
     name: string;
     order_index: number;
+    required_actions?: string[];
   };
 }
 
@@ -48,7 +51,16 @@ export const PipelineStage = ({ stage }: PipelineStageProps) => {
     <Card className="min-h-[600px]">
       <CardHeader>
         <CardTitle className="flex justify-between items-center text-base">
-          <span>{stage.name}</span>
+          <div className="space-y-2">
+            <span>{stage.name}</span>
+            <div className="flex gap-2">
+              {stage.required_actions?.map((action, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {action}
+                </Badge>
+              ))}
+            </div>
+          </div>
           <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
             {leads?.length || 0}
           </span>
@@ -88,6 +100,10 @@ export const PipelineStage = ({ stage }: PipelineStageProps) => {
               <div className="flex gap-2 mt-2">
                 <Button variant="outline" size="sm" className="w-full">
                   Détails
+                </Button>
+                <Button size="sm" className="w-full">
+                  <ArrowRightIcon className="w-4 h-4 mr-2" />
+                  Étape suivante
                 </Button>
               </div>
             </div>
