@@ -25,7 +25,24 @@ export const PipelineBoard = () => {
 
   const handleGeneratePipeline = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('generate-pipeline');
+      // Get the session before making the function call
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) throw sessionError;
+      if (!session) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Veuillez vous reconnecter.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-pipeline', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
       
       if (error) throw error;
 
