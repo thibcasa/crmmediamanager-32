@@ -1,10 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LinkedInCallback } from '@/components/linkedin/LinkedInCallback';
 import { Toaster } from '@/components/ui/toaster';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import Login from '@/pages/Login';
 import AiChat from '@/pages/AiChat';
-import { useAuthStatus } from '@/hooks/useAuthStatus';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { useAuthStatus } from '@/hooks/useAuthStatus';
 
 export default function App() {
   const { isAuthenticated, isLoading } = useAuthStatus();
@@ -26,9 +27,11 @@ export default function App() {
           path="/" 
           element={
             isAuthenticated ? (
-              <AppLayout>
-                <AiChat />
-              </AppLayout>
+              <ProtectedRoute>
+                <AppLayout>
+                  <AiChat />
+                </AppLayout>
+              </ProtectedRoute>
             ) : (
               <Login />
             )
@@ -38,9 +41,11 @@ export default function App() {
           path="/ai-chat" 
           element={
             isAuthenticated ? (
-              <AppLayout>
-                <AiChat />
-              </AppLayout>
+              <ProtectedRoute>
+                <AppLayout>
+                  <AiChat />
+                </AppLayout>
+              </ProtectedRoute>
             ) : (
               <Login />
             )

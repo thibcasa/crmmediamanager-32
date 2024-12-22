@@ -565,6 +565,7 @@ export type Database = {
       }
       social_campaigns: {
         Row: {
+          ai_feedback: Json | null
           created_at: string | null
           id: string
           message_template: string | null
@@ -577,6 +578,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          ai_feedback?: Json | null
           created_at?: string | null
           id?: string
           message_template?: string | null
@@ -589,6 +591,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          ai_feedback?: Json | null
           created_at?: string | null
           id?: string
           message_template?: string | null
