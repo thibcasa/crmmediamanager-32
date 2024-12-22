@@ -51,10 +51,17 @@ export const AIRecommendations = () => {
                 <Badge 
                   variant={
                     campaign.ai_feedback.performance_status === 'good' 
-                      ? 'success' 
+                      ? 'default'
                       : campaign.ai_feedback.performance_status === 'average'
-                      ? 'warning'
+                      ? 'secondary'
                       : 'destructive'
+                  }
+                  className={
+                    campaign.ai_feedback.performance_status === 'good'
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : campaign.ai_feedback.performance_status === 'average'
+                      ? 'bg-yellow-500 hover:bg-yellow-600'
+                      : undefined
                   }
                 >
                   {campaign.ai_feedback.performance_status === 'good' && <ThumbsUp className="w-4 h-4 mr-1" />}
