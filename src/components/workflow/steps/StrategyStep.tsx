@@ -1,105 +1,88 @@
-import { Card } from "@/components/ui/card";
-import { Users, Building, ChartBar, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Platform } from "@/services/SocialCampaignService";
+import { Building2, Users, Target, Megaphone } from "lucide-react";
 
 interface StrategyStepProps {
-  platform: string;
+  platform: Platform;
   onStrategySelect: (strategy: string) => void;
 }
 
+interface StrategyOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
 export const StrategyStep = ({ platform, onStrategySelect }: StrategyStepProps) => {
-  const strategies = {
+  const strategies: Record<Platform, StrategyOption[]> = {
     linkedin: [
       {
-        id: 'prospection_directe',
-        name: 'Prospection Directe',
-        icon: <Users className="h-6 w-6" />,
-        description: 'Messages personnalisés aux propriétaires',
-        targetingCriteria: {
-          location: 'Nice, Alpes-Maritimes',
-          jobTitles: ['Propriétaire', 'Investisseur'],
-          industries: ['Immobilier', 'Finance']
-        }
+        id: "b2b_prospection",
+        title: "Prospection B2B",
+        description: "Identifiez et contactez les propriétaires d'entreprises",
+        icon: <Building2 className="w-6 h-6" />
       },
       {
-        id: 'content_marketing',
-        name: 'Marketing de Contenu',
-        icon: <Building className="h-6 w-6" />,
-        description: 'Articles et analyses du marché local',
-        targetingCriteria: {
-          location: 'Alpes-Maritimes',
-          interests: ['Immobilier', 'Investissement'],
-          demographics: '35-65'
-        }
+        id: "network_growth",
+        title: "Croissance du réseau",
+        description: "Développez votre réseau professionnel immobilier",
+        icon: <Users className="w-6 h-6" />
+      },
+      {
+        id: "thought_leadership",
+        title: "Leadership d'opinion",
+        description: "Positionnez-vous comme expert immobilier",
+        icon: <Target className="w-6 h-6" />
       }
     ],
     instagram: [
       {
-        id: 'visual_showcase',
-        name: 'Vitrine Visuelle',
-        icon: <ChartBar className="h-6 w-6" />,
-        description: 'Photos et stories de biens d\'exception',
-        targetingCriteria: {
-          location: 'Nice',
-          interests: ['Luxe', 'Immobilier'],
-          demographics: '35+'
-        }
+        id: "local_visibility",
+        title: "Visibilité locale",
+        description: "Augmentez votre visibilité dans les Alpes-Maritimes",
+        icon: <Target className="w-6 h-6" />
       },
       {
-        id: 'local_expertise',
-        name: 'Expertise Locale',
-        icon: <Target className="h-6 w-6" />,
-        description: 'Contenu ciblé sur le marché niçois',
-        targetingCriteria: {
-          location: 'Nice et environs',
-          behavior: 'Intérêt immobilier récent',
-          income: 'CSP+'
-        }
+        id: "community_building",
+        title: "Construction communautaire",
+        description: "Créez une communauté de propriétaires engagés",
+        icon: <Users className="w-6 h-6" />
+      },
+      {
+        id: "property_showcase",
+        title: "Mise en valeur immobilière",
+        description: "Présentez des biens et succès immobiliers",
+        icon: <Megaphone className="w-6 h-6" />
       }
     ]
   };
 
-  const platformStrategies = strategies[platform as keyof typeof strategies] || [];
-
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-lg font-medium text-sage-800">
-          Définir votre stratégie pour {platform}
-        </h3>
-        <p className="text-sm text-sage-600">
-          Choisissez l'approche qui correspond le mieux à vos objectifs de prospection
+        <h3 className="text-lg font-medium">Choisir votre stratégie</h3>
+        <p className="text-sm text-muted-foreground">
+          Sélectionnez l'approche la plus adaptée à vos objectifs
         </p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {platformStrategies.map((strategy) => (
-          <Card
+      <div className="grid gap-4">
+        {strategies[platform].map((strategy) => (
+          <Card 
             key={strategy.id}
-            className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-sage-500"
+            className="cursor-pointer hover:border-primary transition-colors"
             onClick={() => onStrategySelect(strategy.id)}
           >
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-sage-100 rounded-lg">
-                  {strategy.icon}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sage-900">{strategy.name}</h4>
-                  <p className="text-sm text-sage-600">{strategy.description}</p>
-                </div>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                {strategy.icon}
               </div>
-              <div className="mt-2">
-                <h5 className="text-xs font-medium text-sage-700 mb-1">Critères de ciblage:</h5>
-                <ul className="text-xs text-sage-600 space-y-1">
-                  {Object.entries(strategy.targetingCriteria).map(([key, value]) => (
-                    <li key={key} className="flex items-center gap-2">
-                      <span className="w-20 font-medium">{key}:</span>
-                      <span>{Array.isArray(value) ? value.join(', ') : value}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div>
+                <h4 className="font-medium">{strategy.title}</h4>
+                <p className="text-sm text-muted-foreground">{strategy.description}</p>
               </div>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>
