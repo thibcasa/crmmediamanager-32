@@ -83,6 +83,7 @@ export default function Login() {
                   email_input_placeholder: 'agence@immobilier.com',
                   password_input_placeholder: 'Votre mot de passe sécurisé',
                   link_text: 'Pas encore de compte ? Inscrivez-vous',
+                  social_provider_text: 'Continuer avec {{provider}}',
                 },
                 sign_up: {
                   email_label: 'Adresse email professionnelle',
@@ -93,11 +94,13 @@ export default function Login() {
                   password_input_placeholder: '8 caractères minimum avec chiffres et lettres',
                   confirmation_text: 'En créant un compte, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité',
                   link_text: 'Déjà un compte ? Connectez-vous',
+                  social_provider_text: 'Continuer avec {{provider}}',
                 },
               },
             }}
             theme="light"
             providers={['linkedin']}
+            socialLayout="vertical"
           />
         </div>
 
