@@ -17,21 +17,115 @@ const AiChat = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const checkLinkedInConnection = async () => {
-    const { data: connection, error } = await supabase
-      .from('linkedin_connections')
-      .select('*')
-      .single();
+  const executeWorkflow = async (aiResponse: string) => {
+    try {
+      // 1. Générer une image avec HuggingFace
+      const { data: visualData, error: visualError } = await supabase.functions.invoke('huggingface-integration', {
+        body: { 
+          action: 'generate-image',
+          data: { prompt: "Professional real estate photo in Nice, French Riviera, modern style" }
+        }
+      });
 
-    if (error || !connection) {
+      if (visualError) throw visualError;
+
+      // 2. Créer une campagne sociale
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('social_campaigns')
+        .insert({
+          name: "Campagne LinkedIn Nice - Propriétaires",
+          platform: 'linkedin',
+          status: 'active',
+          targeting_criteria: {
+            location: "Nice, Alpes-Maritimes",
+            age_range: "35-65",
+            job_titles: ["Cadre", "Manager", "Directeur"],
+            interests: ["Immobilier", "Investissement"]
+          },
+          message_template: aiResponse
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      // 3. Créer un pipeline de suivi
+      const { data: pipelineData, error: pipelineError } = await supabase
+        .from('pipelines')
+        .insert({
+          name: "Pipeline LinkedIn Nice",
+          description: "Suivi des prospects LinkedIn - Propriétaires Nice",
+          stages: [
+            {
+              name: "Premier contact",
+              criteria: { source: "linkedin", status: "new" }
+            },
+            {
+              name: "Intéressé",
+              criteria: { engagement_score: ">50" }
+            },
+            {
+              name: "Rendez-vous",
+              criteria: { meeting_scheduled: true }
+            },
+            {
+              name: "Estimation",
+              criteria: { property_evaluated: true }
+            }
+          ]
+        })
+        .select()
+        .single();
+
+      if (pipelineError) throw pipelineError;
+
+      // 4. Créer une automatisation
+      const { data: automationData, error: automationError } = await supabase
+        .from('automations')
+        .insert({
+          name: "Suivi LinkedIn Nice",
+          trigger_type: "lead_created",
+          trigger_config: { source: "linkedin" },
+          actions: [
+            {
+              type: "send_message",
+              template: "follow_up_linkedin",
+              delay: "2d"
+            },
+            {
+              type: "create_task",
+              template: "qualification_call",
+              delay: "4d"
+            }
+          ],
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (automationError) throw automationError;
+
+      // 5. Poster sur LinkedIn
+      await AIService.generateAndPostToLinkedIn(aiResponse);
+
+      // 6. Rafraîchir les données
+      queryClient.invalidateQueries({ queryKey: ['social-campaigns'] });
+      queryClient.invalidateQueries({ queryKey: ['pipelines'] });
+      queryClient.invalidateQueries({ queryKey: ['automations'] });
+
       toast({
-        title: "LinkedIn non connecté",
-        description: "Connectez votre compte LinkedIn pour activer toutes les fonctionnalités.",
+        title: "Workflow complet exécuté",
+        description: "Campagne créée, pipeline configuré et automatisations mises en place.",
+      });
+
+    } catch (error) {
+      console.error('Erreur dans l\'exécution du workflow:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'exécution du workflow.",
         variant: "destructive"
       });
-      return false;
     }
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,14 +138,6 @@ const AiChat = () => {
     setIsLoading(true);
 
     try {
-      if (userMessage.toLowerCase().includes('linkedin')) {
-        const isConnected = await checkLinkedInConnection();
-        if (!isConnected) {
-          setIsLoading(false);
-          return;
-        }
-      }
-
       const systemPrompt = `Tu es un expert en stratégie immobilière et marketing digital pour les Alpes-Maritimes.
       Pour chaque demande, tu dois :
       1. Analyser l'objectif et proposer une stratégie détaillée
@@ -73,14 +159,9 @@ const AiChat = () => {
       
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
-      queryClient.invalidateQueries({ queryKey: ['automations'] });
-      queryClient.invalidateQueries({ queryKey: ['social-campaigns'] });
-      queryClient.invalidateQueries({ queryKey: ['linkedin-connections'] });
+      // Exécuter le workflow complet
+      await executeWorkflow(assistantMessage);
 
-      toast({
-        title: "Stratégie générée",
-        description: "Les recommandations ont été générées avec succès.",
-      });
     } catch (error) {
       console.error("Error generating strategy:", error);
       toast({
