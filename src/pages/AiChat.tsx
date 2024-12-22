@@ -8,6 +8,8 @@ import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
 import { getSystemPrompt } from "@/components/ai-chat/AISystemPrompt";
+import { AIRecommendations } from "@/components/ai-chat/AIRecommendations";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SUPPORTED_PLATFORMS = ['linkedin', 'facebook', 'instagram', 'whatsapp'];
 
@@ -59,23 +61,35 @@ const AiChat = () => {
           </p>
         </div>
 
-        <Card className="p-6 bg-white shadow-sm border-sage-200">
-          <h2 className="text-xl font-semibold text-sage-800 mb-4">Statut des connexions</h2>
-          <LinkedInStatus />
-          {/* Ajouter ici les statuts des autres réseaux sociaux quand disponibles */}
-        </Card>
+        <Tabs defaultValue="chat" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
+          </TabsList>
 
-        <ExamplePrompts onPromptClick={setInput} />
+          <TabsContent value="chat">
+            <Card className="p-6 bg-white shadow-sm border-sage-200">
+              <h2 className="text-xl font-semibold text-sage-800 mb-4">Statut des connexions</h2>
+              <LinkedInStatus />
+            </Card>
 
-        <Card className="flex flex-col h-[600px] border-sage-200 shadow-sm overflow-hidden">
-          <ChatMessages messages={messages} isLoading={isLoading} />
-          <ChatInput 
-            input={input}
-            isLoading={isLoading}
-            onInputChange={setInput}
-            onSubmit={handleSubmit}
-          />
-        </Card>
+            <ExamplePrompts onPromptClick={setInput} />
+
+            <Card className="flex flex-col h-[600px] border-sage-200 shadow-sm overflow-hidden">
+              <ChatMessages messages={messages} isLoading={isLoading} />
+              <ChatInput 
+                input={input}
+                isLoading={isLoading}
+                onInputChange={setInput}
+                onSubmit={handleSubmit}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="recommendations">
+            <AIRecommendations />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

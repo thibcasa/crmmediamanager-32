@@ -1,1 +1,4 @@
 project_id = "siptvfxfvsihwgglozvu"
+
+[functions.campaign-analyzer]
+verify_jwt = true
