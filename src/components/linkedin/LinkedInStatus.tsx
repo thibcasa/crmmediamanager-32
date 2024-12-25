@@ -13,8 +13,13 @@ export const LinkedInStatus = () => {
     const checkLinkedInConnection = async () => {
       try {
         console.log('Vérification de la connexion LinkedIn...');
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         
+        if (userError) {
+          console.error('Erreur lors de la récupération de l\'utilisateur:', userError);
+          throw userError;
+        }
+
         if (!user) {
           console.log('Aucun utilisateur connecté');
           setIsConnected(false);
@@ -23,26 +28,29 @@ export const LinkedInStatus = () => {
         }
 
         console.log('Recherche de la connexion LinkedIn pour l\'utilisateur:', user.id);
-        const { data: connection, error } = await supabase
+        const { data: connections, error: connectionError } = await supabase
           .from('linkedin_connections')
           .select('*')
           .eq('user_id', user.id)
-          .eq('status', 'active')
-          .single();
+          .eq('status', 'active');
 
-        if (error) {
-          console.error('Erreur lors de la vérification de la connexion LinkedIn:', error);
+        if (connectionError) {
+          console.error('Erreur lors de la vérification de la connexion LinkedIn:', connectionError);
           toast({
             title: "Erreur",
             description: "Impossible de vérifier la connexion LinkedIn",
             variant: "destructive",
           });
+          throw connectionError;
         }
 
-        console.log('Statut de la connexion LinkedIn:', !!connection);
-        setIsConnected(!!connection);
+        console.log('Connexions LinkedIn trouvées:', connections);
+        const hasActiveConnection = connections && connections.length > 0;
+        console.log('Statut de la connexion LinkedIn:', hasActiveConnection);
+        setIsConnected(hasActiveConnection);
       } catch (error) {
         console.error('Erreur lors de la vérification du statut LinkedIn:', error);
+        setIsConnected(false);
       } finally {
         setIsLoading(false);
       }

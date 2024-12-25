@@ -10,7 +10,6 @@ export const LinkedInConnect = () => {
     try {
       console.log('Démarrage de la connexion LinkedIn...');
       
-      // Vérifier si l'URL de redirection est correcte
       const redirectUrl = `${window.location.origin}/auth/callback`;
       console.log('URL de redirection:', redirectUrl);
 
@@ -20,7 +19,8 @@ export const LinkedInConnect = () => {
           redirectTo: redirectUrl,
           scopes: 'openid profile email w_member_social',
           queryParams: {
-            prompt: 'consent'
+            prompt: 'consent',
+            access_type: 'offline'
           }
         }
       });
