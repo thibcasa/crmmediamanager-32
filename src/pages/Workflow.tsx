@@ -1,17 +1,17 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { WorkflowSteps } from "@/components/workflow/WorkflowSteps";
+import { AutomationWorkflow } from "@/components/workflow/AutomationWorkflow";
 
 const Workflow = () => {
   return (
     <AppLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Workflow</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Workflow Marketing</h1>
           <p className="text-muted-foreground mt-2">
-            Créez et gérez vos campagnes marketing étape par étape.
+            Automatisez et optimisez vos campagnes marketing avec l'IA
           </p>
         </div>
-        <WorkflowSteps />
+        <AutomationWorkflow />
       </div>
     </AppLayout>
   );
