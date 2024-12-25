@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LinkedInCallback } from '@/components/linkedin/LinkedInCallback';
 import { Toaster } from '@/components/ui/toaster';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { RealtimeUpdates } from '@/components/system/RealtimeUpdates';
 import Login from '@/pages/Login';
 import AiChat from '@/pages/AiChat';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -60,6 +61,7 @@ export default function App() {
 
   return (
     <Router>
+      {isAuthenticated && <RealtimeUpdates />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<LinkedInCallback />} />
