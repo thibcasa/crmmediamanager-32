@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
 interface Location {
@@ -39,8 +39,12 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           .order('city');
 
         if (error) throw error;
-        setLocations(data);
-        setSelectedCount(selectedLocations.length);
+        
+        if (data) {
+          console.log('Locations fetched:', data.length);
+          setLocations(data);
+          setSelectedCount(selectedLocations.length);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des locations:', error);
         toast({
@@ -73,14 +77,25 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     }
   };
 
+  if (loading) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center space-x-2">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <p>Chargement des zones...</p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="p-6">
+    <Card className="p-6 border-2 border-primary/20">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-primary" />
           <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
         </div>
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="text-sm">
           {selectedCount} zone{selectedCount > 1 ? 's' : ''} sélectionnée{selectedCount > 1 ? 's' : ''}
         </Badge>
       </div>
@@ -100,7 +115,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           />
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 bg-accent/50 p-2 rounded-md">
           <Checkbox 
             id="select-all"
             checked={selectedCount === locations.length}
@@ -115,8 +130,10 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-4">Chargement des zones...</div>
+      {locations.length === 0 ? (
+        <div className="text-center py-4 bg-muted/50 rounded-lg">
+          Aucune zone disponible
+        </div>
       ) : (
         <ScrollArea className="h-[400px] rounded-md border p-4">
           <div className="space-y-2">
