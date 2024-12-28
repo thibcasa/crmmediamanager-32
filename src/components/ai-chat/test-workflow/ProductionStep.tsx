@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Rocket, CheckCircle } from "lucide-react";
+import { Rocket, CheckCircle, AlertCircle } from "lucide-react";
 import { TestResults } from "../types/test-results";
 
 interface ProductionStepProps {
@@ -9,6 +9,14 @@ interface ProductionStepProps {
 }
 
 export const ProductionStep = ({ onDeploy, testResults }: ProductionStepProps) => {
+  const checklistItems = [
+    { label: "Budget validé", checked: true },
+    { label: "Ciblage optimisé", checked: true },
+    { label: "Créatives approuvées", checked: true },
+    { label: "Messages validés", checked: true },
+    { label: "Workflow configuré", checked: true }
+  ];
+
   return (
     <div className="space-y-4">
       <Card className="p-4 bg-green-50 border-green-200">
@@ -33,14 +41,33 @@ export const ProductionStep = ({ onDeploy, testResults }: ProductionStepProps) =
             </div>
           </div>
 
-          <ul className="space-y-2">
-            {testResults.opportunities.map((opportunity, index) => (
-              <li key={index} className="text-sm text-green-700 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                {opportunity}
-              </li>
-            ))}
-          </ul>
+          <div className="border-t border-green-200 pt-4">
+            <h5 className="text-sm font-medium text-green-800 mb-2">Checklist finale</h5>
+            <ul className="space-y-2">
+              {checklistItems.map((item, index) => (
+                <li key={index} className="flex items-center gap-2 text-sm text-green-700">
+                  {item.checked ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  )}
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="border-t border-green-200 pt-4">
+            <h5 className="text-sm font-medium text-green-800 mb-2">Opportunités identifiées</h5>
+            <ul className="space-y-2">
+              {testResults.opportunities.map((opportunity, index) => (
+                <li key={index} className="text-sm text-green-700 flex items-center gap-2">
+                  <Rocket className="h-4 w-4" />
+                  {opportunity}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </Card>
 
