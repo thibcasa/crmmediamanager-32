@@ -82,7 +82,6 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   };
 
   const handlePlatformChange = (value: Platform) => {
-    console.log('Changement de plateforme:', value);
     setPlatform(value);
     setMessageTemplate(platformTemplates[value] || '');
   };
@@ -92,8 +91,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
 
     try {
       setIsSubmitting(true);
-      console.log('Début de création de campagne...');
-
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -104,8 +102,6 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         return;
       }
 
-      console.log('Utilisateur authentifié:', user.id);
-
       const campaignData = {
         name,
         platform,
@@ -113,16 +109,13 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         targeting_criteria: JSON.parse(targetingCriteria),
         status: 'draft',
         schedule: schedule ? JSON.parse(schedule) : null,
-        ai_feedback: null,
-        posts: [], // Add missing field with empty array default
-        post_triggers: [], // Add missing field with empty array default
-        target_metrics: {} // Add missing field with empty object default
+        user_id: user.id, // Explicitly set the user_id
+        posts: [],
+        post_triggers: [],
+        target_metrics: {}
       };
 
-      console.log('Données de la campagne:', campaignData);
-
-      const result = await SocialCampaignService.createCampaign(campaignData);
-      console.log('Campagne créée avec succès:', result);
+      await SocialCampaignService.createCampaign(campaignData);
       
       onSuccess();
       toast({
