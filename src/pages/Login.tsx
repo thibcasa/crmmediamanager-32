@@ -13,7 +13,8 @@ const Login = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Événement d'authentification:", event);
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' && session) {
+        console.log("Session utilisateur:", session);
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
@@ -68,8 +69,8 @@ const Login = () => {
               input: 'auth-input',
             }
           }}
-          redirectTo={`${window.location.origin}/`}
           providers={['linkedin']}
+          redirectTo={window.location.origin}
           localization={{
             variables: {
               sign_in: {
