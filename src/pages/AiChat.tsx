@@ -1,31 +1,55 @@
-import { ContentGenerator } from "@/components/content/ContentGenerator";
-import { TrendAnalyzer } from "@/components/analytics/TrendAnalyzer";
+import { useState } from 'react';
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wand2, TrendingUp } from 'lucide-react';
+import { PredictiveAnalysis } from '@/components/analytics/PredictiveAnalysis';
+import { ContactImport } from '@/components/contacts/ContactImport';
+import { ContactSegmentation } from '@/components/contacts/ContactSegmentation';
+import { Brain, Users, TrendingUp } from 'lucide-react';
 
 const AiChat = () => {
+  const [activeTab, setActiveTab] = useState('analytics');
+
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Assistant IA Marketing</h1>
-      
-      <Tabs defaultValue="generator" className="space-y-6">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">Assistant IA</h1>
+        <p className="text-muted-foreground mt-2">
+          Analysez et optimisez vos campagnes marketing
+        </p>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="generator" className="flex items-center gap-2">
-            <Wand2 className="w-4 h-4" />
-            Générateur
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Brain className="w-4 h-4" />
+            Analyse Prédictive
           </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-2">
+          <TabsTrigger value="contacts" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Gestion des Contacts
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
-            Tendances
+            Performance
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="generator">
-          <ContentGenerator />
+        <TabsContent value="analytics" className="space-y-6">
+          <PredictiveAnalysis campaignId="default" />
         </TabsContent>
 
-        <TabsContent value="trends">
-          <TrendAnalyzer />
+        <TabsContent value="contacts" className="space-y-6">
+          <ContactImport />
+          <ContactSegmentation />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-6">
+          <Card className="p-6">
+            <h3 className="text-lg font-medium">Analyse des Performances</h3>
+            <p className="text-muted-foreground">
+              Module en cours de développement
+            </p>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
