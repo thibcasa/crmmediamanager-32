@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from '@/lib/supabaseClient';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,25 +16,45 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
         
-        if (error || !user) {
-          console.error('Authentication error:', error);
+        if (error) {
+          console.error('Erreur d\'authentification:', error);
+          throw error;
+        }
+        
+        if (!user) {
           toast({
             title: "Accès refusé",
             description: "Veuillez vous connecter pour accéder à cette page",
             variant: "destructive",
           });
           navigate('/login');
+          return;
         }
+
+        // Vérifier si la session est toujours valide
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          console.error('Session invalide:', sessionError);
+          throw sessionError || new Error('Session invalide');
+        }
+
       } catch (error) {
-        console.error('Error checking auth:', error);
+        console.error('Erreur lors de la vérification de l\'authentification:', error);
+        toast({
+          title: "Erreur de session",
+          description: "Une erreur est survenue, veuillez vous reconnecter",
+          variant: "destructive",
+        });
         navigate('/login');
       }
     };
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+    // Écouter les changements d'état d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Changement d\'état d\'authentification:', event, session);
+      if (event === 'SIGNED_OUT' || !session) {
         navigate('/login');
       }
     });
