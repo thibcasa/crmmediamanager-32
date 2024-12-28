@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Facebook } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { ApiKeyForm } from '@/components/lead-scraper/ApiKeyForm';
@@ -41,7 +38,7 @@ export const FacebookSettings = () => {
       <p className="text-sm text-muted-foreground mb-6">
         Configurez votre clé API Facebook pour gérer vos campagnes publicitaires.
       </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} />
+      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="Facebook" />
     </div>
   );
 };

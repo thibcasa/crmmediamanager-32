@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Twitter } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { ApiKeyForm } from '@/components/lead-scraper/ApiKeyForm';
@@ -41,7 +38,7 @@ export const TwitterSettings = () => {
       <p className="text-sm text-muted-foreground mb-6">
         Configurez votre clé API Twitter pour gérer vos campagnes sociales.
       </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} />
+      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="Twitter" />
     </div>
   );
 };
