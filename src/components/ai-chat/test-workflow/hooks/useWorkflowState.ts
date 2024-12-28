@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ValidationService } from '@/services/ValidationService';
-import { WorkflowState, WorkflowPhase, TestStatus } from '../types/workflow-state';
-import { TestResults } from '../types/test-results';
+import { WorkflowState, WorkflowPhase, TestStatus, TestResults } from '../types/test-results';
 
 const initialTestResults: TestResults = {
   engagement: 0,
