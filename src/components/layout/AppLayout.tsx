@@ -1,3 +1,4 @@
+import { Outlet } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch, Calendar, Workflow, Network, Megaphone } from "lucide-react";
 
@@ -14,7 +15,7 @@ const menuItems = [
   { icon: BarChart3, label: "Analyses", path: "/analytics" },
 ];
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+export function AppLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -41,7 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto">
           <div className="container py-6 animate-fadeIn">
             <SidebarTrigger />
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>
