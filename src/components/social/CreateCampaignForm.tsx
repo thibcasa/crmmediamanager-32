@@ -109,10 +109,11 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         targeting_criteria: JSON.parse(targetingCriteria),
         status: 'draft',
         schedule: schedule ? JSON.parse(schedule) : null,
-        user_id: user.id, // Explicitly set the user_id
+        user_id: user.id,
         posts: [],
         post_triggers: [],
-        target_metrics: {}
+        target_metrics: {},
+        ai_feedback: null // Add the missing required field
       };
 
       await SocialCampaignService.createCampaign(campaignData);

@@ -5,7 +5,7 @@ export type SocialCampaign = Database['public']['Tables']['social_campaigns']['R
 export type Platform = Database['public']['Enums']['social_platform'];
 
 export class SocialCampaignService {
-  static async createCampaign(campaign: Omit<SocialCampaign, 'id' | 'created_at' | 'updated_at' | 'user_id'>) {
+  static async createCampaign(campaign: Omit<SocialCampaign, 'id' | 'created_at' | 'updated_at'>) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -13,11 +13,7 @@ export class SocialCampaignService {
 
     const { data: campaignData, error: dbError } = await supabase
       .from('social_campaigns')
-      .insert([{ 
-        ...campaign, 
-        user_id: user.id,  // Explicitly set user_id
-        status: campaign.status || 'draft'
-      }])
+      .insert([campaign])
       .select()
       .single();
 
@@ -38,7 +34,7 @@ export class SocialCampaignService {
     const { data, error } = await supabase
       .from('social_campaigns')
       .select('*')
-      .eq('user_id', user.id)  // Filter by user_id
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -57,28 +53,11 @@ export class SocialCampaignService {
       .from('social_campaigns')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('user_id', userData.user.id)  // Ensure user can only update their own campaigns
+      .eq('user_id', userData.user.id)
       .select()
       .single();
 
     if (dbError) throw dbError;
-
-    // Trigger the social media integration update
-    if (campaignData) {
-      const { error: integrationError } = await supabase.functions.invoke('social-media-integration', {
-        body: {
-          platform: campaignData.platform,
-          action: 'update_campaign',
-          data: {
-            ...updates,
-            id,
-            userId: userData.user.id
-          }
-        }
-      });
-
-      if (integrationError) throw integrationError;
-    }
 
     return campaignData;
   }
