@@ -7,6 +7,7 @@ import { TestMetrics } from './TestMetrics';
 import { TestRecommendations } from './TestRecommendations';
 import { ValidationService } from '@/services/ValidationService';
 import { Progress } from "@/components/ui/progress";
+import { TestResults } from './types/test-results';
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -19,6 +20,12 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const [progress, setProgress] = useState(0);
   const [testStatus, setTestStatus] = useState<'pending' | 'warning' | 'success'>('pending');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [testResults, setTestResults] = useState<TestResults>({
+    engagement: 0,
+    clickRate: 0,
+    conversionRate: 0,
+    recommendations: []
+  });
 
   const updateProgress = (phase: number) => {
     setProgress(phase * 25); // 4 phases = 25% each
@@ -48,7 +55,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
         toast({
           title: "Attention",
           description: "Des améliorations sont suggérées pour votre prompt",
-          variant: "warning"
+          variant: "destructive"
         });
       }
 
@@ -61,15 +68,17 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const results = {
-        engagement: 85,
-        clickRate: 12.5,
-        conversionRate: 3.2,
+        engagement: 0.85,
+        clickRate: 0.125,
+        conversionRate: 0.032,
         recommendations: [
           "Ajoutez plus de détails sur la localisation",
           "Précisez le type de bien immobilier",
           "Incluez des informations sur le prix"
         ]
       };
+
+      setTestResults(results);
 
       // Phase 4: Finalisation
       updateProgress(4);
@@ -149,8 +158,8 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
                 Passer à la correction
               </Button>
 
-              <TestMetrics />
-              <TestRecommendations />
+              <TestMetrics results={testResults} />
+              <TestRecommendations recommendations={testResults.recommendations} />
             </>
           )}
         </div>
