@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ValidationService } from '@/services/ValidationService';
 import { WorkflowState, WorkflowPhase, TestStatus, TestResults } from '../types/test-results';
+import { supabase } from "@/lib/supabaseClient";
 
 const initialTestResults: TestResults = {
   engagement: 0,
@@ -11,7 +12,32 @@ const initialTestResults: TestResults = {
   roi: 0,
   recommendations: [],
   risks: [],
-  opportunities: []
+  opportunities: [],
+  audienceInsights: {
+    segments: [],
+    demographics: {
+      age: [],
+      location: [],
+      interests: []
+    }
+  },
+  predictedMetrics: {
+    leadsPerWeek: 0,
+    costPerLead: 0,
+    totalBudget: 0,
+    revenueProjection: 0
+  },
+  campaignDetails: {
+    creatives: [],
+    content: {
+      messages: [],
+      headlines: [],
+      callsToAction: []
+    },
+    workflow: {
+      steps: []
+    }
+  }
 };
 
 export const useWorkflowState = (messageToTest?: string) => {
@@ -45,24 +71,20 @@ export const useWorkflowState = (messageToTest?: string) => {
     
     try {
       updateProgress(1);
-      const validation = ValidationService.validatePrompt(messageToTest);
       
-      if (!validation.isValid) {
-        setState(prev => ({
-          ...prev,
-          validationErrors: validation.errors,
-          testStatus: 'warning'
-        }));
-        toast({
-          title: "Attention",
-          description: "Des améliorations sont suggérées pour votre campagne",
-          variant: "destructive"
-        });
-      }
+      // Analyse du message avec l'API
+      const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
+        'campaign-analyzer',
+        {
+          body: { message: messageToTest }
+        }
+      );
+
+      if (analysisError) throw analysisError;
 
       updateProgress(2);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      // Simulation des résultats pour la démo
       const iterationMultiplier = 1 + (state.iterationCount * 0.15);
       const results: TestResults = {
         engagement: Math.min(0.85 * iterationMultiplier, 1),
@@ -82,7 +104,53 @@ export const useWorkflowState = (messageToTest?: string) => {
         opportunities: [
           "Fort potentiel d'engagement",
           "Zone géographique attractive"
-        ]
+        ],
+        audienceInsights: {
+          segments: [
+            { name: "Propriétaires 45-65 ans", score: 0.85, potential: 0.92 },
+            { name: "Investisseurs", score: 0.75, potential: 0.88 },
+            { name: "Résidents locaux", score: 0.65, potential: 0.78 }
+          ],
+          demographics: {
+            age: ["45-54", "55-65"],
+            location: ["Nice", "Cannes", "Antibes"],
+            interests: ["Immobilier", "Investissement", "Luxe"]
+          }
+        },
+        predictedMetrics: {
+          leadsPerWeek: 12,
+          costPerLead: 45,
+          totalBudget: 2000,
+          revenueProjection: 15000
+        },
+        campaignDetails: {
+          creatives: [
+            { type: "image", content: "Vue mer panoramique", performance: 0.88 },
+            { type: "video", content: "Visite virtuelle", performance: 0.92 },
+            { type: "text", content: "Description détaillée", performance: 0.75 }
+          ],
+          content: {
+            messages: [
+              "Valorisez votre bien immobilier sur la Côte d'Azur",
+              "Expertise locale pour une vente optimale"
+            ],
+            headlines: [
+              "Estimation gratuite de votre propriété",
+              "Vendez au meilleur prix"
+            ],
+            callsToAction: [
+              "Demandez une estimation",
+              "Contactez un expert"
+            ]
+          },
+          workflow: {
+            steps: [
+              { name: "Analyse du marché", status: "completed" },
+              { name: "Création des visuels", status: "in_progress" },
+              { name: "Lancement campagne", status: "pending" }
+            ]
+          }
+        }
       };
 
       setState(prev => ({
@@ -90,7 +158,7 @@ export const useWorkflowState = (messageToTest?: string) => {
         currentTestResults: results,
         testHistory: [...prev.testHistory, results],
         iterationCount: prev.iterationCount + 1,
-        testStatus: validation.isValid ? 'success' : 'warning'
+        testStatus: 'success'
       }));
 
       updateProgress(4);
@@ -126,7 +194,6 @@ export const useWorkflowState = (messageToTest?: string) => {
       });
       return;
     }
-
     setState(prev => ({ ...prev, activePhase: 'production' }));
     toast({
       title: "Mise en production",
