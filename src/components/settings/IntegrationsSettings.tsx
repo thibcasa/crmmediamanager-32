@@ -14,7 +14,13 @@ import {
   Calendar,
   FileSignature,
   Mail,
+  Store,
+  Building,
+  BarChart,
 } from "lucide-react";
+import { SeLogerSettings } from "./api/SeLogerSettings";
+import { MeilleursAgentsSettings } from "./api/MeilleursAgentsSettings";
+import { LeBonCoinSettings } from "./api/LeBonCoinSettings";
 
 export const IntegrationsSettings = () => {
   const { toast } = useToast();
@@ -51,13 +57,13 @@ export const IntegrationsSettings = () => {
 
       toast({
         title: "Requête envoyée",
-        description: "La requête a été envoyée à Zapier. Vérifiez l'historique de votre Zap pour confirmer le déclenchement.",
+        description: "La requête a été envoyée à Zapier. Vérifiez l'historique de votre Zap.",
       });
     } catch (error) {
       console.error("Erreur lors du test du webhook:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de déclencher le webhook Zapier. Vérifiez l'URL et réessayez.",
+        description: "Impossible de déclencher le webhook Zapier",
         variant: "destructive",
       });
     } finally {
@@ -71,6 +77,19 @@ export const IntegrationsSettings = () => {
       icon: <Home className="w-6 h-6" />,
       description: "Synchronisez vos annonces immobilières",
       url: "https://api.seloger.com/oauth/authorize",
+      component: <SeLogerSettings />,
+    },
+    {
+      name: "LeBonCoin",
+      icon: <Store className="w-6 h-6" />,
+      description: "Gérez vos annonces LeBonCoin",
+      component: <LeBonCoinSettings />,
+    },
+    {
+      name: "MeilleursAgents",
+      icon: <Building className="w-6 h-6" />,
+      description: "Accédez aux estimations de prix",
+      component: <MeilleursAgentsSettings />,
     },
     {
       name: "WhatsApp Business",
@@ -91,16 +110,16 @@ export const IntegrationsSettings = () => {
       url: "https://account-d.docusign.com/oauth/auth",
     },
     {
-      name: "Zapier",
-      icon: <Workflow className="w-6 h-6" />,
-      description: "Automatisez vos workflows",
-      isWebhook: true,
-    },
-    {
       name: "SendinBlue",
       icon: <Mail className="w-6 h-6" />,
       description: "Campagnes email immobilières",
       url: "https://app.sendinblue.com/oauth/authorize",
+    },
+    {
+      name: "Zapier",
+      icon: <Workflow className="w-6 h-6" />,
+      description: "Automatisez vos workflows",
+      isWebhook: true,
     },
     {
       name: "Monday",
@@ -120,6 +139,12 @@ export const IntegrationsSettings = () => {
       description: "Synchronisez vos contacts CRM",
       url: "https://app.hubspot.com/oauth/authorize",
     },
+    {
+      name: "Google Analytics",
+      icon: <BarChart className="w-6 h-6" />,
+      description: "Analysez votre trafic web",
+      url: "https://analytics.google.com/analytics/web/",
+    },
   ];
 
   return (
@@ -129,41 +154,45 @@ export const IntegrationsSettings = () => {
       <div className="grid gap-6">
         {integrations.map((integration) => (
           <Card key={integration.name} className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  {integration.icon}
+            {integration.component ? (
+              integration.component
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    {integration.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{integration.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {integration.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium">{integration.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {integration.description}
-                  </p>
-                </div>
-              </div>
-              
-              {integration.isWebhook ? (
-                <form onSubmit={handleZapierTest} className="flex items-center space-x-2">
-                  <Input
-                    type="url"
-                    placeholder="URL du webhook Zapier"
-                    value={zapierWebhook}
-                    onChange={(e) => setZapierWebhook(e.target.value)}
-                    className="w-64"
-                  />
-                  <Button type="submit" disabled={isLoading}>
-                    Tester
+                
+                {integration.isWebhook ? (
+                  <form onSubmit={handleZapierTest} className="flex items-center space-x-2">
+                    <Input
+                      type="url"
+                      placeholder="URL du webhook Zapier"
+                      value={zapierWebhook}
+                      onChange={(e) => setZapierWebhook(e.target.value)}
+                      className="w-64"
+                    />
+                    <Button type="submit" disabled={isLoading}>
+                      Tester
+                    </Button>
+                  </form>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(integration.url, '_blank')}
+                  >
+                    Connecter
                   </Button>
-                </form>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(integration.url, '_blank')}
-                >
-                  Connecter
-                </Button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </Card>
         ))}
       </div>
