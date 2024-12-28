@@ -9,6 +9,11 @@ import {
   Workflow,
   Building2,
   Webhook,
+  Home,
+  MessageCircle,
+  Calendar,
+  FileSignature,
+  Mail,
 } from "lucide-react";
 
 export const IntegrationsSettings = () => {
@@ -62,28 +67,52 @@ export const IntegrationsSettings = () => {
 
   const integrations = [
     {
-      name: "Monday",
-      icon: <Database className="w-6 h-6" />,
-      description: "Gérez vos projets et tâches",
-      url: "https://monday.com/oauth/authorize",
+      name: "SeLoger API",
+      icon: <Home className="w-6 h-6" />,
+      description: "Synchronisez vos annonces immobilières",
+      url: "https://api.seloger.com/oauth/authorize",
     },
     {
-      name: "Airtable",
-      icon: <Database className="w-6 h-6" />,
-      description: "Synchronisez vos bases de données",
-      url: "https://airtable.com/oauth2/authorize",
+      name: "WhatsApp Business",
+      icon: <MessageCircle className="w-6 h-6" />,
+      description: "Communication directe avec les clients",
+      url: "https://business.whatsapp.com/products/business-platform",
     },
     {
-      name: "Notion",
-      icon: <FileText className="w-6 h-6" />,
-      description: "Connectez votre espace de travail",
-      url: "https://api.notion.com/v1/oauth/authorize",
+      name: "Calendly",
+      icon: <Calendar className="w-6 h-6" />,
+      description: "Gestion automatisée des rendez-vous",
+      url: "https://calendly.com/app/oauth/authorize",
+    },
+    {
+      name: "DocuSign",
+      icon: <FileSignature className="w-6 h-6" />,
+      description: "Signature électronique de documents",
+      url: "https://account-d.docusign.com/oauth/auth",
     },
     {
       name: "Zapier",
       icon: <Workflow className="w-6 h-6" />,
       description: "Automatisez vos workflows",
       isWebhook: true,
+    },
+    {
+      name: "SendinBlue",
+      icon: <Mail className="w-6 h-6" />,
+      description: "Campagnes email immobilières",
+      url: "https://app.sendinblue.com/oauth/authorize",
+    },
+    {
+      name: "Monday",
+      icon: <Database className="w-6 h-6" />,
+      description: "Gérez vos projets et tâches",
+      url: "https://monday.com/oauth/authorize",
+    },
+    {
+      name: "Notion",
+      icon: <FileText className="w-6 h-6" />,
+      description: "Connectez votre espace de travail",
+      url: "https://api.notion.com/v1/oauth/authorize",
     },
     {
       name: "HubSpot",
