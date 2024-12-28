@@ -1,3 +1,6 @@
+export type WorkflowPhase = 'prediction' | 'correction' | 'test' | 'production';
+export type TestStatus = 'pending' | 'warning' | 'success';
+
 export interface TestResults {
   engagement: number;
   clickRate: number;
@@ -46,6 +49,17 @@ export interface TestResults {
   };
 }
 
+export interface WorkflowState {
+  activePhase: WorkflowPhase;
+  isAnalyzing: boolean;
+  progress: number;
+  testStatus: TestStatus;
+  validationErrors: string[];
+  iterationCount: number;
+  testHistory: TestResults[];
+  currentTestResults: TestResults;
+}
+
 export interface TestMetrics {
   before: TestResults;
   after?: TestResults;
@@ -55,5 +69,5 @@ export interface CampaignTest {
   id: string;
   createdAt: Date;
   metrics: TestMetrics;
-  status: 'pending' | 'warning' | 'success';
+  status: TestStatus;
 }
