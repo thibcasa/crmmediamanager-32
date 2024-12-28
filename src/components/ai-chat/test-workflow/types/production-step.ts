@@ -1,4 +1,4 @@
-import { TestResults } from "../types/test-results";
+import { TestResults } from "./test-results";
 
 export interface ProductionStepProps {
   onDeploy: () => void;
