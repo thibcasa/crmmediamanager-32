@@ -39,8 +39,8 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
 
   if (!messages.length && !isLoading) {
     return (
-      <div className="flex-1 p-6 flex items-center justify-center">
-        <p className="text-sage-600 text-sm">
+      <div className="flex-1 p-8 flex items-center justify-center">
+        <p className="text-lg text-sage-600">
           Commencez une conversation en envoyant un message...
         </p>
       </div>
@@ -48,8 +48,8 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
   }
 
   return (
-    <ScrollArea className="flex-1 p-6">
-      <div className="space-y-6">
+    <ScrollArea className="flex-1 px-6 py-8">
+      <div className="space-y-8">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -60,18 +60,18 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-4 shadow-sm relative group ${
+              className={`max-w-[85%] rounded-lg p-6 shadow-md relative group ${
                 message.role === 'assistant'
-                  ? 'bg-sage-50 border border-sage-200'
-                  : 'bg-white border border-sage-200'
+                  ? 'bg-white border-2 border-sage-200'
+                  : 'bg-sage-50 border border-sage-300'
               }`}
             >
-              <p className="text-sm font-medium text-sage-700 mb-2">
+              <p className="text-base font-semibold text-sage-800 mb-3">
                 {message.role === 'assistant' ? 'Assistant Stratégique' : 'Vous'}
               </p>
-              <div className="text-sm prose prose-sage max-w-none">
+              <div className="text-base leading-relaxed prose prose-sage max-w-none">
                 {message.content.split('\n').map((line, i) => (
-                  <p key={i} className="mb-2 last:mb-0 text-sage-800">{line}</p>
+                  <p key={i} className="mb-4 last:mb-0 text-sage-700">{line}</p>
                 ))}
               </div>
               
@@ -79,13 +79,13 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleCopy(message.content, index)}
                 >
                   {copiedMessageIndex === index ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <Copy className="h-4 w-4 text-sage-600" />
+                    <Copy className="h-5 w-5 text-sage-600" />
                   )}
                 </Button>
               )}
@@ -94,9 +94,9 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
         ))}
         {isLoading && (
           <div className="flex items-center justify-center p-4">
-            <div className="flex items-center space-x-2 text-sage-600">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <p className="text-sm">Génération de la stratégie...</p>
+            <div className="flex items-center space-x-3 text-sage-600">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <p className="text-base">Génération de la stratégie...</p>
             </div>
           </div>
         )}
