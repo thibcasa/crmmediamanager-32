@@ -48,6 +48,7 @@ const AiChat = () => {
       setInput('');
 
       // Generate campaign content
+      console.log('Generating campaign content...');
       const { data: campaignResponse, error: campaignError } = await supabase.functions.invoke('content-generator', {
         body: {
           prompt: input,
@@ -57,9 +58,13 @@ const AiChat = () => {
         }
       });
 
-      if (campaignError) throw campaignError;
+      if (campaignError) {
+        console.error('Campaign generation error:', campaignError);
+        throw campaignError;
+      }
 
       // Generate creative visuals
+      console.log('Generating creative visuals...');
       const { data: creativesData, error: creativesError } = await supabase.functions.invoke('openai-image-generation', {
         body: {
           prompt: `Professional real estate marketing visual for: ${input}`,
@@ -70,10 +75,18 @@ const AiChat = () => {
         }
       });
 
-      if (creativesError) throw creativesError;
+      if (creativesError) {
+        console.error('Creatives generation error:', creativesError);
+        throw creativesError;
+      }
+
+      if (!creativesData?.images) {
+        console.error('Invalid creatives data:', creativesData);
+        throw new Error('Format de réponse invalide pour les créatives');
+      }
 
       // Update campaign data
-      setCampaignData({
+      const updatedCampaignData = {
         objective: input,
         creatives: creativesData.images.map((url: string) => ({
           type: 'image',
@@ -86,7 +99,10 @@ const AiChat = () => {
             text: campaignResponse.content
           }
         ]
-      });
+      };
+
+      console.log('Setting campaign data:', updatedCampaignData);
+      setCampaignData(updatedCampaignData);
 
       // Add assistant response
       const assistantMessage = {
