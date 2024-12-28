@@ -33,6 +33,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         const { data, error } = await supabase
           .from('target_locations')
           .select('*')
+          .eq('department', 'Alpes-Maritimes')
           .order('city');
 
         if (error) throw error;
@@ -54,9 +55,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
 
   const filteredLocations = locations.filter(location => {
     const matchesSearch = location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.postal_code.includes(searchTerm) ||
-                         location.department.toLowerCase().includes(searchTerm.toLowerCase());
-    
+                         location.postal_code.includes(searchTerm);
     return matchesSearch;
   });
 
@@ -64,18 +63,18 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
         <MapPin className="h-5 w-5 text-primary" />
-        <Label className="text-lg font-medium">Zones géographiques ciblées</Label>
+        <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
       </div>
       
       <p className="text-sm text-muted-foreground mb-4">
-        Sélectionnez les zones où vous souhaitez diffuser vos campagnes
+        Sélectionnez les zones des Alpes-Maritimes où vous souhaitez diffuser vos campagnes
       </p>
 
       <div className="space-y-4 mb-6">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher une ville, un code postal ou un département..."
+            placeholder="Rechercher une ville ou un code postal..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -111,7 +110,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
                     {location.city}
                   </label>
                   <p className="text-sm text-muted-foreground">
-                    {location.postal_code} - {location.department}
+                    {location.postal_code}
                   </p>
                 </div>
               </div>
