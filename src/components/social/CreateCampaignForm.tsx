@@ -1,19 +1,17 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { SocialCampaignService, Platform } from '@/services/SocialCampaignService';
-import { Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
 import { LinkedInStatus } from '../linkedin/LinkedInStatus';
 import { supabase } from '@/lib/supabaseClient';
 import { SocialPlatform } from '@/types/social';
-
 import { platformTemplates } from './utils/platformTemplates';
 import { CampaignTargeting } from './campaign/CampaignTargeting';
 import { CampaignSchedule } from './campaign/CampaignSchedule';
 import { PersonaSelector } from './campaign/PersonaSelector';
+import { SocialPlatformSelector } from './campaign/SocialPlatformSelector';
+import { MessageTemplateForm } from './campaign/MessageTemplateForm';
 
 interface CreateCampaignFormProps {
   onSuccess: () => void;
@@ -119,7 +117,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
       console.error('Erreur lors de la création de la campagne:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de créer la campagne",
+        description: "Impossible de créer la campagne",
         variant: "destructive"
       });
     } finally {
@@ -140,40 +138,10 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Plateforme</label>
-        <Select value={platform} onValueChange={handlePlatformChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Sélectionnez une plateforme" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="linkedin">
-              <div className="flex items-center gap-2">
-                <Linkedin className="w-4 h-4" />
-                LinkedIn
-              </div>
-            </SelectItem>
-            <SelectItem value="whatsapp">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-              </div>
-            </SelectItem>
-            <SelectItem value="facebook">
-              <div className="flex items-center gap-2">
-                <Facebook className="w-4 h-4" />
-                Facebook
-              </div>
-            </SelectItem>
-            <SelectItem value="instagram">
-              <div className="flex items-center gap-2">
-                <Instagram className="w-4 h-4" />
-                Instagram
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <SocialPlatformSelector 
+        platform={platform}
+        onPlatformChange={handlePlatformChange}
+      />
 
       <PersonaSelector
         selectedPersonaId={selectedPersonaId}
@@ -189,15 +157,10 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         onTargetingChange={setTargetingCriteria}
       />
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Template de message</label>
-        <Textarea
-          value={messageTemplate}
-          onChange={(e) => setMessageTemplate(e.target.value)}
-          placeholder="Bonjour {first_name}, je vois que vous êtes propriétaire..."
-          className="min-h-[200px]"
-        />
-      </div>
+      <MessageTemplateForm
+        messageTemplate={messageTemplate}
+        onMessageTemplateChange={setMessageTemplate}
+      />
 
       <CampaignSchedule
         schedule={schedule}
