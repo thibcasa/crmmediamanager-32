@@ -32,7 +32,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
             description: "Veuillez vous connecter pour accéder à cette page",
             variant: "destructive",
           });
-          navigate('/login');
+          navigate('/login', { replace: true });
           return;
         }
 
@@ -45,7 +45,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           description: "Une erreur est survenue, veuillez vous reconnecter",
           variant: "destructive",
         });
-        navigate('/login');
+        navigate('/login', { replace: true });
       } finally {
         setIsLoading(false);
       }
@@ -53,12 +53,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Changement d\'état d\'authentification:', event, session);
       if (event === 'SIGNED_OUT' || !session) {
         setIsAuthenticated(false);
-        navigate('/login');
-      } else {
+        navigate('/login', { replace: true });
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
       }
     });
