@@ -4,6 +4,7 @@ import { Download, Upload } from "lucide-react";
 import { useState } from "react";
 import Papa from "papaparse";
 import { ProspectService } from "@/services/ProspectService";
+import { LeadStatus } from "@/types/leads";
 
 interface CSVProspectData {
   first_name: string;
@@ -11,9 +12,9 @@ interface CSVProspectData {
   email: string;
   phone?: string;
   source: string;
-  status: string;
+  status: LeadStatus;
   score: string;
-  qualification: string;
+  qualification: "lead" | "prospect" | "client";
   notes?: string;
 }
 
@@ -39,7 +40,7 @@ export const ProspectImportExport = () => {
                 email: row.email,
                 phone: row.phone,
                 source: row.source || 'direct',
-                status: row.status || 'cold',
+                status: row.status as LeadStatus || 'cold',
                 score: parseInt(row.score) || 0,
                 qualification: row.qualification || 'lead',
                 notes: row.notes,
