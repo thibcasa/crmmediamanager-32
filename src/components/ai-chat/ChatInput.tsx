@@ -19,26 +19,43 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
 
-  // Check authentication on component mount
+  // Vérification de l'authentification au montage
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error || !user) {
-        console.error("Authentication error:", error);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Erreur de session:", error);
+          throw error;
+        }
+        
+        if (!session) {
+          console.log("Pas de session active");
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          window.location.href = '/login';
+          return;
+        }
+
+        console.log("Session active:", session.user.id);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de l'authentification:", error);
         toast({
-          title: "Erreur d'authentification",
-          description: "Veuillez vous connecter pour continuer",
+          title: "Erreur de connexion",
+          description: "Une erreur est survenue, veuillez réessayer",
           variant: "destructive",
         });
-        window.location.href = '/login';
       }
     };
 
     checkAuth();
   }, [toast]);
 
-  // Update progress bar during loading
+  // Mise à jour de la barre de progression pendant le chargement
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
@@ -71,17 +88,26 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.email) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Veuillez vous reconnecter",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      onSubmit(e);
+    } catch (error) {
+      console.error("Erreur lors de la soumission:", error);
       toast({
-        title: "Erreur d'authentification",
-        description: "Veuillez vous reconnecter",
+        title: "Erreur",
+        description: "Une erreur est survenue, veuillez réessayer",
         variant: "destructive",
       });
-      return;
     }
-
-    onSubmit(e);
   };
 
   const charCount = input.length;

@@ -28,6 +28,7 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
       });
       setTimeout(() => setCopiedMessageIndex(null), 2000);
     } catch (err) {
+      console.error("Erreur lors de la copie:", err);
       toast({
         title: "Erreur",
         description: "Impossible de copier le contenu",
@@ -35,6 +36,16 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
       });
     }
   };
+
+  if (!messages.length && !isLoading) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <p className="text-sage-600 text-sm">
+          Commencez une conversation en envoyant un message...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <ScrollArea className="flex-1 p-6">
