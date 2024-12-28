@@ -1,88 +1,79 @@
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabaseClient";
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 import { TestResults, WorkflowPhase } from '../types/test-results';
+import { calculateImprovement, checkProductionReadiness } from '../utils/metrics-utils';
 
 export const useWorkflowActions = (
   setState: React.Dispatch<React.SetStateAction<any>>,
   state: any,
-  messageToTest?: string,
-  checkProductionReadiness?: (results: TestResults) => boolean
+  messageToTest?: string
 ) => {
   const { toast } = useToast();
 
-  const updateProgress = (phase: number) => {
-    setState(prev => ({ ...prev, progress: phase * 25 }));
-  };
+  const handlePrediction = async () => {
+    setState(prev => ({ ...prev, isAnalyzing: true }));
+    try {
+      const { data } = await supabase.functions.invoke('campaign-analyzer', {
+        body: { 
+          message: messageToTest,
+          appliedCorrections: state.appliedCorrections,
+          iterationCount: state.iterationCount 
+        }
+      });
 
-  const calculateImprovement = (current: TestResults, previous: TestResults) => {
-    if (!previous) return 0;
-    const engagementImprovement = (current.engagement - previous.engagement) / previous.engagement;
-    const roiImprovement = (current.roi - previous.roi) / previous.roi;
-    return ((engagementImprovement + roiImprovement) / 2) * 100;
+      setState(prev => ({
+        ...prev,
+        lastPrediction: data,
+        activePhase: 'test',
+        isAnalyzing: false
+      }));
+
+      toast({
+        title: "Nouvelle prédiction générée",
+        description: "Passez à la phase de test pour valider les résultats."
+      });
+    } catch (error) {
+      console.error('Error in prediction:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer la prédiction",
+        variant: "destructive"
+      });
+      setState(prev => ({ ...prev, isAnalyzing: false }));
+    }
   };
 
   const handleTest = async () => {
-    if (!messageToTest) {
+    if (!state.lastPrediction) {
       toast({
         title: "Erreur",
-        description: "Veuillez d'abord envoyer un message dans le chat",
+        description: "Veuillez d'abord générer une prédiction",
         variant: "destructive"
       });
       return;
     }
 
-    setState(prev => ({ ...prev, isAnalyzing: true, validationErrors: [] }));
-    console.log("Démarrage de l'analyse...");
-    
+    setState(prev => ({ 
+      ...prev, 
+      isAnalyzing: true,
+      testStatus: 'pending'
+    }));
+
     try {
-      // Phase 1: Analyse du contenu
-      updateProgress(1);
-      console.log("Phase 1: Analyse du contenu en cours...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Phase 2: Évaluation de l'engagement
-      updateProgress(2);
-      console.log("Phase 2: Évaluation de l'engagement en cours...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
-        'campaign-analyzer',
-        {
-          body: { 
-            message: messageToTest,
-            iterationCount: state.iterationCount,
-            previousResults: state.testHistory[state.testHistory.length - 1]
-          }
-        }
-      );
-
-      if (analysisError) throw analysisError;
-
-      // Phase 3: Calcul des métriques prédictives
-      updateProgress(3);
-      console.log("Phase 3: Calcul des métriques prédictives en cours...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const iterationMultiplier = 1 + (state.iterationCount * 0.15);
-      const results: TestResults = {
-        ...analysisData,
+      const results = {
+        ...state.lastPrediction,
         iterationMetrics: {
           improvementRate: calculateImprovement(
-            analysisData,
-            state.testHistory[state.testHistory.length - 1]
+            state.lastPrediction,
+            state.currentTestResults
           ),
-          previousResults: state.testHistory[state.testHistory.length - 1],
+          previousResults: state.currentTestResults,
           iterationCount: state.iterationCount + 1
         }
       };
 
-      // Phase 4: Finalisation
-      updateProgress(4);
-      console.log("Phase 4: Finalisation de l'analyse...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const isReadyForProduction = checkProductionReadiness?.(results);
+      const isReadyForProduction = checkProductionReadiness(results);
 
       setState(prev => ({
         ...prev,
@@ -92,6 +83,7 @@ export const useWorkflowActions = (
         testStatus: 'success',
         readyForProduction: isReadyForProduction,
         activePhase: 'correction',
+        isAnalyzing: false,
         validationErrors: [
           "Optimisez le ton pour le marché immobilier premium",
           "Ajoutez plus de références aux quartiers prisés",
@@ -105,38 +97,31 @@ export const useWorkflowActions = (
           description: `Performance améliorée de ${results.iterationMetrics.improvementRate.toFixed(1)}% par rapport au test précédent.`,
         });
       }
-
-      updateProgress(100);
-      return results;
     } catch (error) {
-      console.error('Error in test workflow:', error);
-      setState(prev => ({ ...prev, testStatus: 'warning' }));
+      console.error('Error in test:', error);
+      setState(prev => ({ 
+        ...prev, 
+        testStatus: 'warning',
+        isAnalyzing: false 
+      }));
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue pendant l'analyse",
+        description: "Une erreur est survenue pendant le test",
         variant: "destructive"
       });
-    } finally {
-      setState(prev => ({ ...prev, isAnalyzing: false }));
     }
   };
 
-  const handleCorrection = (appliedCorrections: string[]) => {
+  const handleCorrection = (corrections: string[]) => {
     setState(prev => ({ 
       ...prev, 
-      activePhase: 'test',
-      currentTestResults: {
-        ...prev.currentTestResults,
-        appliedCorrections: [
-          ...(prev.currentTestResults.appliedCorrections || []),
-          ...appliedCorrections
-        ]
-      }
+      appliedCorrections: [...prev.appliedCorrections, ...corrections],
+      activePhase: 'prediction'
     }));
     
     toast({
-      title: `${appliedCorrections.length} corrections appliquées`,
-      description: "Relancez un test pour voir l'impact des corrections.",
+      title: `${corrections.length} corrections appliquées`,
+      description: "Générez une nouvelle prédiction pour voir l'impact des corrections.",
     });
   };
 
@@ -156,14 +141,11 @@ export const useWorkflowActions = (
     });
   };
 
-  const setActivePhase = (phase: WorkflowPhase) => {
-    setState(prev => ({ ...prev, activePhase: phase }));
-  };
-
   return {
+    handlePrediction,
     handleTest,
     handleCorrection,
     handleProduction,
-    setActivePhase
+    setActivePhase: (phase: WorkflowPhase) => setState(prev => ({ ...prev, activePhase: phase }))
   };
 };
