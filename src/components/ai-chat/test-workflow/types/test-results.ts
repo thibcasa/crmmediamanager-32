@@ -1,4 +1,5 @@
-export type WorkflowPhase = 'prediction' | 'correction' | 'test' | 'production';
+export type WorkflowPhase = 'prediction' | 'correction' | 'test' | 'production' | 'analytics';
+
 export type TestStatus = 'pending' | 'warning' | 'success';
 
 export interface AudienceSegment {
@@ -53,7 +54,7 @@ export interface TestResults {
   recommendations: string[];
   risks: string[];
   opportunities: string[];
-  appliedCorrections?: string[]; // Nouvelles corrections appliquées
+  appliedCorrections?: string[];
   audienceInsights?: {
     segments: AudienceSegment[];
     demographics: Demographics;

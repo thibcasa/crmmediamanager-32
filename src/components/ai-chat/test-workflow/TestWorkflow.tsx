@@ -10,6 +10,7 @@ import { TestMetrics } from './TestMetrics';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
+import { WorkflowPhase } from './types/test-results';
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -20,7 +21,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { toast } = useToast();
   const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
 
-  const handlePhaseChange = (phase: string) => {
+  const handlePhaseChange = (phase: WorkflowPhase) => {
     if (phase === 'production' && !canProceedToProduction) {
       toast({
         title: "Validation requise",
