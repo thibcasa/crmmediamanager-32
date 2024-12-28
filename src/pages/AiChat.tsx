@@ -1,66 +1,89 @@
 import { useState } from 'react';
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PredictiveAnalysis } from '@/components/analytics/PredictiveAnalysis';
-import { ContactImport } from '@/components/contacts/ContactImport';
-import { ContactSegmentation } from '@/components/contacts/ContactSegmentation';
+import { ChatMessages } from '@/components/ai-chat/ChatMessages';
+import { ChatInput } from '@/components/ai-chat/ChatInput';
 import { TestWorkflow } from '@/components/ai-chat/TestWorkflow';
-import { Brain, Users, TrendingUp, TestTube2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabaseClient';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 const AiChat = () => {
-  const [activeTab, setActiveTab] = useState('test');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    try {
+      setIsLoading(true);
+      
+      // Ajouter le message de l'utilisateur
+      const userMessage = { role: 'user' as const, content: input };
+      setMessages(prev => [...prev, userMessage]);
+      setInput('');
+
+      // Appeler l'API de génération de contenu
+      const { data, error } = await supabase.functions.invoke('content-generator', {
+        body: {
+          prompt: input,
+          type: 'strategy',
+          targetAudience: "propriétaires immobiliers Alpes-Maritimes",
+          tone: "professionnel et stratégique"
+        }
+      });
+
+      if (error) throw error;
+
+      // Ajouter la réponse de l'assistant
+      const assistantMessage = {
+        role: 'assistant' as const,
+        content: data?.content || "Je n'ai pas pu générer de réponse. Veuillez réessayer."
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error generating content:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer la réponse. Veuillez réessayer.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-4xl font-bold tracking-tight">Assistant IA</h1>
         <p className="text-muted-foreground mt-2">
-          Analysez, testez et optimisez vos campagnes marketing
+          Générez des stratégies marketing et du contenu optimisé pour l'immobilier
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="test" className="flex items-center gap-2">
-            <TestTube2 className="w-4 h-4" />
-            Test & Validation
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <Brain className="w-4 h-4" />
-            Analyse Prédictive
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Gestion des Contacts
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Performance
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 flex flex-col h-[600px]">
+          <ChatMessages messages={messages} isLoading={isLoading} />
+          <ChatInput 
+            input={input}
+            isLoading={isLoading}
+            onInputChange={(value) => setInput(value)}
+            onSubmit={handleSubmit}
+          />
+        </Card>
 
-        <TabsContent value="test" className="space-y-6">
+        <div className="space-y-6">
           <TestWorkflow />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-6">
-          <PredictiveAnalysis campaignId="default" />
-        </TabsContent>
-
-        <TabsContent value="contacts" className="space-y-6">
-          <ContactImport />
-          <ContactSegmentation />
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium">Analyse des Performances</h3>
-            <p className="text-muted-foreground">
-              Module en cours de développement
-            </p>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
