@@ -9,9 +9,12 @@ import { MultiChannelSelector } from '../targeting/MultiChannelSelector';
 import { supabase } from '@/lib/supabaseClient';
 import { useState } from 'react';
 import { SocialPlatform } from '@/types/social';
+import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from "lucide-react";
 
 export const CampaignCreationWizard = () => {
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeStep, setActiveStep] = useState('persona');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(['linkedin']);
@@ -21,9 +24,20 @@ export const CampaignCreationWizard = () => {
     bestTimes: ['09:00', '12:00', '17:00'],
     contentThemes: ['property_showcase']
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSaveCampaign = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Erreur d'authentification",
+        description: "Vous devez être connecté pour créer une campagne",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
@@ -60,8 +74,31 @@ export const CampaignCreationWizard = () => {
         description: "Impossible de créer la campagne",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-2">Connexion requise</h2>
+          <p className="text-muted-foreground">
+            Veuillez vous connecter pour créer une campagne
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
@@ -137,8 +174,11 @@ export const CampaignCreationWizard = () => {
             </Button>
           )}
           {activeStep === 'content' ? (
-            <Button onClick={handleSaveCampaign}>
-              Créer la campagne
+            <Button 
+              onClick={handleSaveCampaign}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Création...' : 'Créer la campagne'}
             </Button>
           ) : (
             <Button
