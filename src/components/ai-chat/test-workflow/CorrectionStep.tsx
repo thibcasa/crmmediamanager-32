@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface CorrectionStepProps {
   validationErrors: string[];
-  onApplyCorrections: (appliedCorrections: string[]) => void;
+  onApplyCorrections: (corrections: string[]) => void;
   testResults: TestResults;
   previousResults?: TestResults;
 }
@@ -32,13 +32,12 @@ export const CorrectionStep = ({
     onApplyCorrections(selectedCorrections);
     setSelectedCorrections([]);
   };
-  
+
   return (
     <div className="space-y-6">
-      {/* Previous Recommendations Section */}
       {previousResults?.recommendations && previousResults.recommendations.length > 0 && (
         <Card className="p-4 bg-muted">
-          <h4 className="font-medium mb-2">Recommandations précédentes</h4>
+          <h4 className="font-medium mb-2">Corrections précédentes</h4>
           <ul className="space-y-2">
             {previousResults.recommendations.map((rec, index) => (
               <li key={index} className="flex items-center gap-2 text-sm">
@@ -56,7 +55,6 @@ export const CorrectionStep = ({
         </Card>
       )}
 
-      {/* New Corrections Section */}
       <Card className="p-4 border-yellow-200 bg-yellow-50">
         <h4 className="font-medium text-yellow-800 mb-2">Corrections suggérées</h4>
         <ul className="space-y-2">
@@ -82,36 +80,13 @@ export const CorrectionStep = ({
         </ul>
       </Card>
 
-      {/* Metrics Comparison */}
-      {previousResults && (
-        <Card className="p-4">
-          <h4 className="font-medium mb-4">Impact des corrections</h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium">Avant corrections</p>
-              <ul className="text-sm space-y-1 mt-2">
-                <li>ROI: {previousResults.roi.toFixed(2)}</li>
-                <li>Engagement: {(previousResults.engagement * 100).toFixed(1)}%</li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-sm font-medium">Après corrections</p>
-              <ul className="text-sm space-y-1 mt-2">
-                <li>ROI: {testResults.roi.toFixed(2)}</li>
-                <li>Engagement: {(testResults.engagement * 100).toFixed(1)}%</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-      )}
-
       <div className="flex justify-end">
         <Button
           onClick={handleApplyCorrections}
-          className="flex items-center gap-2"
           disabled={selectedCorrections.length === 0}
+          className="flex items-center gap-2"
         >
-          Appliquer les corrections sélectionnées ({selectedCorrections.length})
+          Appliquer les corrections ({selectedCorrections.length})
         </Button>
       </div>
     </div>

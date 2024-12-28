@@ -80,4 +80,6 @@ export interface WorkflowState {
   testHistory: TestResults[];
   currentTestResults: TestResults;
   readyForProduction: boolean;
+  appliedCorrections: string[];
+  lastPrediction: TestResults | null;
 }
