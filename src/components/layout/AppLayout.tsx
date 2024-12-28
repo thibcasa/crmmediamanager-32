@@ -38,13 +38,25 @@ export function AppLayout() {
   const [simulationResults, setSimulationResults] = useState<string[]>([]);
 
   const runMarketAnalysis = async () => {
-    // Simuler une analyse de marché
+    // Simuler une analyse complète du marché immobilier
     await new Promise(resolve => setTimeout(resolve, 2000));
-    return [
-      "Détection de 127 propriétaires potentiels dans les Alpes-Maritimes",
-      "Analyse des tendances de vente : +15% ce trimestre",
-      "Identification de 3 zones à fort potentiel"
-    ];
+    return {
+      socialMediaAnalysis: [
+        "Détection de 127 propriétaires potentiels dans les Alpes-Maritimes via LinkedIn",
+        "15 conversations actives détectées sur Facebook concernant la vente immobilière",
+        "3 zones à fort potentiel identifiées : Antibes, Cannes, Nice"
+      ],
+      contentAnalysis: [
+        "Message type le plus efficace : 'Estimation gratuite de votre bien'",
+        "Meilleur moment pour poster : Mardi et Jeudi 18h-20h",
+        "Taux d'engagement moyen prévu : 4.2%"
+      ],
+      campaignPredictions: [
+        "ROI estimé de la campagne : 320%",
+        "Coût par lead estimé : 45€",
+        "Temps moyen de conversion : 45 jours"
+      ]
+    };
   };
 
   const handleSimulation = async () => {
@@ -52,16 +64,20 @@ export function AppLayout() {
       setIsSimulating(true);
       toast({
         title: "Simulation lancée",
-        description: "Analyse du marché immobilier en cours...",
+        description: "Analyse complète du marché immobilier en cours...",
       });
 
       // Lancer l'analyse de marché
       const results = await runMarketAnalysis();
-      setSimulationResults(results);
+      setSimulationResults([
+        ...results.socialMediaAnalysis,
+        ...results.contentAnalysis,
+        ...results.campaignPredictions
+      ]);
 
       toast({
         title: "Simulation terminée",
-        description: "L'analyse du marché a été complétée avec succès",
+        description: "L'analyse prédictive est disponible",
       });
     } catch (error) {
       toast({
@@ -92,7 +108,7 @@ export function AppLayout() {
                 disabled={isSimulating}
               >
                 <PlayCircle className="w-5 h-5" />
-                {isSimulating ? 'Simulation en cours...' : 'Lancer la simulation'}
+                {isSimulating ? 'Analyse en cours...' : 'Lancer l\'analyse prédictive'}
               </Button>
             </div>
 
@@ -100,7 +116,7 @@ export function AppLayout() {
             {simulationResults.length > 0 && (
               <div className="px-2">
                 <Alert>
-                  <AlertTitle>Résultats de l'analyse</AlertTitle>
+                  <AlertTitle>Résultats de l'analyse prédictive</AlertTitle>
                   <AlertDescription>
                     <ul className="list-disc pl-4 space-y-1 text-sm">
                       {simulationResults.map((result, index) => (
