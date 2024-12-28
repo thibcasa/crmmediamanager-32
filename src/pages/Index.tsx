@@ -4,11 +4,13 @@ import {
   Brain, 
   Building2,
   BarChart3,
+  Users
 } from 'lucide-react';
 import { CampaignCreationWizard } from "@/components/social/campaign-creation/CampaignCreationWizard";
 import { TrendAnalyzer } from "@/components/analytics/TrendAnalyzer";
 import { PredictiveAnalysis } from "@/components/analytics/PredictiveAnalysis";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
+import { PersonaBuilder } from "@/components/persona/PersonaBuilder";
 import { useState } from "react";
 
 const Index = () => {
@@ -25,7 +27,7 @@ const Index = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
               onClick={() => setActiveTab("dashboard")}>
           <div className="flex items-center gap-3">
@@ -35,6 +37,19 @@ const Index = () => {
             <div>
               <h3 className="font-medium">Tableau de Bord</h3>
               <p className="text-sm text-muted-foreground">Vue d'ensemble CRM</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
+              onClick={() => setActiveTab("personas")}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium">Personas</h3>
+              <p className="text-sm text-muted-foreground">Gestion des personas</p>
             </div>
           </div>
         </Card>
@@ -72,6 +87,10 @@ const Index = () => {
             <BarChart3 className="h-4 w-4" />
             Tableau de Bord
           </TabsTrigger>
+          <TabsTrigger value="personas" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Personas
+          </TabsTrigger>
           <TabsTrigger value="campaign-creation" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Création de Campagne
@@ -84,6 +103,10 @@ const Index = () => {
 
         <TabsContent value="dashboard">
           <CRMDashboard />
+        </TabsContent>
+
+        <TabsContent value="personas">
+          <PersonaBuilder />
         </TabsContent>
 
         <TabsContent value="campaign-creation">
