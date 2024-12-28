@@ -19,10 +19,6 @@ export const CorrectionStep = ({
 }: CorrectionStepProps) => {
   const [selectedCorrections, setSelectedCorrections] = useState<string[]>([]);
   
-  // Get previous recommendations that haven't been applied yet
-  const previousRecommendations = previousResults?.recommendations || [];
-  const appliedCorrections = testResults.appliedCorrections || [];
-  
   const handleCorrectionSelect = (correction: string) => {
     setSelectedCorrections(prev => 
       prev.includes(correction) 
@@ -33,23 +29,24 @@ export const CorrectionStep = ({
 
   const handleApplyCorrections = () => {
     onApplyCorrections(selectedCorrections);
+    setSelectedCorrections([]);
   };
   
   return (
     <div className="space-y-6">
       {/* Previous Recommendations Section */}
-      {previousRecommendations.length > 0 && (
+      {previousResults?.recommendations && previousResults.recommendations.length > 0 && (
         <Card className="p-4 bg-muted">
           <h4 className="font-medium mb-2">Recommandations précédentes</h4>
           <ul className="space-y-2">
-            {previousRecommendations.map((rec, index) => (
+            {previousResults.recommendations.map((rec, index) => (
               <li key={index} className="flex items-center gap-2 text-sm">
-                {appliedCorrections.includes(rec) ? (
+                {testResults.appliedCorrections?.includes(rec) ? (
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                 ) : (
                   <AlertCircle className="h-4 w-4 text-orange-500" />
                 )}
-                <span className={appliedCorrections.includes(rec) ? "line-through text-muted-foreground" : ""}>
+                <span className={testResults.appliedCorrections?.includes(rec) ? "line-through text-muted-foreground" : ""}>
                   {rec}
                 </span>
               </li>
