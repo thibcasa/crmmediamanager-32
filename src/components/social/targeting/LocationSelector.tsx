@@ -84,10 +84,20 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const handleCitySelect = (cityName: string) => {
     setSelectedCity(cityName);
     const location = locations.find(loc => loc.city === cityName);
-    if (location && !selectedLocations.includes(location.id)) {
-      const newLocations = [...selectedLocations, location.id];
+    if (location) {
+      const isLocationSelected = selectedLocations.includes(location.id);
+      let newLocations: string[];
+      
+      if (isLocationSelected) {
+        // Si la ville est déjà sélectionnée, on la retire
+        newLocations = selectedLocations.filter(id => id !== location.id);
+      } else {
+        // Si la ville n'est pas sélectionnée, on l'ajoute
+        newLocations = [...selectedLocations, location.id];
+      }
+      
       onLocationChange(newLocations);
-      const newCount = selectedCount + 1;
+      const newCount = newLocations.length;
       setSelectedCount(newCount);
       setIsAllSelected(newCount === locations.length);
     }
