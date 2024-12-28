@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TestTube, ArrowRight } from "lucide-react";
-import { TestResults } from "./types";
+import { TestResults } from "../types/test-results";
 
 interface TestStepProps {
   isAnalyzing: boolean;

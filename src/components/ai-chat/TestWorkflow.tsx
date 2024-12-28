@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ValidationService } from '@/services/ValidationService';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Brain, Wrench, TestTube, Rocket } from 'lucide-react';
-import { TestResults } from './test-workflow/types';
+import { TestResults } from './types/test-results';
 import { PredictionStep } from './test-workflow/PredictionStep';
 import { CorrectionStep } from './test-workflow/CorrectionStep';
 import { TestStep } from './test-workflow/TestStep';

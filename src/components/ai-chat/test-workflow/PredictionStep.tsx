@@ -4,7 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Brain } from "lucide-react";
 import { TestMetrics } from "./TestMetrics";
 import { TestRecommendations } from "./TestRecommendations";
-import { TestResults } from "./types";
+import { TestResults } from "../types/test-results";
 
 interface PredictionStepProps {
   isAnalyzing: boolean;
@@ -26,7 +26,7 @@ export const PredictionStep = ({
       {isAnalyzing && (
         <div className="space-y-2">
           <Progress value={progress} className="w-full" />
-          <p className="text-sm text-sage-600 text-center">
+          <p className="text-sm text-muted-foreground text-center">
             Analyse en cours... {progress}%
           </p>
         </div>
