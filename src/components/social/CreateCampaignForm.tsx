@@ -113,7 +113,10 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         targeting_criteria: JSON.parse(targetingCriteria),
         status: 'draft',
         schedule: schedule ? JSON.parse(schedule) : null,
-        ai_feedback: null
+        ai_feedback: null,
+        posts: [], // Add missing field with empty array default
+        post_triggers: [], // Add missing field with empty array default
+        target_metrics: {} // Add missing field with empty object default
       };
 
       console.log('Données de la campagne:', campaignData);
