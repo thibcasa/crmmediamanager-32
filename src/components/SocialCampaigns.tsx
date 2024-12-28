@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignList } from './social/CampaignList';
 import { CampaignAnalytics } from './social/CampaignAnalytics';
 import { CreateCampaignForm } from './social/CreateCampaignForm';
+import { SocialApiSettings } from './settings/SocialApiSettings';
 import { supabase } from '@/lib/supabaseClient';
 
 export const SocialCampaigns = () => {
@@ -31,10 +32,11 @@ export const SocialCampaigns = () => {
       <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
       
       <Tabs defaultValue="create" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="create">Nouvelle Campagne</TabsTrigger>
           <TabsTrigger value="list">Campagnes Existantes</TabsTrigger>
           <TabsTrigger value="analytics">Analyse</TabsTrigger>
+          <TabsTrigger value="settings">Configuration API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="create">
@@ -56,6 +58,10 @@ export const SocialCampaigns = () => {
               <p>Sélectionnez une campagne pour voir son analyse</p>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <SocialApiSettings />
         </TabsContent>
       </Tabs>
     </Card>
