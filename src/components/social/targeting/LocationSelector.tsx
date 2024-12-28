@@ -100,10 +100,10 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les prix</SelectItem>
-                <SelectItem value="luxury">Luxe (> 1M€)</SelectItem>
+                <SelectItem value="luxury">Luxe (&gt; 1M€)</SelectItem>
                 <SelectItem value="high">Haut de gamme (500K€ - 1M€)</SelectItem>
                 <SelectItem value="medium">Moyen (300K€ - 500K€)</SelectItem>
-                <SelectItem value="entry">Premier achat (< 300K€)</SelectItem>
+                <SelectItem value="entry">Premier achat (&lt; 300K€)</SelectItem>
               </SelectContent>
             </Select>
           </div>
