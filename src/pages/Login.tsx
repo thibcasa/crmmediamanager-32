@@ -12,23 +12,25 @@ const Login = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Événement d'authentification:", event);
       if (event === 'SIGNED_IN') {
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
         });
-        navigate('/ai-chat');
+        navigate('/');
       }
     });
 
     const checkUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
+      console.log("Vérification de l'utilisateur:", user);
       if (error) {
         console.error('Erreur lors de la vérification de l\'utilisateur:', error);
         return;
       }
       if (user) {
-        navigate('/ai-chat');
+        navigate('/');
       }
     };
     
@@ -66,7 +68,7 @@ const Login = () => {
               input: 'auth-input',
             }
           }}
-          redirectTo={`${window.location.origin}/ai-chat`}
+          redirectTo={`${window.location.origin}/`}
           providers={['linkedin']}
           localization={{
             variables: {
