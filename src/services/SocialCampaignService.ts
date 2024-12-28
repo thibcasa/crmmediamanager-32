@@ -61,4 +61,67 @@ export class SocialCampaignService {
 
     return campaignData;
   }
+
+  static async duplicateCampaign(campaignId: string) {
+    const { data: originalCampaign, error: fetchError } = await supabase
+      .from('social_campaigns')
+      .select('*')
+      .eq('id', campaignId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { id, created_at, updated_at, ...campaignData } = originalCampaign;
+    
+    const { data: newCampaign, error: createError } = await supabase
+      .from('social_campaigns')
+      .insert([{
+        ...campaignData,
+        name: `${campaignData.name} (copie)`,
+        status: 'draft'
+      }])
+      .select()
+      .single();
+
+    if (createError) throw createError;
+    return newCampaign;
+  }
+
+  static async deleteCampaign(id: string) {
+    const { error } = await supabase
+      .from('social_campaigns')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  static async optimizeCampaign(id: string) {
+    const { data: campaign, error: fetchError } = await supabase
+      .from('social_campaigns')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Appel à l'API d'optimisation
+    const response = await supabase.functions.invoke('campaign-analyzer', {
+      body: { campaign }
+    });
+
+    if (response.error) throw response.error;
+
+    // Mise à jour de la campagne avec les optimisations
+    const { error: updateError } = await supabase
+      .from('social_campaigns')
+      .update({
+        ai_feedback: response.data.feedback,
+        content_strategy: response.data.optimizedStrategy,
+        targeting_criteria: response.data.optimizedTargeting
+      })
+      .eq('id', id);
+
+    if (updateError) throw updateError;
+  }
 }
