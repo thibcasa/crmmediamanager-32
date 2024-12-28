@@ -9,7 +9,8 @@ import {
   MessageSquare,
   FileText,
   Target,
-  Settings
+  Settings,
+  Building2
 } from "lucide-react";
 import { ContentGenerator } from "@/components/content/ContentGenerator";
 import { EmailCampaign } from "@/components/EmailCampaign";
@@ -26,6 +27,44 @@ const Index = () => {
         <p className="text-xl text-muted-foreground">
           Gérez vos stratégies de prospection et optimisez vos conversions
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium">Prospects</h3>
+              <p className="text-sm text-muted-foreground">Gestion des contacts</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium">Propriétés</h3>
+              <p className="text-sm text-muted-foreground">Biens immobiliers</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BarChart3 className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium">Analytics</h3>
+              <p className="text-sm text-muted-foreground">Performances & KPIs</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       <Tabs defaultValue="content" className="space-y-6">
