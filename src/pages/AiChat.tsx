@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChatMessages } from '@/components/ai-chat/ChatMessages';
 import { ChatInput } from '@/components/ai-chat/ChatInput';
 import { TestWorkflow } from '@/components/ai-chat/TestWorkflow';
+import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/CampaignWorkflowManager';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
@@ -68,12 +69,12 @@ const AiChat = () => {
       <div>
         <h1 className="text-4xl font-bold tracking-tight">Assistant IA</h1>
         <p className="text-muted-foreground mt-2">
-          Générez des stratégies marketing et du contenu optimisé pour l'immobilier
+          Générez et optimisez vos campagnes marketing pour l'immobilier
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 flex flex-col h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="flex flex-col h-[600px]">
           <ChatMessages messages={messages} isLoading={isLoading} />
           <ChatInput 
             input={input}
@@ -84,7 +85,7 @@ const AiChat = () => {
         </Card>
 
         <div className="space-y-6">
-          <TestWorkflow messageToTest={lastUserMessage} />
+          <CampaignWorkflowManager />
         </div>
       </div>
     </div>
