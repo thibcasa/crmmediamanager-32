@@ -7,7 +7,11 @@ import { TestResults } from './types/test-results';
 import { TestMetrics } from './TestMetrics';
 import { TestRecommendations } from './TestRecommendations';
 
-export const TestWorkflow = () => {
+interface TestWorkflowProps {
+  messageToTest?: string;
+}
+
+export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { toast } = useToast();
   const [activePhase, setActivePhase] = useState<'test' | 'prediction' | 'correction' | 'production'>('test');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -15,9 +19,18 @@ export const TestWorkflow = () => {
   const [testStatus, setTestStatus] = useState<'pending' | 'warning' | 'success'>('pending');
 
   const handleTest = async () => {
+    if (!messageToTest) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez d'abord envoyer un message dans le chat",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
-      // Simulation du test pour démonstration
+      // Simulation du test avec le message
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const results = {
@@ -81,7 +94,7 @@ export const TestWorkflow = () => {
           <Button
             variant="outline"
             onClick={handleTest}
-            disabled={isAnalyzing || activePhase === 'production'}
+            disabled={isAnalyzing || activePhase === 'production' || !messageToTest}
             className="flex items-center gap-2"
           >
             <Brain className="h-4 w-4" />

@@ -60,6 +60,9 @@ const AiChat = () => {
     }
   };
 
+  // Obtenir le dernier message de l'utilisateur pour le test
+  const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
+
   return (
     <div className="space-y-6">
       <div>
@@ -81,7 +84,7 @@ const AiChat = () => {
         </Card>
 
         <div className="space-y-6">
-          <TestWorkflow />
+          <TestWorkflow messageToTest={lastUserMessage} />
         </div>
       </div>
     </div>
