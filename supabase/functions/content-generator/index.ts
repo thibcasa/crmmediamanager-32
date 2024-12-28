@@ -23,8 +23,15 @@ serve(async (req) => {
     
     console.log(`Generating ${type} content for ${platform}`);
 
-    const systemPrompt = `Tu es un expert en stratégie immobilière sur ${platform}. 
-    Ton objectif est de créer du contenu pour atteindre et engager des propriétaires immobiliers dans les Alpes-Maritimes.
+    const platformPrompts = {
+      linkedin: "Tu es un expert en stratégie immobilière sur LinkedIn. Ton contenu doit être professionnel, informatif et adapté au format LinkedIn.",
+      facebook: "Tu es un expert immobilier sur Facebook. Ton contenu doit être engageant, accessible et inclure des call-to-action pertinents.",
+      instagram: "Tu es un expert immobilier sur Instagram. Ton contenu doit être visuel, inspirant et inclure des hashtags pertinents.",
+      whatsapp: "Tu es un expert immobilier sur WhatsApp. Ton message doit être direct, personnel et adapté à une conversation privée.",
+      tiktok: "Tu es un expert immobilier sur TikTok. Ton contenu doit être dynamique, court et percutant, adapté aux tendances TikTok."
+    };
+
+    const systemPrompt = `${platformPrompts[platform] || platformPrompts.linkedin}
     
     Pour chaque demande, tu dois :
     1. Analyser l'objectif de la campagne
@@ -33,7 +40,7 @@ serve(async (req) => {
     4. Proposer une stratégie de ciblage précise
     5. Définir des KPIs et objectifs mesurables
     
-    Ton contenu doit être professionnel, informatif et adapté au marché immobilier premium des Alpes-Maritimes.`;
+    Ton contenu doit cibler spécifiquement les propriétaires de biens immobiliers dans les Alpes-Maritimes.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
