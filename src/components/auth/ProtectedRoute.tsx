@@ -13,14 +13,20 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Accès refusé",
-          description: "Veuillez vous connecter pour accéder à cette page",
-          variant: "destructive",
-        });
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          console.error('Authentication error:', error);
+          toast({
+            title: "Accès refusé",
+            description: "Veuillez vous connecter pour accéder à cette page",
+            variant: "destructive",
+          });
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
         navigate('/login');
       }
     };
