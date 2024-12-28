@@ -4,33 +4,43 @@ import { TrendingUp, Users, Target, DollarSign } from "lucide-react";
 
 interface MetricsGridProps {
   results: TestResults;
+  previousResults?: TestResults;
 }
 
-export const MetricsGrid = ({ results }: MetricsGridProps) => {
+export const MetricsGrid = ({ results, previousResults }: MetricsGridProps) => {
+  const calculateTrend = (current: number, previous?: number) => {
+    if (!previous) return undefined;
+    return ((current - previous) / previous) * 100;
+  };
+
   const metrics = [
     {
       icon: TrendingUp,
       label: "Engagement",
       value: `${(results.engagement * 100).toFixed(1)}%`,
-      color: "blue"
+      color: "blue",
+      trend: calculateTrend(results.engagement, previousResults?.engagement)
     },
     {
       icon: Users,
       label: "Taux de clic",
       value: `${(results.clickRate * 100).toFixed(1)}%`,
-      color: "green"
+      color: "green",
+      trend: calculateTrend(results.clickRate, previousResults?.clickRate)
     },
     {
       icon: Target,
       label: "Conversion",
       value: `${(results.conversionRate * 100).toFixed(1)}%`,
-      color: "purple"
+      color: "purple",
+      trend: calculateTrend(results.conversionRate, previousResults?.conversionRate)
     },
     {
       icon: DollarSign,
       label: "ROI estimé",
       value: `${(results.roi * 100).toFixed(1)}%`,
-      color: "yellow"
+      color: "yellow",
+      trend: calculateTrend(results.roi, previousResults?.roi)
     }
   ];
 

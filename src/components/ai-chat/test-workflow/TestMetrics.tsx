@@ -1,25 +1,17 @@
 import { Card } from "@/components/ui/card";
-import { TestResults } from './types';
+import { TestResults } from './types/test-results';
+import { MetricsGrid } from './components/metrics/MetricsGrid';
 
 interface TestMetricsProps {
   results: TestResults;
+  previousResults?: TestResults;
 }
 
-export const TestMetrics = ({ results }: TestMetricsProps) => {
+export const TestMetrics = ({ results, previousResults }: TestMetricsProps) => {
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <Card className="p-4">
-        <p className="text-sm font-medium">Engagement estimé</p>
-        <p className="text-2xl font-bold">{(results.engagement * 100).toFixed(1)}%</p>
-      </Card>
-      <Card className="p-4">
-        <p className="text-sm font-medium">Coût par acquisition</p>
-        <p className="text-2xl font-bold">{results.cpa}€</p>
-      </Card>
-      <Card className="p-4">
-        <p className="text-sm font-medium">ROI estimé</p>
-        <p className="text-2xl font-bold">{(results.roi * 100).toFixed(1)}%</p>
-      </Card>
+    <div className="space-y-4">
+      <h4 className="text-sm font-medium">Métriques de Performance</h4>
+      <MetricsGrid results={results} previousResults={previousResults} />
     </div>
   );
 };
