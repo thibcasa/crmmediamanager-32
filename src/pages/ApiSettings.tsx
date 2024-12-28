@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SocialApiSettings } from "@/components/settings/SocialApiSettings";
 import { EmailApiSettings } from "@/components/settings/EmailApiSettings";
+import { IntegrationsSettings } from "@/components/settings/IntegrationsSettings";
 
 const ApiSettings = () => {
   return (
@@ -15,9 +16,10 @@ const ApiSettings = () => {
 
       <Card className="p-6">
         <Tabs defaultValue="social" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
             <TabsTrigger value="social">Réseaux Sociaux</TabsTrigger>
             <TabsTrigger value="email">Email Marketing</TabsTrigger>
+            <TabsTrigger value="integrations">Intégrations</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -27,6 +29,10 @@ const ApiSettings = () => {
 
           <TabsContent value="email" className="mt-6">
             <EmailApiSettings />
+          </TabsContent>
+
+          <TabsContent value="integrations" className="mt-6">
+            <IntegrationsSettings />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
