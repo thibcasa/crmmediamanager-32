@@ -1,6 +1,43 @@
 export type WorkflowPhase = 'prediction' | 'correction' | 'test' | 'production';
 export type TestStatus = 'pending' | 'warning' | 'success';
 
+export interface AudienceSegment {
+  name: string;
+  score: number;
+  potential: number;
+}
+
+export interface Demographics {
+  age: string[];
+  location: string[];
+  interests: string[];
+}
+
+export interface Creative {
+  type: 'image' | 'video' | 'text';
+  content: string;
+  performance: number;
+}
+
+export interface CampaignContent {
+  messages: string[];
+  headlines: string[];
+  callsToAction: string[];
+}
+
+export interface WorkflowStep {
+  name: string;
+  status: 'completed' | 'in_progress' | 'pending';
+  metrics?: Record<string, number>;
+}
+
+export interface PredictedMetrics {
+  leadsPerWeek: number;
+  costPerLead: number;
+  totalBudget: number;
+  revenueProjection: number;
+}
+
 export interface TestResults {
   engagement: number;
   clickRate: number;
@@ -11,40 +48,15 @@ export interface TestResults {
   risks: string[];
   opportunities: string[];
   audienceInsights?: {
-    segments: Array<{
-      name: string;
-      score: number;
-      potential: number;
-    }>;
-    demographics: {
-      age: string[];
-      location: string[];
-      interests: string[];
-    };
+    segments: AudienceSegment[];
+    demographics: Demographics;
   };
-  predictedMetrics?: {
-    leadsPerWeek: number;
-    costPerLead: number;
-    totalBudget: number;
-    revenueProjection: number;
-  };
+  predictedMetrics?: PredictedMetrics;
   campaignDetails?: {
-    creatives: Array<{
-      type: 'image' | 'video' | 'text';
-      content: string;
-      performance: number;
-    }>;
-    content: {
-      messages: string[];
-      headlines: string[];
-      callsToAction: string[];
-    };
+    creatives: Creative[];
+    content: CampaignContent;
     workflow: {
-      steps: Array<{
-        name: string;
-        status: string;
-        metrics?: Record<string, number>;
-      }>;
+      steps: WorkflowStep[];
     };
   };
 }
@@ -58,16 +70,4 @@ export interface WorkflowState {
   iterationCount: number;
   testHistory: TestResults[];
   currentTestResults: TestResults;
-}
-
-export interface TestMetrics {
-  before: TestResults;
-  after?: TestResults;
-}
-
-export interface CampaignTest {
-  id: string;
-  createdAt: Date;
-  metrics: TestMetrics;
-  status: TestStatus;
 }
