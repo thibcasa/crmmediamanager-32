@@ -7,7 +7,7 @@ import { MetricsGrid } from './testing-dashboard/components/MetricsGrid';
 import { TestProgress } from './testing-dashboard/components/TestProgress';
 import { PerformanceAlert } from './testing-dashboard/components/PerformanceAlert';
 import { useTestExecution } from './testing-dashboard/hooks/useTestExecution';
-import { Beaker, AlertCircle, PlayCircle } from 'lucide-react';
+import { Beaker, AlertCircle, PlayCircle, Loader2 } from 'lucide-react';
 
 interface TestingDashboardProps {
   campaignData: CampaignData;
@@ -73,14 +73,34 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
 
   return (
     <Card className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-lg font-medium">Test & Validation</h3>
+          <h3 className="text-2xl font-semibold">Test & Validation</h3>
           <p className="text-sm text-muted-foreground">
             Testez votre campagne avant le lancement
           </p>
         </div>
       </div>
+
+      {/* Bouton de simulation proéminent */}
+      <Button 
+        size="lg"
+        className="w-full h-16 text-lg font-semibold bg-primary hover:bg-primary/90 mb-6"
+        onClick={handleSimulation}
+        disabled={isSimulating}
+      >
+        {isSimulating ? (
+          <>
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            Simulation en cours...
+          </>
+        ) : (
+          <>
+            <PlayCircle className="mr-2 h-6 w-6" />
+            Lancer la simulation de la campagne
+          </>
+        )}
+      </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="p-4 border-2 border-dashed">
@@ -92,15 +112,6 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
             <p className="text-sm text-muted-foreground">
               Simulez les résultats de votre campagne sans l'exécuter réellement
             </p>
-            <Button 
-              variant="outline"
-              onClick={handleSimulation}
-              disabled={isSimulating}
-              className="w-full"
-            >
-              <PlayCircle className="mr-2 h-4 w-4" />
-              {isSimulating ? 'Simulation en cours...' : 'Lancer la simulation'}
-            </Button>
           </div>
         </Card>
 
