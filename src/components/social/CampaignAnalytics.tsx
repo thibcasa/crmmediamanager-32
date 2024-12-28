@@ -21,10 +21,21 @@ export const CampaignAnalytics = ({ campaign }: CampaignAnalyticsProps) => {
   const { data: analytics } = useQuery({
     queryKey: ['campaign-analytics', campaign.id],
     queryFn: async () => {
+      // First get leads associated with this campaign
+      const { data: leads, error: leadsError } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('source_campaign', campaign.id);
+      
+      if (leadsError) throw leadsError;
+      
+      if (!leads?.length) return [];
+
+      // Then get analytics for these leads
       const { data, error } = await supabase
         .from('conversation_analytics')
         .select('*')
-        .eq('source_campaign', campaign.id);
+        .in('lead_id', leads.map(lead => lead.id));
       
       if (error) throw error;
       return data;
