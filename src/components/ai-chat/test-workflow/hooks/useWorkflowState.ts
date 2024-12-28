@@ -1,0 +1,151 @@
+import { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { ValidationService } from '@/services/ValidationService';
+import { WorkflowState, WorkflowPhase, TestStatus } from '../types/workflow-state';
+import { TestResults } from '../types/test-results';
+
+const initialTestResults: TestResults = {
+  engagement: 0,
+  clickRate: 0,
+  conversionRate: 0,
+  cpa: 0,
+  roi: 0,
+  recommendations: [],
+  risks: [],
+  opportunities: []
+};
+
+export const useWorkflowState = (messageToTest?: string) => {
+  const { toast } = useToast();
+  const [state, setState] = useState<WorkflowState>({
+    activePhase: 'prediction',
+    isAnalyzing: false,
+    progress: 0,
+    testStatus: 'pending',
+    validationErrors: [],
+    iterationCount: 0,
+    testHistory: [],
+    currentTestResults: initialTestResults
+  });
+
+  const updateProgress = (phase: number) => {
+    setState(prev => ({ ...prev, progress: phase * 25 }));
+  };
+
+  const handleTest = async () => {
+    if (!messageToTest) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez d'abord envoyer un message dans le chat",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setState(prev => ({ ...prev, isAnalyzing: true, validationErrors: [] }));
+    
+    try {
+      updateProgress(1);
+      const validation = ValidationService.validatePrompt(messageToTest);
+      
+      if (!validation.isValid) {
+        setState(prev => ({
+          ...prev,
+          validationErrors: validation.errors,
+          testStatus: 'warning'
+        }));
+        toast({
+          title: "Attention",
+          description: "Des améliorations sont suggérées pour votre campagne",
+          variant: "destructive"
+        });
+      }
+
+      updateProgress(2);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const iterationMultiplier = 1 + (state.iterationCount * 0.15);
+      const results: TestResults = {
+        engagement: Math.min(0.85 * iterationMultiplier, 1),
+        clickRate: Math.min(0.125 * iterationMultiplier, 0.3),
+        conversionRate: Math.min(0.032 * iterationMultiplier, 0.1),
+        cpa: Math.max(15 / iterationMultiplier, 8),
+        roi: Math.min(2.5 * iterationMultiplier, 5),
+        recommendations: [
+          "Optimisez le ciblage géographique",
+          "Précisez le type de bien immobilier",
+          "Ajoutez des témoignages clients"
+        ],
+        risks: [
+          "Coût par acquisition à surveiller",
+          "Ciblage à affiner"
+        ],
+        opportunities: [
+          "Fort potentiel d'engagement",
+          "Zone géographique attractive"
+        ]
+      };
+
+      setState(prev => ({
+        ...prev,
+        currentTestResults: results,
+        testHistory: [...prev.testHistory, results],
+        iterationCount: prev.iterationCount + 1,
+        testStatus: validation.isValid ? 'success' : 'warning'
+      }));
+
+      updateProgress(4);
+      return results;
+    } catch (error) {
+      console.error('Error in test workflow:', error);
+      setState(prev => ({ ...prev, testStatus: 'warning' }));
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue pendant l'analyse",
+        variant: "destructive"
+      });
+    } finally {
+      setState(prev => ({ ...prev, isAnalyzing: false }));
+      updateProgress(100);
+    }
+  };
+
+  const handleCorrection = () => {
+    setState(prev => ({ ...prev, activePhase: 'correction' }));
+    toast({
+      title: "Correction en cours",
+      description: "Application des recommandations...",
+    });
+  };
+
+  const handleProduction = () => {
+    if (state.currentTestResults.roi < 2 || state.currentTestResults.engagement < 0.6) {
+      toast({
+        title: "Attention",
+        description: "Les performances ne sont pas encore optimales. Continuez les itérations.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setState(prev => ({ ...prev, activePhase: 'production' }));
+    toast({
+      title: "Mise en production",
+      description: "Déploiement de la campagne optimisée...",
+    });
+  };
+
+  const setActivePhase = (phase: WorkflowPhase) => {
+    setState(prev => ({ ...prev, activePhase: phase }));
+  };
+
+  return {
+    state,
+    actions: {
+      handleTest,
+      handleCorrection,
+      handleProduction,
+      setActivePhase
+    }
+  };
+};
