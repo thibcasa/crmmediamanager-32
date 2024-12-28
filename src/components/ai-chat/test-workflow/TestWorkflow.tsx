@@ -1,14 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Brain, Wrench, TestTube, Rocket, Image, FileText, Target } from 'lucide-react';
+import { Brain, Wrench, TestTube, Rocket } from 'lucide-react';
 import { useWorkflowState } from './hooks/useWorkflowState';
 import { PredictionStep } from './PredictionStep';
 import { CorrectionStep } from './CorrectionStep';
 import { TestStep } from './TestStep';
 import { ProductionStep } from './ProductionStep';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { CreativesModule } from '../modules/CreativesModule';
-import { ContentModule } from '../modules/ContentModule';
+import { CampaignOverview } from '../campaign-workflow/CampaignOverview';
+import { useToast } from "@/hooks/use-toast";
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -16,7 +15,36 @@ interface TestWorkflowProps {
 
 export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { state, actions } = useWorkflowState(messageToTest);
+  const { toast } = useToast();
   const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
+
+  const handlePrediction = async () => {
+    try {
+      await actions.handlePrediction();
+      toast({
+        title: "Prédiction générée",
+        description: "Les résultats ont été mis à jour"
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer la prédiction",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRecommendationClick = (recommendation: string) => {
+    // Modify the original prompt based on the recommendation
+    if (messageToTest) {
+      const updatedPrompt = `${messageToTest} (Amélioration: ${recommendation})`;
+      actions.setMessageToTest(updatedPrompt);
+      toast({
+        title: "Prompt mis à jour",
+        description: "Le message a été modifié selon la recommandation"
+      });
+    }
+  };
 
   return (
     <Card className="p-6">
@@ -28,11 +56,13 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
           </div>
         </div>
 
-        {/* Ajout des modules Créatives et Contenus */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <CreativesModule />
-          <ContentModule />
-        </div>
+        <CampaignOverview
+          creatives={state.creatives || []}
+          content={state.content || []}
+          onPredictionClick={handlePrediction}
+          onRecommendationClick={handleRecommendationClick}
+          recommendations={state.currentTestResults.recommendations || []}
+        />
 
         <Tabs 
           value={state.activePhase} 
