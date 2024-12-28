@@ -7,7 +7,7 @@ import { MetricsGrid } from './testing-dashboard/components/MetricsGrid';
 import { TestProgress } from './testing-dashboard/components/TestProgress';
 import { PerformanceAlert } from './testing-dashboard/components/PerformanceAlert';
 import { useTestExecution } from './testing-dashboard/hooks/useTestExecution';
-import { Beaker, AlertCircle } from 'lucide-react';
+import { Beaker, AlertCircle, PlayCircle } from 'lucide-react';
 
 interface TestingDashboardProps {
   campaignData: CampaignData;
@@ -80,28 +80,57 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
             Testez votre campagne avant le lancement
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={handleSimulation}
-            disabled={isSimulating}
-          >
-            <Beaker className="mr-2 h-4 w-4" />
-            {isSimulating ? 'Simulation...' : 'Simuler'}
-          </Button>
-          <Button
-            onClick={handleRealTest}
-            disabled={isTesting}
-          >
-            {isTesting ? 'Test en cours...' : 'Tester en conditions réelles'}
-          </Button>
-        </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-4 border-2 border-dashed">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Beaker className="h-5 w-5 text-primary" />
+              <h4 className="font-medium">Mode Simulation</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Simulez les résultats de votre campagne sans l'exécuter réellement
+            </p>
+            <Button 
+              variant="outline"
+              onClick={handleSimulation}
+              disabled={isSimulating}
+              className="w-full"
+            >
+              <PlayCircle className="mr-2 h-4 w-4" />
+              {isSimulating ? 'Simulation en cours...' : 'Lancer la simulation'}
+            </Button>
+          </div>
+        </Card>
+
+        <Card className="p-4 border-2 border-dashed">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-primary" />
+              <h4 className="font-medium">Test en Conditions Réelles</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Testez votre campagne avec des données réelles
+            </p>
+            <Button
+              onClick={handleRealTest}
+              disabled={isTesting}
+              className="w-full"
+            >
+              {isTesting ? 'Test en cours...' : 'Tester en conditions réelles'}
+            </Button>
+          </div>
+        </Card>
+      </div>
+
+      {(isSimulating || isTesting) && (
+        <TestProgress isTesting={isTesting || isSimulating} progress={progress} />
+      )}
 
       {campaignData.predictions && (
         <div className="space-y-6">
           <MetricsGrid predictions={campaignData.predictions} />
-          <TestProgress isTesting={isTesting || isSimulating} progress={progress} />
           <PerformanceAlert predictions={campaignData.predictions} />
           
           {campaignData.predictions.roi < 2 && (
