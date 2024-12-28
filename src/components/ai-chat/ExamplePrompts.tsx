@@ -1,33 +1,47 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, Building, Home, TrendingUp, Users } from "lucide-react";
+import { Sparkles, Building, Home, TrendingUp, Users, Target, Calendar } from "lucide-react";
 
 export const EXAMPLE_PROMPTS = [
   {
-    category: "Immobilier de Luxe",
-    title: "Campagne LinkedIn Ciblée",
-    prompt: "Crée une stratégie de prospection sur LinkedIn pour contacter 50 propriétaires de biens de luxe dans les Alpes-Maritimes",
-    description: "Génère une stratégie complète de messages et connexions LinkedIn",
+    category: "Prospection Ciblée",
+    title: "Stratégie LinkedIn Premium",
+    prompt: "Crée une stratégie de prospection sur LinkedIn pour contacter 30 propriétaires de villas avec piscine à Nice et Cannes",
+    description: "Génère une stratégie de messages personnalisés pour LinkedIn",
+    icon: Target
+  },
+  {
+    category: "Multi-Réseaux",
+    title: "Campagne Intégrée",
+    prompt: "Crée une stratégie marketing combinant LinkedIn et Instagram pour obtenir 5 mandats ce mois-ci dans le secteur de Nice Nord",
+    description: "Plan d'action sur LinkedIn et Instagram",
     icon: Building
   },
   {
-    category: "Résidentiel",
-    title: "Campagne Multi-Réseaux",
-    prompt: "Crée une stratégie marketing combinant LinkedIn et Instagram pour obtenir 8 mandats cette semaine dans le secteur résidentiel",
-    description: "Orchestration de messages cohérents sur LinkedIn et Instagram",
+    category: "Contenu Engageant",
+    title: "Posts Immobiliers",
+    prompt: "Génère 5 idées de posts Instagram mettant en avant les avantages fiscaux de l'investissement immobilier à Nice",
+    description: "Création de contenu éducatif et attractif",
     icon: Home
   },
   {
-    category: "Analyse de Marché",
-    title: "Tendances du Marché",
-    prompt: "Analyse les tendances actuelles du marché immobilier dans les Alpes-Maritimes et génère un rapport détaillé",
-    description: "Création d'un rapport d'analyse de marché complet",
+    category: "Événements",
+    title: "Portes Ouvertes",
+    prompt: "Crée une stratégie de communication pour organiser une journée portes ouvertes pour 3 biens d'exception à Nice",
+    description: "Plan de promotion d'événement immobilier",
+    icon: Calendar
+  },
+  {
+    category: "Analyse Marché",
+    title: "Rapport Tendances",
+    prompt: "Analyse les tendances actuelles du marché immobilier de luxe dans les Alpes-Maritimes et génère un rapport détaillé",
+    description: "Création d'un rapport d'analyse de marché",
     icon: TrendingUp
   },
   {
     category: "Networking",
-    title: "Stratégie de Networking",
-    prompt: "Développe une stratégie de networking pour créer des partenariats avec des agents immobiliers locaux",
-    description: "Plan de développement de réseau professionnel",
+    title: "Partenariats Locaux",
+    prompt: "Développe une stratégie pour créer des partenariats avec des architectes et décorateurs d'intérieur de la Côte d'Azur",
+    description: "Plan de développement réseau professionnel",
     icon: Users
   }
 ];
@@ -38,7 +52,7 @@ interface ExamplePromptsProps {
 
 export const ExamplePrompts = ({ onPromptClick }: ExamplePromptsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       {EXAMPLE_PROMPTS.map((prompt, index) => (
         <Card 
           key={index}
