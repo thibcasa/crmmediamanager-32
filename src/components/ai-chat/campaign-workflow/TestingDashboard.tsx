@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { TestTube, Loader2, AlertCircle } from 'lucide-react';
-import { CampaignData } from './CampaignWorkflowManager';
+import { CampaignData } from '../types/campaign';
 import { supabase } from '@/lib/supabaseClient';
 
 interface TestingDashboardProps {

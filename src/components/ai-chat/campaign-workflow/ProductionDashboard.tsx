@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Rocket } from 'lucide-react';
-import { CampaignData } from './CampaignWorkflowManager';
+import { CampaignData } from '../types/campaign';
 
 interface ProductionDashboardProps {
   campaignData: CampaignData;

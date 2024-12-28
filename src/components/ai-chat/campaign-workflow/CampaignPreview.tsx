@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { CampaignData } from './CampaignWorkflowManager';
+import { CampaignData } from '../types/campaign';
 
 interface CampaignPreviewProps {
   campaignData: CampaignData;

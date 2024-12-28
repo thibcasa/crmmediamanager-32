@@ -1,12 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useWorkflowState } from './hooks/useWorkflowState';
-import { PredictionStep } from './PredictionStep';
-import { CorrectionStep } from './CorrectionStep';
-import { TestStep } from './TestStep';
-import { ProductionStep } from './ProductionStep';
 import { CampaignHeader } from './CampaignHeader';
-import { CampaignTabs } from './CampaignTabs';
+import { CampaignPreview } from './CampaignPreview';
+import { TestingDashboard } from './TestingDashboard';
+import { ProductionDashboard } from './ProductionDashboard';
+import { CreativeGenerator } from './CreativeGenerator';
+import { ContentGenerator } from './ContentGenerator';
 import { CampaignData } from '../types/campaign';
 
 interface CampaignWorkflowManagerProps {
@@ -16,60 +16,57 @@ interface CampaignWorkflowManagerProps {
 
 export const CampaignWorkflowManager = ({ initialData, onUpdate }: CampaignWorkflowManagerProps) => {
   const { state, actions } = useWorkflowState(initialData?.objective);
-  const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
+
+  const defaultCampaignData: CampaignData = {
+    objective: initialData?.objective || '',
+    creatives: initialData?.creatives || [],
+    content: initialData?.content || [],
+    predictions: initialData?.predictions || {
+      engagement: 0,
+      costPerLead: 0,
+      roi: 0,
+      estimatedLeads: 0
+    }
+  };
+
+  const [campaignData, setCampaignData] = useState<CampaignData>(defaultCampaignData);
+
+  const handleUpdate = (updates: Partial<CampaignData>) => {
+    setCampaignData(prev => ({ ...prev, ...updates }));
+    onUpdate?.(updates);
+  };
 
   return (
-    <Card className="p-6">
-      <div className="space-y-6">
-        <CampaignHeader iterationCount={state.iterationCount} />
-
-        <Tabs 
-          value={state.activePhase} 
-          onValueChange={(value: any) => actions.setActivePhase(value)} 
-          className="w-full"
-        >
-          <CampaignTabs canProceedToProduction={canProceedToProduction} />
-
-          <TabsContent value="prediction">
-            <PredictionStep
-              isAnalyzing={state.isAnalyzing}
-              progress={state.progress}
-              testResults={state.currentTestResults}
-              onAnalyze={actions.handleTest}
-              messageToTest={initialData?.objective}
-              iterationCount={state.iterationCount}
-            />
-          </TabsContent>
-
-          <TabsContent value="correction">
-            <CorrectionStep
-              validationErrors={state.validationErrors}
-              onApplyCorrections={actions.handleCorrection}
-              testResults={state.currentTestResults}
-              previousResults={state.testHistory[state.testHistory.length - 2]}
-            />
-          </TabsContent>
-
-          <TabsContent value="test">
-            <TestStep
-              isAnalyzing={state.isAnalyzing}
-              onTest={actions.handleTest}
-              testResults={state.currentTestResults}
-              previousResults={state.testHistory[state.testHistory.length - 2]}
-              iterationCount={state.iterationCount}
-            />
-          </TabsContent>
-
-          <TabsContent value="production">
-            <ProductionStep
-              onDeploy={actions.handleProduction}
-              testResults={state.currentTestResults}
-              iterationHistory={state.testHistory}
-              canProceed={canProceedToProduction}
-            />
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-6">
+      <CampaignHeader iterationCount={state.iterationCount} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <CreativeGenerator 
+            onCreativesGenerated={(creatives) => handleUpdate({ creatives })}
+            existingCreatives={campaignData.creatives}
+          />
+          <ContentGenerator 
+            onContentGenerated={(content) => handleUpdate({ content })}
+            existingContent={campaignData.content}
+          />
+        </div>
+        
+        <div className="space-y-6">
+          <CampaignPreview 
+            campaignData={campaignData}
+            onUpdate={handleUpdate}
+          />
+          <TestingDashboard 
+            campaignData={campaignData}
+            onTestComplete={(predictions) => handleUpdate({ predictions })}
+          />
+          <ProductionDashboard 
+            campaignData={campaignData}
+            onLaunch={actions.handleProduction}
+          />
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };

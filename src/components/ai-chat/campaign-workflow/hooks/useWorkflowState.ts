@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CampaignData } from '../../types/campaign';
 
 interface TestResults {
   roi: number;

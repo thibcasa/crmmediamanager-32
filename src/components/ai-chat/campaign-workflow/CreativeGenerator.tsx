@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Wand2, Loader2 } from 'lucide-react';
-import { CampaignData } from './CampaignWorkflowManager';
+import { CampaignData } from '../types/campaign';
 import { supabase } from '@/lib/supabaseClient';
 
 interface CreativeGeneratorProps {

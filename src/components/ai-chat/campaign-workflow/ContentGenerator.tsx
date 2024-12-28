@@ -5,8 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { MessageSquare, Loader2 } from 'lucide-react';
-import { CampaignData } from './CampaignWorkflowManager';
-import { supabase } from '@/lib/supabaseClient';
+import { CampaignData } from '../types/campaign';
 
 interface ContentGeneratorProps {
   onContentGenerated: (content: CampaignData['content']) => void;
