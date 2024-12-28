@@ -96,6 +96,44 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_assets: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          type: string
+          url: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          type: string
+          url: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_templates: {
         Row: {
           content: string
@@ -369,6 +407,54 @@ export type Database = {
             | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          pipeline_config: Json | null
+          reference: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          workflow_config: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          pipeline_config?: Json | null
+          reference: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          workflow_config?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          pipeline_config?: Json | null
+          reference?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          workflow_config?: Json | null
         }
         Relationships: []
       }
