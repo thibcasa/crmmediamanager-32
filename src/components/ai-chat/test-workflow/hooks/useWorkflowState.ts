@@ -50,7 +50,11 @@ export const useWorkflowState = (messageToTest?: string) => {
     isAnalyzing: false,
     progress: 0,
     testStatus: 'pending',
-    validationErrors: [],
+    validationErrors: [
+      "Optimisez le ton pour le marché immobilier premium",
+      "Ajoutez plus de mots-clés spécifiques aux Alpes-Maritimes",
+      "Renforcez l'appel à l'action"
+    ],
     iterationCount: 0,
     testHistory: [],
     currentTestResults: initialTestResults,

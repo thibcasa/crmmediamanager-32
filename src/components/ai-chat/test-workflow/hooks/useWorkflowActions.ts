@@ -89,7 +89,8 @@ export const useWorkflowActions = (
         testHistory: [...prev.testHistory, results],
         iterationCount: prev.iterationCount + 1,
         testStatus: 'success',
-        readyForProduction: isReadyForProduction
+        readyForProduction: isReadyForProduction,
+        activePhase: 'correction'
       }));
 
       if (results.iterationMetrics.improvementRate > 0) {
@@ -115,7 +116,15 @@ export const useWorkflowActions = (
   };
 
   const handleCorrection = () => {
-    setState(prev => ({ ...prev, activePhase: 'correction' }));
+    setState(prev => ({ 
+      ...prev, 
+      activePhase: 'test',
+      validationErrors: [
+        "Optimisez davantage le ton pour le marché premium",
+        "Ajoutez plus de références aux quartiers prisés",
+        "Renforcez la proposition de valeur"
+      ]
+    }));
     toast({
       title: "Correction en cours",
       description: "Appliquez les recommandations puis relancez un test.",
