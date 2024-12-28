@@ -23,13 +23,29 @@ const queryClient = new QueryClient({
   },
 });
 
+// Wrapper pour ajouter le monitoring à chaque page
+const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string) => {
+  return () => (
+    <MonitoringProvider
+      config={{
+        pageName,
+        enableAutoCorrect: true,
+        enablePerformanceTracking: true,
+        enableErrorTracking: true
+      }}
+    >
+      <WrappedComponent />
+    </MonitoringProvider>
+  );
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <MonitoringProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={withMonitoring(Login, 'Login')} />
             <Route
               path="/"
               element={
@@ -38,14 +54,14 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Index />} />
-              <Route path="pipeline" element={<Pipeline />} />
-              <Route path="prospects" element={<Prospects />} />
-              <Route path="workflow" element={<Workflow />} />
-              <Route path="ai-chat" element={<AiChat />} />
-              <Route path="calendar" element={<Calendar />} />
-              <Route path="campaigns" element={<Campaigns />} />
-              <Route path="api-settings" element={<ApiSettings />} />
+              <Route index element={withMonitoring(Index, 'Index')} />
+              <Route path="pipeline" element={withMonitoring(Pipeline, 'Pipeline')} />
+              <Route path="prospects" element={withMonitoring(Prospects, 'Prospects')} />
+              <Route path="workflow" element={withMonitoring(Workflow, 'Workflow')} />
+              <Route path="ai-chat" element={withMonitoring(AiChat, 'AiChat')} />
+              <Route path="calendar" element={withMonitoring(Calendar, 'Calendar')} />
+              <Route path="campaigns" element={withMonitoring(Campaigns, 'Campaigns')} />
+              <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')} />
             </Route>
           </Routes>
           <Toaster />

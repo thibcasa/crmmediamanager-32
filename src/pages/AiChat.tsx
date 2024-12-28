@@ -17,15 +17,19 @@ const AiChat = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const { sendMessage, isLoading } = useChat();
+  const [input, setInput] = useState("");
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
     try {
-      trackEvent('message_sent', { content_length: content.length });
+      trackEvent('message_sent', { content_length: input.length });
       
-      const userMessage: Message = { role: 'user', content };
+      const userMessage: Message = { role: 'user', content: input };
       setMessages(prev => [...prev, userMessage]);
 
-      const response = await sendMessage(content);
+      const response = await sendMessage(input);
       
       const assistantMessage: Message = {
         role: 'assistant',
@@ -33,6 +37,7 @@ const AiChat = () => {
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+      setInput("");
       trackEvent('message_received', { response_length: response.message.length });
     } catch (error) {
       await handleError(error as Error);
@@ -50,7 +55,12 @@ const AiChat = () => {
     <div className="flex-1 flex flex-col">
       <div className="flex-1 flex flex-col min-h-0">
         <ChatMessages messages={messages} isLoading={isLoading} />
-        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+        <ChatInput 
+          input={input}
+          isLoading={isLoading}
+          onInputChange={setInput}
+          onSubmit={handleSendMessage}
+        />
       </div>
     </div>
   );
