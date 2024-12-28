@@ -5,13 +5,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { PersonaFilterManager } from '@/components/persona/PersonaFilterManager';
 import { LocationSelector } from '../targeting/LocationSelector';
 import { ContentStrategyForm } from '../content/ContentStrategyForm';
+import { MultiChannelSelector } from '../targeting/MultiChannelSelector';
 import { supabase } from '@/lib/supabaseClient';
 import { useState } from 'react';
+import { SocialPlatform } from '@/types/social';
 
 export const CampaignCreationWizard = () => {
   const { toast } = useToast();
   const [activeStep, setActiveStep] = useState('persona');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(['linkedin']);
   const [contentStrategy, setContentStrategy] = useState({
     postTypes: ['image', 'carousel'],
     postingFrequency: 'daily',
@@ -29,7 +32,7 @@ export const CampaignCreationWizard = () => {
         .insert({
           user_id: user.id,
           name: 'Nouvelle Campagne',
-          platform: 'linkedin',
+          platform: selectedPlatforms[0],
           status: 'draft',
           targeting_criteria: {},
           content_strategy: {
@@ -70,8 +73,9 @@ export const CampaignCreationWizard = () => {
       </div>
 
       <Tabs value={activeStep} onValueChange={setActiveStep}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="persona">Persona</TabsTrigger>
+          <TabsTrigger value="social">Réseaux Sociaux</TabsTrigger>
           <TabsTrigger value="location">Localisation</TabsTrigger>
           <TabsTrigger value="content">Contenu</TabsTrigger>
         </TabsList>
@@ -86,6 +90,21 @@ export const CampaignCreationWizard = () => {
                 </p>
               </div>
               <PersonaFilterManager />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="social">
+            <Card className="p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold">Sélection des Réseaux Sociaux</h2>
+                <p className="text-muted-foreground">
+                  Choisissez les plateformes pour votre campagne
+                </p>
+              </div>
+              <MultiChannelSelector 
+                selectedPlatforms={selectedPlatforms}
+                onPlatformsChange={setSelectedPlatforms}
+              />
             </Card>
           </TabsContent>
 
@@ -109,7 +128,7 @@ export const CampaignCreationWizard = () => {
             <Button
               variant="outline"
               onClick={() => {
-                const steps = ['persona', 'location', 'content'];
+                const steps = ['persona', 'social', 'location', 'content'];
                 const currentIndex = steps.indexOf(activeStep);
                 setActiveStep(steps[currentIndex - 1]);
               }}
@@ -124,7 +143,7 @@ export const CampaignCreationWizard = () => {
           ) : (
             <Button
               onClick={() => {
-                const steps = ['persona', 'location', 'content'];
+                const steps = ['persona', 'social', 'location', 'content'];
                 const currentIndex = steps.indexOf(activeStep);
                 setActiveStep(steps[currentIndex + 1]);
               }}
