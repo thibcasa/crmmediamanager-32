@@ -1,23 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
 import { supabase } from '@/lib/supabaseClient';
 import { AIService } from '@/services/AIService';
-import { ProspectCard } from './prospects/ProspectCard';
 import { ProspectTabs } from './prospects/ProspectTabs';
-import { ProspectImportExport } from './prospects/ProspectImportExport';
-import { ProspectForm } from './prospects/ProspectForm';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { UserPlus } from 'lucide-react';
+import { ProspectHeader } from './prospects/ProspectHeader';
+import { ProspectListContent } from './prospects/ProspectListContent';
 
 export const ProspectList = () => {
   const { toast } = useToast();
@@ -111,10 +101,7 @@ export const ProspectList = () => {
       Téléphone: ${prospect.phone || 'Non fourni'}
       Source: ${prospect.source}
       Score: ${prospect.score}
-      Notes: ${prospect.notes || 'Aucune note'}
-
-      Objectif: Générer une stratégie personnalisée pour ce contact en tenant compte de sa qualification (${prospect.qualification}) 
-      et de son historique d'interactions.`;
+      Notes: ${prospect.notes || 'Aucune note'}`;
 
       const strategy = await AIService.generateContent('description', prompt);
       
@@ -181,48 +168,26 @@ export const ProspectList = () => {
 
   return (
     <Card className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
-        <div className="flex gap-4">
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <UserPlus className="w-4 h-4" />
-                Ajouter un contact
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Ajouter un nouveau contact</DialogTitle>
-              </DialogHeader>
-              <ProspectForm onSuccess={handleAddSuccess} onCancel={() => setIsAddDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-          <ProspectImportExport onImportSuccess={loadProspects} />
-        </div>
-      </div>
+      <ProspectHeader
+        isAddDialogOpen={isAddDialogOpen}
+        setIsAddDialogOpen={setIsAddDialogOpen}
+        onAddSuccess={handleAddSuccess}
+        onImportSuccess={loadProspects}
+      />
       
       <ProspectTabs
         prospects={prospects}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       >
-        {isLoading ? (
-          <div>Chargement...</div>
-        ) : (
-          <div className="space-y-4">
-            {filteredProspects.map((prospect) => (
-              <ProspectCard
-                key={prospect.id}
-                prospect={prospect}
-                onScheduleMeeting={handleScheduleMeeting}
-                onGenerateStrategy={generateStrategy}
-                isGeneratingStrategy={isGeneratingStrategy}
-                getQualificationColor={getQualificationColor}
-              />
-            ))}
-          </div>
-        )}
+        <ProspectListContent
+          prospects={filteredProspects}
+          isLoading={isLoading}
+          onScheduleMeeting={handleScheduleMeeting}
+          onGenerateStrategy={generateStrategy}
+          isGeneratingStrategy={isGeneratingStrategy}
+          getQualificationColor={getQualificationColor}
+        />
       </ProspectTabs>
     </Card>
   );
