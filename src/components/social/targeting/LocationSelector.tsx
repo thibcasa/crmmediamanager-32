@@ -1,27 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-interface Location {
-  id: string;
-  city: string;
-  postal_code: string;
-  department: string;
-  region: string;
-}
+import { CitySelect } from './components/CitySelect';
+import { SelectAllCheckbox } from './components/SelectAllCheckbox';
+import { LocationList } from './components/LocationList';
+import { Location } from './types';
 
 interface LocationSelectorProps {
   selectedLocations: string[];
@@ -32,9 +19,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const { toast } = useToast();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string>("");
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -50,7 +35,6 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         if (data) {
           console.log('Locations fetched:', data.length);
           setLocations(data);
-          setSelectedCount(selectedLocations.length);
           setIsAllSelected(data.length > 0 && selectedLocations.length === data.length);
         }
       } catch (error) {
@@ -71,36 +55,30 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const handleSelectAll = () => {
     if (isAllSelected) {
       onLocationChange([]);
-      setSelectedCount(0);
       setIsAllSelected(false);
     } else {
       const allLocationIds = locations.map(loc => loc.id);
       onLocationChange(allLocationIds);
-      setSelectedCount(locations.length);
       setIsAllSelected(true);
     }
   };
 
-  const handleCitySelect = (cityName: string) => {
-    setSelectedCity(cityName);
-    const location = locations.find(loc => loc.city === cityName);
-    if (location) {
-      const isLocationSelected = selectedLocations.includes(location.id);
-      let newLocations: string[];
-      
-      if (isLocationSelected) {
-        // Si la ville est déjà sélectionnée, on la retire
-        newLocations = selectedLocations.filter(id => id !== location.id);
-      } else {
-        // Si la ville n'est pas sélectionnée, on l'ajoute
-        newLocations = [...selectedLocations, location.id];
-      }
-      
-      onLocationChange(newLocations);
-      const newCount = newLocations.length;
-      setSelectedCount(newCount);
-      setIsAllSelected(newCount === locations.length);
-    }
+  const handleCitySelect = (locationId: string) => {
+    const newLocations = selectedLocations.includes(locationId)
+      ? selectedLocations.filter(id => id !== locationId)
+      : [...selectedLocations, locationId];
+    
+    onLocationChange(newLocations);
+    setIsAllSelected(newLocations.length === locations.length);
+  };
+
+  const handleLocationToggle = (locationId: string, checked: boolean) => {
+    const newLocations = checked
+      ? [...selectedLocations, locationId]
+      : selectedLocations.filter(id => id !== locationId);
+    
+    onLocationChange(newLocations);
+    setIsAllSelected(newLocations.length === locations.length);
   };
 
   if (loading) {
@@ -122,7 +100,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
         </div>
         <Badge variant="secondary" className="text-sm">
-          {selectedCount} zone{selectedCount > 1 ? 's' : ''} sélectionnée{selectedCount > 1 ? 's' : ''}
+          {selectedLocations.length} zone{selectedLocations.length > 1 ? 's' : ''} sélectionnée{selectedLocations.length > 1 ? 's' : ''}
         </Badge>
       </div>
       
@@ -131,35 +109,16 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
       </p>
 
       <div className="space-y-4 mb-6">
-        <Select value={selectedCity} onValueChange={handleCitySelect}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Sélectionnez une ville..." />
-          </SelectTrigger>
-          <SelectContent>
-            {locations.map((location) => (
-              <SelectItem 
-                key={location.id} 
-                value={location.city}
-              >
-                {location.city} ({location.postal_code})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CitySelect
+          locations={locations}
+          onCitySelect={handleCitySelect}
+          selectedLocations={selectedLocations}
+        />
         
-        <div className="flex items-center space-x-2 bg-accent/50 p-2 rounded-md">
-          <Checkbox 
-            id="select-all"
-            checked={isAllSelected}
-            onCheckedChange={handleSelectAll}
-          />
-          <label
-            htmlFor="select-all"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            {isAllSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
-          </label>
-        </div>
+        <SelectAllCheckbox
+          isAllSelected={isAllSelected}
+          onSelectAll={handleSelectAll}
+        />
       </div>
 
       {locations.length === 0 ? (
@@ -167,41 +126,11 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           Aucune zone disponible
         </div>
       ) : (
-        <ScrollArea className="h-[400px] rounded-md border p-4">
-          <div className="space-y-2">
-            {locations.map((location) => (
-              <div
-                key={location.id}
-                className="flex items-start space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
-              >
-                <Checkbox
-                  id={location.id}
-                  checked={selectedLocations.includes(location.id)}
-                  onCheckedChange={(checked) => {
-                    const newLocations = checked
-                      ? [...selectedLocations, location.id]
-                      : selectedLocations.filter(id => id !== location.id);
-                    onLocationChange(newLocations);
-                    const newCount = checked ? selectedCount + 1 : selectedCount - 1;
-                    setSelectedCount(newCount);
-                    setIsAllSelected(newCount === locations.length);
-                  }}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor={location.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {location.city}
-                  </label>
-                  <p className="text-sm text-muted-foreground">
-                    {location.postal_code}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+        <LocationList
+          locations={locations}
+          selectedLocations={selectedLocations}
+          onLocationToggle={handleLocationToggle}
+        />
       )}
     </Card>
   );
