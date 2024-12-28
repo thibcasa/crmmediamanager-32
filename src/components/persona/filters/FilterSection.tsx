@@ -2,10 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LucideIcon } from 'lucide-react';
 
 interface FilterSectionProps {
   title: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   filters: Array<{
     id: string;
     label: string;
@@ -17,7 +18,7 @@ interface FilterSectionProps {
 
 export const FilterSection = ({
   title,
-  icon,
+  icon: Icon,
   filters,
   selectedFilters,
   onFilterChange,
@@ -25,7 +26,7 @@ export const FilterSection = ({
   return (
     <Card className="p-4">
       <div className="flex items-center gap-2 mb-4">
-        {icon}
+        <Icon className="w-5 h-5 text-primary" />
         <Label className="text-lg font-medium">{title}</Label>
       </div>
       
