@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,13 +21,13 @@ export interface CampaignData {
     type: 'post' | 'story' | 'reel' | 'article';
     text: string;
   }>;
-  predictions: {
+  predictions?: {
     engagement: number;
     costPerLead: number;
     roi: number;
     estimatedLeads: number;
   };
-  workflow: {
+  workflow?: {
     steps: Array<{
       name: string;
       status: 'pending' | 'completed' | 'in_progress';
@@ -35,7 +35,12 @@ export interface CampaignData {
   };
 }
 
-export const CampaignWorkflowManager = () => {
+interface CampaignWorkflowManagerProps {
+  initialData?: CampaignData;
+  onUpdate?: (updates: Partial<CampaignData>) => void;
+}
+
+export const CampaignWorkflowManager = ({ initialData, onUpdate }: CampaignWorkflowManagerProps) => {
   const { toast } = useToast();
   const [activePhase, setActivePhase] = useState<string>('creatives');
   const [campaignData, setCampaignData] = useState<CampaignData>({
@@ -53,8 +58,20 @@ export const CampaignWorkflowManager = () => {
     }
   });
 
+  // Update campaign data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setCampaignData(prev => ({
+        ...prev,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
+
   const handleCreativesGenerated = async (creatives: CampaignData['creatives']) => {
-    setCampaignData(prev => ({ ...prev, creatives }));
+    const updatedData = { ...campaignData, creatives };
+    setCampaignData(updatedData);
+    onUpdate?.(updatedData);
     toast({
       title: "Créatives générées",
       description: `${creatives.length} créatives ont été générées avec succès.`
@@ -62,7 +79,9 @@ export const CampaignWorkflowManager = () => {
   };
 
   const handleContentGenerated = async (content: CampaignData['content']) => {
-    setCampaignData(prev => ({ ...prev, content }));
+    const updatedData = { ...campaignData, content };
+    setCampaignData(updatedData);
+    onUpdate?.(updatedData);
     toast({
       title: "Contenu généré",
       description: "Le contenu textuel a été généré avec succès."
@@ -70,7 +89,9 @@ export const CampaignWorkflowManager = () => {
   };
 
   const handleTestComplete = async (predictions: CampaignData['predictions']) => {
-    setCampaignData(prev => ({ ...prev, predictions }));
+    const updatedData = { ...campaignData, predictions };
+    setCampaignData(updatedData);
+    onUpdate?.(updatedData);
     
     if (predictions.roi >= 3 && predictions.engagement >= 0.3) {
       toast({

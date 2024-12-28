@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ChatMessages } from '@/components/ai-chat/ChatMessages';
 import { ChatInput } from '@/components/ai-chat/ChatInput';
-import { TestWorkflow } from '@/components/ai-chat/TestWorkflow';
 import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/CampaignWorkflowManager';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -12,10 +11,28 @@ interface Message {
   content: string;
 }
 
+interface CampaignData {
+  objective: string;
+  creatives: Array<{
+    type: 'image' | 'video';
+    url: string;
+    format: string;
+  }>;
+  content: Array<{
+    type: 'post' | 'story' | 'reel' | 'article';
+    text: string;
+  }>;
+}
+
 const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [campaignData, setCampaignData] = useState<CampaignData>({
+    objective: '',
+    creatives: [],
+    content: []
+  });
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,44 +42,76 @@ const AiChat = () => {
     try {
       setIsLoading(true);
       
-      // Ajouter le message de l'utilisateur
+      // Add user message
       const userMessage = { role: 'user' as const, content: input };
       setMessages(prev => [...prev, userMessage]);
       setInput('');
 
-      // Appeler l'API de génération de contenu
-      const { data, error } = await supabase.functions.invoke('content-generator', {
+      // Generate campaign content
+      const { data: campaignResponse, error: campaignError } = await supabase.functions.invoke('content-generator', {
         body: {
           prompt: input,
-          type: 'strategy',
+          type: 'campaign',
           targetAudience: "propriétaires immobiliers Alpes-Maritimes",
           tone: "professionnel et stratégique"
         }
       });
 
-      if (error) throw error;
+      if (campaignError) throw campaignError;
 
-      // Ajouter la réponse de l'assistant
+      // Generate creative visuals
+      const { data: creativesData, error: creativesError } = await supabase.functions.invoke('openai-image-generation', {
+        body: {
+          prompt: `Professional real estate marketing visual for: ${input}`,
+          n: 2,
+          size: "1024x1024",
+          quality: "standard",
+          style: "natural"
+        }
+      });
+
+      if (creativesError) throw creativesError;
+
+      // Update campaign data
+      setCampaignData({
+        objective: input,
+        creatives: creativesData.images.map((url: string) => ({
+          type: 'image',
+          url,
+          format: 'linkedin'
+        })),
+        content: [
+          {
+            type: 'post',
+            text: campaignResponse.content
+          }
+        ]
+      });
+
+      // Add assistant response
       const assistantMessage = {
         role: 'assistant' as const,
-        content: data?.content || "Je n'ai pas pu générer de réponse. Veuillez réessayer."
+        content: `J'ai généré une campagne basée sur votre demande. Vous pouvez voir les créatives et le contenu dans le panneau de droite. Voici un résumé de la stratégie proposée :\n\n${campaignResponse.content}`
       };
       
       setMessages(prev => [...prev, assistantMessage]);
+
+      toast({
+        title: "Campagne générée",
+        description: "Les créatives et le contenu ont été générés avec succès.",
+      });
+
     } catch (error) {
-      console.error('Error generating content:', error);
+      console.error('Error generating campaign:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer la réponse. Veuillez réessayer.",
+        description: "Impossible de générer la campagne. Veuillez réessayer.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Obtenir le dernier message de l'utilisateur pour le test
-  const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
 
   return (
     <div className="space-y-6">
@@ -85,7 +134,10 @@ const AiChat = () => {
         </Card>
 
         <div className="space-y-6">
-          <CampaignWorkflowManager />
+          <CampaignWorkflowManager 
+            initialData={campaignData}
+            onUpdate={(updates) => setCampaignData(prev => ({ ...prev, ...updates }))}
+          />
         </div>
       </div>
     </div>
