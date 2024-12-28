@@ -11,6 +11,13 @@ import { useState } from 'react';
 export const CampaignCreationWizard = () => {
   const { toast } = useToast();
   const [activeStep, setActiveStep] = useState('persona');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [contentStrategy, setContentStrategy] = useState({
+    postTypes: ['image', 'carousel'],
+    postingFrequency: 'daily',
+    bestTimes: ['09:00', '12:00', '17:00'],
+    contentThemes: ['property_showcase']
+  });
 
   const handleSaveCampaign = async () => {
     try {
@@ -26,11 +33,12 @@ export const CampaignCreationWizard = () => {
           status: 'draft',
           targeting_criteria: {},
           content_strategy: {
-            posting_frequency: 'daily',
-            best_times: ['09:00', '12:00', '17:00'],
-            post_types: ['image', 'carousel', 'video', 'story'],
-            content_themes: ['property_showcase', 'market_insights', 'testimonials']
-          }
+            posting_frequency: contentStrategy.postingFrequency,
+            best_times: contentStrategy.bestTimes,
+            post_types: contentStrategy.postTypes,
+            content_themes: contentStrategy.contentThemes
+          },
+          target_locations: selectedLocations
         })
         .select()
         .single();
@@ -82,11 +90,17 @@ export const CampaignCreationWizard = () => {
           </TabsContent>
 
           <TabsContent value="location">
-            <LocationSelector />
+            <LocationSelector 
+              selectedLocations={selectedLocations}
+              onLocationChange={setSelectedLocations}
+            />
           </TabsContent>
 
           <TabsContent value="content">
-            <ContentStrategyForm />
+            <ContentStrategyForm 
+              initialStrategy={contentStrategy}
+              onChange={setContentStrategy}
+            />
           </TabsContent>
         </div>
 
