@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SocialApiSettings } from "@/components/settings/SocialApiSettings";
+import { EmailApiSettings } from "@/components/settings/EmailApiSettings";
 
 const ApiSettings = () => {
   return (
@@ -25,9 +26,7 @@ const ApiSettings = () => {
           </TabsContent>
 
           <TabsContent value="email" className="mt-6">
-            <div className="text-center py-8 text-gray-500">
-              Configuration des services d'email marketing à venir
-            </div>
+            <EmailApiSettings />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
