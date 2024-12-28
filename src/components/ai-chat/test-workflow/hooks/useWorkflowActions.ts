@@ -33,6 +33,7 @@ export const useWorkflowActions = (
     }
 
     setState(prev => ({ ...prev, isAnalyzing: true, validationErrors: [] }));
+    console.log("Démarrage de l'analyse...");
     
     try {
       // Phase 1: Analyse du contenu
@@ -90,7 +91,12 @@ export const useWorkflowActions = (
         iterationCount: prev.iterationCount + 1,
         testStatus: 'success',
         readyForProduction: isReadyForProduction,
-        activePhase: 'correction'
+        activePhase: 'correction',
+        validationErrors: [
+          "Optimisez le ton pour le marché immobilier premium",
+          "Ajoutez plus de références aux quartiers prisés",
+          "Renforcez la proposition de valeur"
+        ]
       }));
 
       if (results.iterationMetrics.improvementRate > 0) {

@@ -11,14 +11,15 @@ serve(async (req) => {
   }
 
   try {
-    const { message, iterationCount = 1 } = await req.json()
+    const { message, iterationCount = 1, previousResults } = await req.json()
     console.log('Analyzing campaign message:', message, 'Iteration:', iterationCount)
 
     // Simulate improvement based on iteration count
     const iterationMultiplier = 1 + (iterationCount * 0.15)
+    const baseEngagement = previousResults ? previousResults.engagement : 0.5
 
     const analysis = {
-      engagement: Math.min(0.85 * iterationMultiplier, 1),
+      engagement: Math.min((baseEngagement + 0.1) * iterationMultiplier, 1),
       clickRate: Math.min(0.125 * iterationMultiplier, 0.25),
       conversionRate: Math.min(0.032 * iterationMultiplier, 0.08),
       cpa: Math.max(15 / iterationMultiplier, 8),
