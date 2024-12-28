@@ -1,25 +1,18 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Image, 
-  Mail, 
-  Users, 
-  Workflow as WorkflowIcon,
-  BarChart3,
-  MessageSquare,
-  FileText,
-  Target,
-  Settings,
+  Brain, 
   Building2,
-  Brain
-} from "lucide-react";
-import { ContentGenerator } from "@/components/content/ContentGenerator";
-import { EmailCampaign } from "@/components/EmailCampaign";
-import { WorkflowSteps } from "@/components/workflow/WorkflowSteps";
-import { SocialCampaigns } from "@/components/SocialCampaigns";
+  BarChart3,
+} from 'lucide-react';
 import { AIGuidedCampaignWorkflow } from "@/components/social/AIGuidedCampaignWorkflow";
+import { TrendAnalyzer } from "@/components/analytics/TrendAnalyzer";
+import { PredictiveAnalysis } from "@/components/analytics/PredictiveAnalysis";
+import { useState } from "react";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("ai-prediction");
+
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -32,7 +25,7 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <Card className="p-4">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("ai-prediction")}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Brain className="w-6 h-6 text-primary" />
@@ -44,7 +37,7 @@ const Index = () => {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("properties")}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Building2 className="w-6 h-6 text-primary" />
@@ -56,7 +49,7 @@ const Index = () => {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setActiveTab("analytics")}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <BarChart3 className="w-6 h-6 text-primary" />
@@ -69,112 +62,43 @@ const Index = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="ai-campaign" className="space-y-6">
-        <TabsList className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <TabsTrigger value="ai-campaign" className="flex items-center gap-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="ai-prediction" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            <span>Campagne IA</span>
+            IA & Prédiction
           </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
-            <span>Création Contenu</span>
+          <TabsTrigger value="properties" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Propriétés
           </TabsTrigger>
-          <TabsTrigger value="social" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span>Campagnes Social</span>
-          </TabsTrigger>
-          <TabsTrigger value="email" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            <span>Campagnes Email</span>
-          </TabsTrigger>
-          <TabsTrigger value="workflow" className="flex items-center gap-2">
-            <WorkflowIcon className="h-4 w-4" />
-            <span>Workflow</span>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ai-campaign">
-          <AIGuidedCampaignWorkflow />
-        </TabsContent>
-
-        <TabsContent value="content">
+        <TabsContent value="ai-prediction">
           <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <h2 className="text-2xl font-semibold">Générateur de Contenu</h2>
-                  <p className="text-muted-foreground mt-1">
-                    Créez du contenu optimisé pour vos réseaux sociaux
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Target className="h-5 w-5 text-muted-foreground" />
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </div>
-              <ContentGenerator />
-            </div>
+            <AIGuidedCampaignWorkflow />
           </Card>
         </TabsContent>
 
-        <TabsContent value="social">
+        <TabsContent value="properties">
           <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
-                  <p className="text-muted-foreground mt-1">
-                    Gérez vos campagnes sur les réseaux sociaux
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <BarChart3 className="h-5 w-5 text-muted-foreground" />
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </div>
-              <SocialCampaigns />
-            </div>
+            <h2 className="text-2xl font-semibold mb-4">Gestion des Propriétés</h2>
+            <p className="text-muted-foreground">
+              Liste et détails des biens immobiliers dans votre portefeuille
+            </p>
+            {/* Nous pouvons ajouter ici la liste des propriétés une fois que le composant sera créé */}
           </Card>
         </TabsContent>
 
-        <TabsContent value="email">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <h2 className="text-2xl font-semibold">Campagnes Email</h2>
-                  <p className="text-muted-foreground mt-1">
-                    Créez et gérez vos campagnes email
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </div>
-              <EmailCampaign />
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="workflow">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="flex justify-between items-center border-b pb-4">
-                <div>
-                  <h2 className="text-2xl font-semibold">Workflow Automation</h2>
-                  <p className="text-muted-foreground mt-1">
-                    Automatisez vos processus de prospection
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </div>
-              <WorkflowSteps />
-            </div>
-          </Card>
+        <TabsContent value="analytics">
+          <div className="space-y-6">
+            <TrendAnalyzer />
+            <PredictiveAnalysis campaignId="default" />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
