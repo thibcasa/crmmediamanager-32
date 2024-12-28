@@ -5,6 +5,18 @@ import { useState } from "react";
 import Papa from "papaparse";
 import { ProspectService } from "@/services/ProspectService";
 
+interface CSVProspectData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  source: string;
+  status: string;
+  score: string;
+  qualification: string;
+  notes?: string;
+}
+
 export const ProspectImportExport = () => {
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
@@ -16,7 +28,7 @@ export const ProspectImportExport = () => {
 
     setIsImporting(true);
     try {
-      Papa.parse(file, {
+      Papa.parse<CSVProspectData>(file, {
         header: true,
         complete: async (results) => {
           try {
