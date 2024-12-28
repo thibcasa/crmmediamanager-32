@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { CampaignData } from '../types/campaign';
@@ -17,6 +17,7 @@ export const ContentGenerator = ({ onContentGenerated, existingContent }: Conten
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [contentType, setContentType] = useState<'post' | 'story' | 'reel' | 'article'>('post');
+  const [platform, setPlatform] = useState('linkedin');
   const [objective, setObjective] = useState('');
 
   const generateContent = async () => {
@@ -35,7 +36,7 @@ export const ContentGenerator = ({ onContentGenerated, existingContent }: Conten
         body: {
           type: 'social',
           prompt: objective,
-          platform: 'linkedin',
+          platform,
           contentType,
           targetAudience: "propriétaires immobiliers Alpes-Maritimes",
           tone: "professionnel et confiant"
@@ -77,12 +78,25 @@ export const ContentGenerator = ({ onContentGenerated, existingContent }: Conten
       </div>
 
       <div className="space-y-4">
+        <Select value={platform} onValueChange={(value: any) => setPlatform(value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Choisir une plateforme" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="linkedin">LinkedIn</SelectItem>
+            <SelectItem value="facebook">Facebook</SelectItem>
+            <SelectItem value="instagram">Instagram</SelectItem>
+            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+            <SelectItem value="tiktok">TikTok</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Select value={contentType} onValueChange={(value: any) => setContentType(value)}>
           <SelectTrigger>
             <SelectValue placeholder="Choisir un type de contenu" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="post">Post LinkedIn</SelectItem>
+            <SelectItem value="post">Publication</SelectItem>
             <SelectItem value="story">Story</SelectItem>
             <SelectItem value="reel">Reel</SelectItem>
             <SelectItem value="article">Article</SelectItem>
