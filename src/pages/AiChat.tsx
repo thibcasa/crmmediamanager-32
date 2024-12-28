@@ -36,49 +36,60 @@ const AiChat = () => {
   });
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Erreur de vérification de session:', error);
+          console.error("Erreur de session:", error);
           throw error;
         }
         
         if (!session) {
-          console.log('Pas de session active, redirection vers login');
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter",
-            variant: "destructive",
-          });
-          navigate('/login');
+          console.log("Pas de session active");
+          if (mounted) {
+            toast({
+              title: "Session expirée",
+              description: "Veuillez vous reconnecter",
+              variant: "destructive",
+            });
+            navigate('/login');
+          }
           return;
         }
 
-        console.log('Session active:', session.user.id);
+        console.log("Session active:", session.user.id);
       } catch (error) {
-        console.error('Erreur lors de la vérification de l\'authentification:', error);
-        toast({
-          title: "Erreur de connexion",
-          description: "Une erreur est survenue, veuillez réessayer",
-          variant: "destructive",
-        });
-        navigate('/login');
+        console.error("Erreur lors de la vérification de l'authentification:", error);
+        if (mounted) {
+          toast({
+            title: "Erreur de connexion",
+            description: "Une erreur est survenue, veuillez réessayer",
+            variant: "destructive",
+          });
+          navigate('/login');
+        }
       } finally {
-        setIsAuthChecking(false);
+        if (mounted) {
+          setIsAuthChecking(false);
+        }
       }
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      if (!session && mounted) {
         navigate('/login');
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,12 +99,10 @@ const AiChat = () => {
     try {
       setIsLoading(true);
       
-      // Ajouter le message de l'utilisateur
       const userMessage = { role: 'user' as const, content: input };
       setMessages(prev => [...prev, userMessage]);
       setInput('');
 
-      // Simuler une réponse de l'assistant (à remplacer par votre logique réelle)
       const assistantMessage = {
         role: 'assistant' as const,
         content: `J'ai bien reçu votre message : "${input}". Je vais traiter votre demande.`

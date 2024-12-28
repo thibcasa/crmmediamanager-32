@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,20 +11,23 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Erreur d\'authentification:', error);
           throw error;
         }
         
-        if (!user) {
+        if (!session) {
+          console.log('Pas de session active, redirection vers login');
           toast({
-            title: "Accès refusé",
+            title: "Session expirée",
             description: "Veuillez vous connecter pour accéder à cette page",
             variant: "destructive",
           });
@@ -31,13 +35,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           return;
         }
 
-        // Vérifier si la session est toujours valide
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-          console.error('Session invalide:', sessionError);
-          throw sessionError || new Error('Session invalide');
-        }
-
+        console.log('Session active:', session.user.id);
+        setIsAuthenticated(true);
       } catch (error) {
         console.error('Erreur lors de la vérification de l\'authentification:', error);
         toast({
@@ -46,21 +45,37 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           variant: "destructive",
         });
         navigate('/login');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
 
-    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Changement d\'état d\'authentification:', event, session);
       if (event === 'SIGNED_OUT' || !session) {
+        setIsAuthenticated(false);
         navigate('/login');
+      } else {
+        setIsAuthenticated(true);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return <>{children}</>;
 };
