@@ -1,5 +1,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
+import { Loader2, Copy, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -12,6 +15,27 @@ interface ChatMessagesProps {
 }
 
 export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
+  const { toast } = useToast();
+  const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
+
+  const handleCopy = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageIndex(index);
+      toast({
+        title: "Copié !",
+        description: "Le contenu a été copié dans le presse-papiers",
+      });
+      setTimeout(() => setCopiedMessageIndex(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de copier le contenu",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <ScrollArea className="flex-1 p-6">
       <div className="space-y-6">
@@ -25,7 +49,7 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-4 shadow-sm ${
+              className={`max-w-[80%] rounded-lg p-4 shadow-sm relative group ${
                 message.role === 'assistant'
                   ? 'bg-sage-50 border border-sage-200'
                   : 'bg-white border border-sage-200'
@@ -39,6 +63,21 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
                   <p key={i} className="mb-2 last:mb-0 text-sage-800">{line}</p>
                 ))}
               </div>
+              
+              {message.role === 'assistant' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleCopy(message.content, index)}
+                >
+                  {copiedMessageIndex === index ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-sage-600" />
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         ))}
