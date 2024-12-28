@@ -1,109 +1,117 @@
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { TestStep } from "./TestStep";
-import { PredictionStep } from "./PredictionStep";
-import { CorrectionStep } from "./CorrectionStep";
-import { ProductionStep } from "./ProductionStep";
-import { useWorkflowState } from "./hooks/useWorkflowState";
-import { useWorkflowActions } from "./hooks/useWorkflowActions";
-import { CampaignOverview } from "../campaign-workflow/CampaignOverview";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Brain, Wrench, TestTube, Rocket } from 'lucide-react';
+import { useWorkflowState } from './hooks/useWorkflowState';
+import { PredictionStep } from './PredictionStep';
+import { CorrectionStep } from './CorrectionStep';
+import { TestStep } from './TestStep';
+import { ProductionStep } from './ProductionStep';
+import { useToast } from "@/components/ui/use-toast";
 
-export const TestWorkflow = ({ messageToTest }: { messageToTest?: string }) => {
+interface TestWorkflowProps {
+  messageToTest?: string;
+}
+
+export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { toast } = useToast();
   const { state, actions } = useWorkflowState(messageToTest);
-  const [activeTab, setActiveTab] = useState("overview");
-
-  const handlePrediction = async () => {
-    try {
-      await actions.handlePrediction();
-      toast({
-        title: "Analyse prédictive terminée",
-        description: "Les résultats sont disponibles"
-      });
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer la prédiction",
-        variant: "destructive"
-      });
-    }
-  };
+  const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
 
   const handleRecommendationClick = (recommendation: string) => {
     if (messageToTest) {
+      // Append the recommendation to the original message
       const updatedMessage = `${messageToTest}\n\nAméliorations appliquées:\n- ${recommendation}`;
       actions.setMessageToTest(updatedMessage);
+      
+      // Automatically trigger a new prediction
+      actions.handlePrediction();
+      
       toast({
-        title: "Prompt mis à jour",
-        description: "Le message a été modifié selon la recommandation"
+        title: "Recommandation appliquée",
+        description: "Une nouvelle analyse va être lancée avec cette amélioration.",
       });
-      // Lancer automatiquement une nouvelle prédiction
-      handlePrediction();
     }
   };
 
   return (
-    <div className="space-y-8">
-      <CampaignOverview
-        creatives={state.creatives || []}
-        content={state.content || []}
-        onPredictionClick={handlePrediction}
-        onRecommendationClick={handleRecommendationClick}
-        recommendations={[
-          ...(state.currentTestResults.recommendations || []),
-          ...(state.currentTestResults.risks || []),
-          ...(state.currentTestResults.opportunities || [])
-        ]}
-      />
+    <Card className="p-6">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Test & Validation</h3>
+          <div className="text-sm text-muted-foreground">
+            Itération {state.iterationCount}
+          </div>
+        </div>
 
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Aperçu</TabsTrigger>
-          <TabsTrigger value="prediction">Prédiction</TabsTrigger>
-          <TabsTrigger value="correction">Correction</TabsTrigger>
-          <TabsTrigger value="production">Production</TabsTrigger>
-        </TabsList>
+        <Tabs 
+          value={state.activePhase} 
+          onValueChange={(value: any) => actions.setActivePhase(value)} 
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="prediction" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              Prédiction
+            </TabsTrigger>
+            <TabsTrigger value="correction" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              Correction
+            </TabsTrigger>
+            <TabsTrigger value="test" className="flex items-center gap-2">
+              <TestTube className="h-4 w-4" />
+              Test
+            </TabsTrigger>
+            <TabsTrigger 
+              value="production" 
+              className="flex items-center gap-2"
+              disabled={!canProceedToProduction}
+            >
+              <Rocket className="h-4 w-4" />
+              Production
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="overview">
-          <TestStep
-            isAnalyzing={state.isAnalyzing}
-            onTest={actions.handleTest}
-            testResults={state.currentTestResults}
-            previousResults={state.testHistory[state.testHistory.length - 2]}
-            iterationCount={state.iterationCount}
-          />
-        </TabsContent>
+          <TabsContent value="prediction">
+            <PredictionStep
+              isAnalyzing={state.isAnalyzing}
+              progress={state.progress}
+              testResults={state.currentTestResults}
+              onAnalyze={actions.handleTest}
+              messageToTest={messageToTest}
+              iterationCount={state.iterationCount}
+            />
+          </TabsContent>
 
-        <TabsContent value="prediction">
-          <PredictionStep
-            isAnalyzing={state.isAnalyzing}
-            progress={state.progress}
-            testResults={state.currentTestResults}
-            onAnalyze={handlePrediction}
-            messageToTest={messageToTest}
-            iterationCount={state.iterationCount}
-          />
-        </TabsContent>
+          <TabsContent value="correction">
+            <CorrectionStep
+              validationErrors={state.validationErrors}
+              onApplyCorrections={actions.handleCorrection}
+              testResults={state.currentTestResults}
+              previousResults={state.testHistory[state.testHistory.length - 2]}
+              onRecommendationClick={handleRecommendationClick}
+            />
+          </TabsContent>
 
-        <TabsContent value="correction">
-          <CorrectionStep
-            validationErrors={state.validationErrors}
-            onApplyCorrections={actions.handleCorrection}
-            testResults={state.currentTestResults}
-            onRecommendationClick={handleRecommendationClick}
-          />
-        </TabsContent>
+          <TabsContent value="test">
+            <TestStep
+              isAnalyzing={state.isAnalyzing}
+              onTest={actions.handleTest}
+              testResults={state.currentTestResults}
+              previousResults={state.testHistory[state.testHistory.length - 2]}
+              iterationCount={state.iterationCount}
+            />
+          </TabsContent>
 
-        <TabsContent value="production">
-          <ProductionStep
-            onDeploy={actions.handleProduction}
-            testResults={state.currentTestResults}
-            iterationHistory={state.testHistory}
-            canProceed={state.readyForProduction}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="production">
+            <ProductionStep
+              onDeploy={actions.handleProduction}
+              testResults={state.currentTestResults}
+              iterationHistory={state.testHistory}
+              canProceed={canProceedToProduction}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Card>
   );
 };
