@@ -13,6 +13,7 @@ import Calendar from "./pages/Calendar";
 import Campaigns from "./pages/Campaigns";
 import Analytics from "./pages/Analytics";
 import ApiSettings from "./pages/ApiSettings";
+import Meetings from "./pages/Meetings";
 import { AppLayout } from "./components/layout/AppLayout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -25,7 +26,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Wrapper pour ajouter le monitoring à chaque page
 const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string) => {
   const MonitoredComponent = () => (
     <MonitoringProvider
@@ -67,6 +67,7 @@ function App() {
               <Route path="campaigns" element={withMonitoring(Campaigns, 'Campaigns')()} />
               <Route path="analytics" element={withMonitoring(Analytics, 'Analytics')()} />
               <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')()} />
+              <Route path="meetings" element={withMonitoring(Meetings, 'Meetings')()} />
             </Route>
           </Routes>
           <Toaster />
