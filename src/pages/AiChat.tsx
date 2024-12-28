@@ -1,13 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChatMessages } from '@/components/ai-chat/ChatMessages';
-import { ChatInput } from '@/components/ai-chat/ChatInput';
-import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/CampaignWorkflowManager';
-import { Card } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabaseClient';
-import { Loader2 } from 'lucide-react';
-import { useMonitoring } from '@/monitoring/hooks/useMonitoring';
+import { useState } from "react";
+import { useMonitoring } from "@/monitoring/hooks/useMonitoring";
+import { ChatMessages } from "@/components/ai-chat/ChatMessages";
+import { ChatInput } from "@/components/ai-chat/ChatInput";
+import { useChat } from "@/hooks/use-chat";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -15,168 +10,47 @@ interface Message {
 }
 
 const AiChat = () => {
-  const { trackEvent, trackError } = useMonitoring({ 
+  const { trackError, trackEvent } = useMonitoring({
     componentName: 'AiChat',
-    enablePerformance: true,
-    enableErrorTracking: true
+    enableAutoCorrect: true
   });
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [campaignData, setCampaignData] = useState({
-    objective: '',
-    creatives: [],
-    content: [],
-    predictions: {
-      engagement: 0,
-      costPerLead: 0,
-      roi: 0,
-      estimatedLeads: 0
-    },
-    workflow: {
-      steps: []
-    }
-  });
+  const { sendMessage, isLoading } = useChat();
 
-  useEffect(() => {
-    let mounted = true;
-
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Erreur de session:", error);
-          trackError(error);
-          throw error;
-        }
-        
-        if (!session) {
-          console.log("Pas de session active");
-          if (mounted) {
-            toast({
-              title: "Session expirée",
-              description: "Veuillez vous reconnecter",
-              variant: "destructive",
-            });
-            navigate('/login');
-          }
-          return;
-        }
-
-        trackEvent('session_validated', { userId: session.user.id });
-        console.log("Session active:", session.user.id);
-      } catch (error) {
-        console.error("Erreur lors de la vérification de l'authentification:", error);
-        if (error instanceof Error) {
-          trackError(error);
-        }
-        if (mounted) {
-          toast({
-            title: "Erreur de connexion",
-            description: "Une erreur est survenue, veuillez réessayer",
-            variant: "destructive",
-          });
-          navigate('/login');
-        }
-      } finally {
-        if (mounted) {
-          setIsAuthChecking(false);
-        }
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && mounted) {
-        navigate('/login');
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast, trackEvent, trackError]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
+  const handleSendMessage = async (content: string) => {
     try {
-      setIsLoading(true);
-      trackEvent('message_sent', { messageLength: input.length });
+      trackEvent('message_sent', { content_length: content.length });
       
-      const userMessage = { role: 'user' as const, content: input };
+      const userMessage: Message = { role: 'user', content };
       setMessages(prev => [...prev, userMessage]);
-      setInput('');
 
-      const assistantMessage = {
-        role: 'assistant' as const,
-        content: `J'ai bien reçu votre message : "${input}". Je vais traiter votre demande.`
+      const response = await sendMessage(content);
+      
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: response.message
       };
       
       setMessages(prev => [...prev, assistantMessage]);
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été traité avec succès.",
-      });
-
+      trackEvent('message_received', { response_length: response.message.length });
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
-      if (error instanceof Error) {
-        trackError(error);
-      }
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter votre message. Veuillez réessayer.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      await handleError(error as Error);
     }
   };
 
-  if (isAuthChecking) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
-      </div>
-    );
-  }
+  const handleError = async (error: Error) => {
+    await trackError(error, {
+      context: 'ai_chat_page',
+      severity: 'high'
+    });
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold tracking-tight">Assistant IA</h1>
-        <p className="text-muted-foreground mt-2">
-          Générez et optimisez vos campagnes marketing pour l'immobilier
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="flex flex-col h-[600px]">
-          <ChatMessages messages={messages} isLoading={isLoading} />
-          <ChatInput 
-            input={input}
-            isLoading={isLoading}
-            onInputChange={(value) => setInput(value)}
-            onSubmit={handleSubmit}
-          />
-        </Card>
-
-        <div className="space-y-6">
-          <CampaignWorkflowManager 
-            initialData={campaignData}
-            onUpdate={(updates) => setCampaignData(prev => ({ ...prev, ...updates }))}
-          />
-        </div>
+    <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
+        <ChatMessages messages={messages} isLoading={isLoading} />
+        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
       </div>
     </div>
   );

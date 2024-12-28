@@ -1,16 +1,19 @@
 import { useEffect } from 'react';
 import * as Sentry from "@sentry/react";
+import { autoCorrectService } from '../services/AutoCorrectService';
 
 interface MonitoringOptions {
   componentName: string;
   enablePerformance?: boolean;
   enableErrorTracking?: boolean;
+  enableAutoCorrect?: boolean;
 }
 
 export const useMonitoring = ({ 
   componentName, 
   enablePerformance = true, 
-  enableErrorTracking = true 
+  enableErrorTracking = true,
+  enableAutoCorrect = true
 }: MonitoringOptions) => {
   useEffect(() => {
     const startTime = performance.now();
@@ -19,13 +22,16 @@ export const useMonitoring = ({
     return () => {
       const duration = performance.now() - startTime;
       console.log(`[Monitoring] ${componentName} unmounted after ${Math.round(duration)}ms`);
+      
+      if (enablePerformance && enableAutoCorrect) {
+        autoCorrectService.handlePerformanceIssue(componentName, duration);
+      }
     };
-  }, [componentName]);
+  }, [componentName, enablePerformance, enableAutoCorrect]);
 
   const trackEvent = (eventName: string, data?: Record<string, any>) => {
     console.log(`[Monitoring] Event in ${componentName}:`, eventName, data);
     
-    // Send to Sentry
     Sentry.addBreadcrumb({
       category: 'user-action',
       message: eventName,
@@ -34,7 +40,7 @@ export const useMonitoring = ({
     });
   };
 
-  const trackError = (error: Error, context?: Record<string, any>) => {
+  const trackError = async (error: Error, context?: Record<string, any>) => {
     console.error(`[Monitoring] Error in ${componentName}:`, error);
     
     if (enableErrorTracking) {
@@ -45,6 +51,14 @@ export const useMonitoring = ({
         }
         Sentry.captureException(error);
       });
+
+      if (enableAutoCorrect) {
+        const corrected = await autoCorrectService.handleComponentError(error, componentName);
+        if (!corrected) {
+          // Si la correction automatique échoue, on notifie Sentry
+          Sentry.captureMessage(`Auto-correction failed for ${componentName}`, 'error');
+        }
+      }
     }
   };
 
