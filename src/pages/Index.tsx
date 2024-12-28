@@ -22,11 +22,11 @@ const Index = () => {
   return (
     <AppLayout>
       <div className="space-y-8">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">
             Tableau de bord CRM Immobilier
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-xl text-muted-foreground">
             Gérez vos stratégies de prospection et optimisez vos conversions
           </p>
         </div>
@@ -51,15 +51,19 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="content">
+          <TabsContent value="content" className="animate-fadeIn">
             <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h2 className="text-2xl font-semibold">Générateur de Contenu</h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                       Créez du contenu optimisé pour vos réseaux sociaux
                     </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Target className="h-5 w-5 text-muted-foreground" />
+                    <Settings className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 <ContentGenerator />
@@ -67,15 +71,19 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="social">
+          <TabsContent value="social" className="animate-fadeIn">
             <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                       Gérez vos campagnes sur les réseaux sociaux
                     </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                    <Settings className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 <SocialCampaigns />
@@ -83,15 +91,19 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="email">
+          <TabsContent value="email" className="animate-fadeIn">
             <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h2 className="text-2xl font-semibold">Campagnes Email</h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                       Créez et gérez vos campagnes email
                     </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <Settings className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 <EmailCampaign />
@@ -99,15 +111,19 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="workflow">
+          <TabsContent value="workflow" className="animate-fadeIn">
             <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h2 className="text-2xl font-semibold">Workflow Automation</h2>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mt-1">
                       Automatisez vos processus de prospection
                     </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <Settings className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </div>
                 <WorkflowSteps />
