@@ -19,6 +19,8 @@ interface ProspectFormProps {
   onCancel?: () => void;
 }
 
+type Qualification = 'lead' | 'prospect' | 'client';
+
 export const ProspectForm = ({ onSuccess, onCancel }: ProspectFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +32,7 @@ export const ProspectForm = ({ onSuccess, onCancel }: ProspectFormProps) => {
     source: 'direct' as LeadSource,
     status: 'cold' as LeadStatus,
     notes: '',
-    qualification: 'lead',
+    qualification: 'lead' as Qualification,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
