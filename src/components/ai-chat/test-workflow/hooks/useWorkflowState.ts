@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { WorkflowState, TestResults } from '../types/test-results';
 import { useWorkflowActions } from './useWorkflowActions';
+import { toast } from '@/components/ui/use-toast';
 
 const initialTestResults: TestResults = {
   engagement: 0,
@@ -35,6 +36,11 @@ const initialTestResults: TestResults = {
     workflow: {
       steps: []
     }
+  },
+  iterationMetrics: {
+    improvementRate: 0,
+    previousResults: null,
+    iterationCount: 0
   }
 };
 
@@ -47,10 +53,22 @@ export const useWorkflowState = (messageToTest?: string) => {
     validationErrors: [],
     iterationCount: 0,
     testHistory: [],
-    currentTestResults: initialTestResults
+    currentTestResults: initialTestResults,
+    readyForProduction: false
   });
 
-  const actions = useWorkflowActions(setState, state, messageToTest);
+  const checkProductionReadiness = (results: TestResults) => {
+    const isReady = results.roi >= 3 && results.engagement >= 0.3;
+    if (isReady && !state.readyForProduction) {
+      toast({
+        title: "Campagne prête pour la production !",
+        description: "Les métriques ont atteint les seuils requis pour le déploiement.",
+      });
+    }
+    return isReady;
+  };
+
+  const actions = useWorkflowActions(setState, state, messageToTest, checkProductionReadiness);
 
   return {
     state,

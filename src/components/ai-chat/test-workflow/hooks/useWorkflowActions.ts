@@ -6,12 +6,20 @@ import { TestResults, WorkflowPhase } from '../types/test-results';
 export const useWorkflowActions = (
   setState: React.Dispatch<React.SetStateAction<any>>,
   state: any,
-  messageToTest?: string
+  messageToTest?: string,
+  checkProductionReadiness?: (results: TestResults) => boolean
 ) => {
   const { toast } = useToast();
 
   const updateProgress = (phase: number) => {
     setState(prev => ({ ...prev, progress: phase * 25 }));
+  };
+
+  const calculateImprovement = (current: TestResults, previous: TestResults) => {
+    if (!previous) return 0;
+    const engagementImprovement = (current.engagement - previous.engagement) / previous.engagement;
+    const roiImprovement = (current.roi - previous.roi) / previous.roi;
+    return ((engagementImprovement + roiImprovement) / 2) * 100;
   };
 
   const handleTest = async () => {
@@ -32,7 +40,11 @@ export const useWorkflowActions = (
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
         'campaign-analyzer',
         {
-          body: { message: messageToTest }
+          body: { 
+            message: messageToTest,
+            iterationCount: state.iterationCount,
+            previousResults: state.testHistory[state.testHistory.length - 1]
+          }
         }
       );
 
@@ -42,79 +54,34 @@ export const useWorkflowActions = (
 
       const iterationMultiplier = 1 + (state.iterationCount * 0.15);
       const results: TestResults = {
-        engagement: Math.min(0.85 * iterationMultiplier, 1),
-        clickRate: Math.min(0.125 * iterationMultiplier, 0.3),
-        conversionRate: Math.min(0.032 * iterationMultiplier, 0.1),
-        cpa: Math.max(15 / iterationMultiplier, 8),
-        roi: Math.min(2.5 * iterationMultiplier, 5),
-        recommendations: [
-          "Optimisez le ciblage géographique",
-          "Précisez le type de bien immobilier",
-          "Ajoutez des témoignages clients"
-        ],
-        risks: [
-          "Coût par acquisition à surveiller",
-          "Ciblage à affiner"
-        ],
-        opportunities: [
-          "Fort potentiel d'engagement",
-          "Zone géographique attractive"
-        ],
-        audienceInsights: {
-          segments: [
-            { name: "Propriétaires 45-65 ans", score: 0.85, potential: 0.92 },
-            { name: "Investisseurs", score: 0.75, potential: 0.88 },
-            { name: "Résidents locaux", score: 0.65, potential: 0.78 }
-          ],
-          demographics: {
-            age: ["45-54", "55-65"],
-            location: ["Nice", "Cannes", "Antibes"],
-            interests: ["Immobilier", "Investissement", "Luxe"]
-          }
-        },
-        predictedMetrics: {
-          leadsPerWeek: 12,
-          costPerLead: 45,
-          totalBudget: 2000,
-          revenueProjection: 15000
-        },
-        campaignDetails: {
-          creatives: [
-            { type: "image", content: "Vue mer panoramique", performance: 0.88 },
-            { type: "video", content: "Visite virtuelle", performance: 0.92 },
-            { type: "text", content: "Description détaillée", performance: 0.75 }
-          ],
-          content: {
-            messages: [
-              "Valorisez votre bien immobilier sur la Côte d'Azur",
-              "Expertise locale pour une vente optimale"
-            ],
-            headlines: [
-              "Estimation gratuite de votre propriété",
-              "Vendez au meilleur prix"
-            ],
-            callsToAction: [
-              "Demandez une estimation",
-              "Contactez un expert"
-            ]
-          },
-          workflow: {
-            steps: [
-              { name: "Analyse du marché", status: "completed" },
-              { name: "Création des visuels", status: "in_progress" },
-              { name: "Lancement campagne", status: "pending" }
-            ]
-          }
+        ...analysisData,
+        iterationMetrics: {
+          improvementRate: calculateImprovement(
+            analysisData,
+            state.testHistory[state.testHistory.length - 1]
+          ),
+          previousResults: state.testHistory[state.testHistory.length - 1],
+          iterationCount: state.iterationCount + 1
         }
       };
+
+      const isReadyForProduction = checkProductionReadiness?.(results);
 
       setState(prev => ({
         ...prev,
         currentTestResults: results,
         testHistory: [...prev.testHistory, results],
         iterationCount: prev.iterationCount + 1,
-        testStatus: 'success'
+        testStatus: 'success',
+        readyForProduction: isReadyForProduction
       }));
+
+      if (results.iterationMetrics.improvementRate > 0) {
+        toast({
+          title: "Amélioration détectée !",
+          description: `Performance améliorée de ${results.iterationMetrics.improvementRate.toFixed(1)}% par rapport au test précédent.`,
+        });
+      }
 
       updateProgress(4);
       return results;
@@ -136,12 +103,12 @@ export const useWorkflowActions = (
     setState(prev => ({ ...prev, activePhase: 'correction' }));
     toast({
       title: "Correction en cours",
-      description: "Application des recommandations...",
+      description: "Appliquez les recommandations puis relancez un test.",
     });
   };
 
   const handleProduction = () => {
-    if (state.currentTestResults.roi < 2 || state.currentTestResults.engagement < 0.6) {
+    if (!state.readyForProduction) {
       toast({
         title: "Attention",
         description: "Les performances ne sont pas encore optimales. Continuez les itérations.",
@@ -151,8 +118,8 @@ export const useWorkflowActions = (
     }
     setState(prev => ({ ...prev, activePhase: 'production' }));
     toast({
-      title: "Mise en production",
-      description: "Déploiement de la campagne optimisée...",
+      title: "Campagne prête !",
+      description: "Votre campagne optimisée peut maintenant être déployée.",
     });
   };
 

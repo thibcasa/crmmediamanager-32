@@ -38,6 +38,12 @@ export interface PredictedMetrics {
   revenueProjection: number;
 }
 
+export interface IterationMetrics {
+  improvementRate: number;
+  previousResults: TestResults | null;
+  iterationCount: number;
+}
+
 export interface TestResults {
   engagement: number;
   clickRate: number;
@@ -59,6 +65,7 @@ export interface TestResults {
       steps: WorkflowStep[];
     };
   };
+  iterationMetrics?: IterationMetrics;
 }
 
 export interface WorkflowState {
@@ -70,4 +77,5 @@ export interface WorkflowState {
   iterationCount: number;
   testHistory: TestResults[];
   currentTestResults: TestResults;
+  readyForProduction: boolean;
 }
