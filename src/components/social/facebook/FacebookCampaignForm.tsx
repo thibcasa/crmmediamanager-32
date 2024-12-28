@@ -9,6 +9,7 @@ import { BudgetSection } from './sections/BudgetSection';
 import { KPIsSection } from './sections/KPIsSection';
 import { Button } from "@/components/ui/button";
 import { SocialCampaignService } from '@/services/SocialCampaignService';
+import { supabase } from '@/lib/supabaseClient';
 
 export const FacebookCampaignForm = () => {
   const { toast } = useToast();
@@ -47,6 +48,16 @@ export const FacebookCampaignForm = () => {
     try {
       setIsSubmitting(true);
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Vous devez être connecté pour créer une campagne",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const formattedCampaign = {
         name: `Campagne Facebook - ${campaignData.name}`,
         platform: 'facebook' as const,
@@ -69,7 +80,8 @@ export const FacebookCampaignForm = () => {
           ctr: campaignData.kpis.targetCTR,
           cpl: campaignData.kpis.targetCPL,
           conversion_rate: campaignData.kpis.targetConversionRate
-        }
+        },
+        user_id: user.id // Add the user_id field
       };
 
       await SocialCampaignService.createCampaign(formattedCampaign);
