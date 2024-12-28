@@ -31,15 +31,35 @@ export const PredictionStep = ({
     { name: 'Jour 7', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.8 },
   ];
 
+  const getProgressMessage = (progress: number) => {
+    if (progress < 25) return "Analyse du contenu...";
+    if (progress < 50) return "Évaluation de l'engagement...";
+    if (progress < 75) return "Calcul des métriques prédictives...";
+    if (progress < 100) return "Finalisation de l'analyse...";
+    return "Analyse terminée !";
+  };
+
   return (
     <div className="space-y-6">
       {isAnalyzing && (
-        <div className="space-y-2">
-          <Progress value={progress} className="w-full" />
-          <p className="text-sm text-muted-foreground text-center">
-            Analyse prédictive en cours... {progress}%
-          </p>
-        </div>
+        <Card className="p-4 space-y-4">
+          <div className="space-y-2">
+            <Progress value={progress} className="w-full" />
+            <p className="text-sm text-muted-foreground text-center">
+              {getProgressMessage(progress)}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-blue-500" />
+              <span>Phase d'analyse: {Math.floor(progress / 25) + 1}/4</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>Itération: {iterationCount}</span>
+            </div>
+          </div>
+        </Card>
       )}
 
       <Button

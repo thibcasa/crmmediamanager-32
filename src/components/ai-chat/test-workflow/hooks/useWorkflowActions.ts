@@ -35,8 +35,16 @@ export const useWorkflowActions = (
     setState(prev => ({ ...prev, isAnalyzing: true, validationErrors: [] }));
     
     try {
+      // Phase 1: Analyse du contenu
       updateProgress(1);
+      console.log("Phase 1: Analyse du contenu en cours...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Phase 2: Évaluation de l'engagement
+      updateProgress(2);
+      console.log("Phase 2: Évaluation de l'engagement en cours...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
         'campaign-analyzer',
         {
@@ -50,7 +58,10 @@ export const useWorkflowActions = (
 
       if (analysisError) throw analysisError;
 
-      updateProgress(2);
+      // Phase 3: Calcul des métriques prédictives
+      updateProgress(3);
+      console.log("Phase 3: Calcul des métriques prédictives en cours...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const iterationMultiplier = 1 + (state.iterationCount * 0.15);
       const results: TestResults = {
@@ -64,6 +75,11 @@ export const useWorkflowActions = (
           iterationCount: state.iterationCount + 1
         }
       };
+
+      // Phase 4: Finalisation
+      updateProgress(4);
+      console.log("Phase 4: Finalisation de l'analyse...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const isReadyForProduction = checkProductionReadiness?.(results);
 
@@ -83,7 +99,7 @@ export const useWorkflowActions = (
         });
       }
 
-      updateProgress(4);
+      updateProgress(100);
       return results;
     } catch (error) {
       console.error('Error in test workflow:', error);
@@ -95,7 +111,6 @@ export const useWorkflowActions = (
       });
     } finally {
       setState(prev => ({ ...prev, isAnalyzing: false }));
-      updateProgress(100);
     }
   };
 
