@@ -27,6 +27,24 @@ export const SocialCampaigns = () => {
     refetch();
   };
 
+  const handleUpdateCampaign = async (campaign: any) => {
+    try {
+      await SocialCampaignService.updateCampaign(campaign.id, campaign);
+      toast({
+        title: "Succès",
+        description: "Campagne mise à jour avec succès"
+      });
+      refetch();
+    } catch (error) {
+      console.error('Error updating campaign:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la campagne",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
@@ -47,6 +65,7 @@ export const SocialCampaigns = () => {
           <CampaignList 
             campaigns={campaigns || []} 
             onSelectCampaign={setSelectedCampaign}
+            onUpdate={handleUpdateCampaign}
           />
         </TabsContent>
 

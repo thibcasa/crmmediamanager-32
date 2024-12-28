@@ -8,8 +8,8 @@ import { SocialCampaignService, Platform } from '@/services/SocialCampaignServic
 import { Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
 import { LinkedInStatus } from '../linkedin/LinkedInStatus';
 import { supabase } from '@/lib/supabaseClient';
+import { SocialPlatform } from '@/types/social';
 
-// Move templates to a separate file for better organization
 import { platformTemplates } from './utils/platformTemplates';
 import { CampaignTargeting } from './campaign/CampaignTargeting';
 import { CampaignSchedule } from './campaign/CampaignSchedule';
@@ -24,6 +24,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState('Test LinkedIn - Propriétaires Nice');
   const [platform, setPlatform] = useState<Platform>('linkedin');
+  const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(['linkedin']);
   const [messageTemplate, setMessageTemplate] = useState(platformTemplates.linkedin);
   const [targetingCriteria, setTargetingCriteria] = useState({
     location: "Nice, Alpes-Maritimes",
@@ -113,6 +114,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
       });
       setSelectedPersonaId(null);
       setSelectedLocations([]);
+      setSelectedPlatforms(['linkedin']);
     } catch (error) {
       console.error('Erreur lors de la création de la campagne:', error);
       toast({
@@ -181,6 +183,8 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
       <CampaignTargeting
         selectedLocations={selectedLocations}
         onLocationsChange={setSelectedLocations}
+        selectedPlatforms={selectedPlatforms}
+        onPlatformsChange={setSelectedPlatforms}
         targetingCriteria={targetingCriteria}
         onTargetingChange={setTargetingCriteria}
       />
