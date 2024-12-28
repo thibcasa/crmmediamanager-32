@@ -17,6 +17,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('Vérification de l\'authentification...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {

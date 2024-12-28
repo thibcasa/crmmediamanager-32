@@ -18,7 +18,7 @@ const Login = () => {
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
         });
-        navigate('/ai-chat');
+        navigate('/');
       }
     });
 
@@ -30,7 +30,7 @@ const Login = () => {
         return;
       }
       if (user) {
-        navigate('/ai-chat');
+        navigate('/');
       }
     };
     
@@ -62,6 +62,8 @@ const Login = () => {
               input: 'auth-input',
             }
           }}
+          redirectTo={`${window.location.origin}/`}
+          providers={['linkedin']}
           localization={{
             variables: {
               sign_in: {
@@ -82,7 +84,6 @@ const Login = () => {
               },
             },
           }}
-          providers={['linkedin']}
         />
       </Card>
     </div>
