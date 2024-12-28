@@ -1,10 +1,10 @@
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/lib/supabaseClient";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,25 +12,23 @@ const Login = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session);
-      if (session) {
+      if (event === 'SIGNED_IN') {
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
         });
-        navigate('/');
+        navigate('/ai-chat');
       }
     });
 
-    // Vérifier si l'utilisateur est déjà connecté
     const checkUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) {
-        console.error('Erreur de vérification de session:', error);
+        console.error('Erreur lors de la vérification de l\'utilisateur:', error);
         return;
       }
       if (user) {
-        navigate('/');
+        navigate('/ai-chat');
       }
     };
     
@@ -39,11 +37,17 @@ const Login = () => {
   }, [navigate, toast]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-sage-50">
-      <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-6 text-sage-800">
-          Connexion
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-sage-50 p-4">
+      <Card className="w-full max-w-md p-8 bg-white">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-sage-900">
+            Connexion
+          </h1>
+          <p className="text-sage-600 mt-2">
+            Connectez-vous pour accéder à votre espace
+          </p>
+        </div>
+
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -52,9 +56,9 @@ const Login = () => {
               default: {
                 colors: {
                   brand: '#65736E',
-                  brandAccent: '#879683',
-                }
-              }
+                  brandAccent: '#52665D',
+                },
+              },
             },
             className: {
               container: 'auth-container',
@@ -62,7 +66,7 @@ const Login = () => {
               input: 'auth-input',
             }
           }}
-          redirectTo={`${window.location.origin}/`}
+          redirectTo={`${window.location.origin}/ai-chat`}
           providers={['linkedin']}
           localization={{
             variables: {
@@ -71,8 +75,8 @@ const Login = () => {
                 password_label: 'Mot de passe',
                 button_label: 'Se connecter',
                 loading_button_label: 'Connexion en cours...',
-                social_provider_text: 'Continuer avec {{provider}}',
-                link_text: "Vous avez déjà un compte ? Connectez-vous",
+                social_provider_text: 'Se connecter avec {{provider}}',
+                link_text: 'Vous avez déjà un compte ? Connectez-vous',
               },
               sign_up: {
                 email_label: 'Adresse email',
