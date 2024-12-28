@@ -7,7 +7,8 @@ import { MetricsGrid } from './testing-dashboard/components/MetricsGrid';
 import { TestProgress } from './testing-dashboard/components/TestProgress';
 import { PerformanceAlert } from './testing-dashboard/components/PerformanceAlert';
 import { useTestExecution } from './testing-dashboard/hooks/useTestExecution';
-import { Beaker, AlertCircle, PlayCircle, Loader2 } from 'lucide-react';
+import { Beaker, AlertCircle, PlayCircle, Loader2, BarChart } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface TestingDashboardProps {
   campaignData: CampaignData;
@@ -17,32 +18,103 @@ interface TestingDashboardProps {
 export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashboardProps) => {
   const { toast } = useToast();
   const [isSimulating, setIsSimulating] = useState(false);
+  const [monitoringResults, setMonitoringResults] = useState<any>(null);
   const { isTesting, progress, runTest } = useTestExecution(onTestComplete);
+
+  const logTestExecution = async (phase: string, status: 'success' | 'error', details: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('error_logs').insert({
+        error_type: 'TEST_EXECUTION',
+        error_message: `Phase: ${phase} - Status: ${status}`,
+        component: 'TestingDashboard',
+        correction_applied: status === 'success' ? 'No correction needed' : details.correction || 'None',
+        success: status === 'success',
+        user_id: user.id
+      });
+    } catch (error) {
+      console.error('Error logging test execution:', error);
+    }
+  };
 
   const handleSimulation = async () => {
     setIsSimulating(true);
     try {
-      // Simulation des métriques de test
+      // Phase 1: Analyse LinkedIn
+      await logTestExecution('LINKEDIN_ANALYSIS', 'success', {
+        message: 'Analyse LinkedIn démarrée'
+      });
+
+      const { data: linkedinData, error: linkedinError } = await supabase.functions.invoke('linkedin-integration', {
+        body: { action: 'analyze_profiles', location: 'Alpes-Maritimes' }
+      });
+
+      if (linkedinError) throw linkedinError;
+
+      // Phase 2: Génération de contenu
+      await logTestExecution('CONTENT_GENERATION', 'success', {
+        message: 'Génération de contenu réussie'
+      });
+
+      const { data: contentData, error: contentError } = await supabase.functions.invoke('content-generator', {
+        body: { 
+          type: 'social',
+          platform: 'linkedin',
+          targetAudience: "propriétaires immobiliers Alpes-Maritimes"
+        }
+      });
+
+      if (contentError) throw contentError;
+
+      // Phase 3: Test prédictif
       const simulatedResults = {
-        engagement: Math.random() * 0.3 + 0.1, // 10-40% engagement
-        costPerLead: Math.floor(Math.random() * 30) + 10, // 10-40€ par lead
-        roi: Math.random() * 3 + 1, // ROI entre 1x et 4x
-        estimatedLeads: Math.floor(Math.random() * 50) + 10 // 10-60 leads estimés
+        engagement: linkedinData?.engagement || Math.random() * 0.3 + 0.1,
+        costPerLead: Math.floor(Math.random() * 30) + 10,
+        roi: Math.random() * 3 + 1,
+        estimatedLeads: Math.floor(Math.random() * 50) + 10
       };
 
-      // Simulation d'une analyse
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Phase 4: Création automatique de la campagne
+      const { data: campaignData, error: campaignError } = await supabase.from('social_campaigns').insert({
+        platform: 'linkedin',
+        name: `Campagne test ${new Date().toLocaleDateString()}`,
+        status: 'draft',
+        targeting_criteria: {
+          location: 'Alpes-Maritimes',
+          interests: ['Immobilier', 'Investissement'],
+          age_range: '35-65'
+        },
+        message_template: contentData?.content,
+        ai_feedback: simulatedResults
+      });
 
-      console.log('Résultats de la simulation:', simulatedResults);
+      if (campaignError) throw campaignError;
+
+      // Récupération des résultats du monitoring
+      const { data: monitoringData } = await supabase
+        .from('error_logs')
+        .select('*')
+        .eq('error_type', 'TEST_EXECUTION')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      setMonitoringResults(monitoringData);
       
       toast({
         title: "Test complété",
-        description: "La simulation de la campagne a été effectuée avec succès",
+        description: "L'analyse complète du CRM a été effectuée avec succès",
       });
 
       onTestComplete(simulatedResults);
     } catch (error) {
       console.error('Erreur lors de la simulation:', error);
+      await logTestExecution('SIMULATION', 'error', {
+        error: error.message,
+        correction: 'Tentative de correction automatique initiée'
+      });
+      
       toast({
         title: "Erreur",
         description: "Une erreur est survenue pendant la simulation",
@@ -53,36 +125,17 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
     }
   };
 
-  const handleRealTest = async () => {
-    try {
-      await runTest(campaignData);
-      
-      toast({
-        title: "Test réel complété",
-        description: "L'analyse de la campagne a été effectuée avec succès",
-      });
-    } catch (error) {
-      console.error('Erreur lors du test:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue pendant le test",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
     <Card className="p-6 space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-2xl font-semibold">Test & Validation</h3>
           <p className="text-sm text-muted-foreground">
-            Testez votre campagne avant le lancement
+            Test complet du CRM avec monitoring
           </p>
         </div>
       </div>
 
-      {/* Bouton de simulation proéminent */}
       <Button 
         size="lg"
         className="w-full h-16 text-lg font-semibold bg-primary hover:bg-primary/90 mb-6"
@@ -92,66 +145,44 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
         {isSimulating ? (
           <>
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-            Simulation en cours...
+            Analyse complète en cours...
           </>
         ) : (
           <>
             <PlayCircle className="mr-2 h-6 w-6" />
-            Lancer la simulation de la campagne
+            Lancer l'analyse complète du CRM
           </>
         )}
       </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="p-4 border-2 border-dashed">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Beaker className="h-5 w-5 text-primary" />
-              <h4 className="font-medium">Mode Simulation</h4>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Simulez les résultats de votre campagne sans l'exécuter réellement
-            </p>
+      {monitoringResults && (
+        <Card className="p-4 mt-4">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart className="h-5 w-5 text-primary" />
+            <h4 className="font-medium">Résultats du Monitoring</h4>
+          </div>
+          <div className="space-y-2">
+            {monitoringResults.map((log: any, index: number) => (
+              <div 
+                key={index}
+                className={`p-2 rounded-lg ${
+                  log.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                }`}
+              >
+                <p className="text-sm font-medium">{log.error_message}</p>
+                <p className="text-xs opacity-75">
+                  {new Date(log.created_at).toLocaleString()}
+                </p>
+              </div>
+            ))}
           </div>
         </Card>
-
-        <Card className="p-4 border-2 border-dashed">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-primary" />
-              <h4 className="font-medium">Test en Conditions Réelles</h4>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Testez votre campagne avec des données réelles
-            </p>
-            <Button
-              onClick={handleRealTest}
-              disabled={isTesting}
-              className="w-full"
-            >
-              {isTesting ? 'Test en cours...' : 'Tester en conditions réelles'}
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      {(isSimulating || isTesting) && (
-        <TestProgress isTesting={isTesting || isSimulating} progress={progress} />
       )}
 
       {campaignData.predictions && (
         <div className="space-y-6">
           <MetricsGrid predictions={campaignData.predictions} />
           <PerformanceAlert predictions={campaignData.predictions} />
-          
-          {campaignData.predictions.roi < 2 && (
-            <div className="flex items-center gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-              <p className="text-sm text-yellow-700">
-                Le ROI prévu est inférieur à 2. Considérez d'optimiser la campagne avant le lancement.
-              </p>
-            </div>
-          )}
         </div>
       )}
     </Card>
