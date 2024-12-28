@@ -5,23 +5,11 @@ import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { CampaignData, CampaignContent, CampaignCreative } from '@/types/campaign';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
-}
-
-interface CampaignData {
-  objective: string;
-  creatives: Array<{
-    type: 'image' | 'video';
-    url: string;
-    format: string;
-  }>;
-  content: Array<{
-    type: 'post' | 'story' | 'reel' | 'article';
-    text: string;
-  }>;
 }
 
 const AiChat = () => {
@@ -85,20 +73,18 @@ const AiChat = () => {
         throw new Error('Format de réponse invalide pour les créatives');
       }
 
-      // Update campaign data
-      const updatedCampaignData = {
+      // Update campaign data with proper typing
+      const updatedCampaignData: CampaignData = {
         objective: input,
         creatives: creativesData.images.map((url: string) => ({
           type: 'image',
           url,
           format: 'linkedin'
-        })),
-        content: [
-          {
-            type: 'post',
-            text: campaignResponse.content
-          }
-        ]
+        })) as CampaignCreative[],
+        content: [{
+          type: 'post',
+          text: campaignResponse.content
+        }] as CampaignContent[]
       };
 
       console.log('Setting campaign data:', updatedCampaignData);
