@@ -89,7 +89,7 @@ export const TestWorkflow = ({ messageToTest }: { messageToTest?: string }) => {
         <TabsContent value="correction">
           <CorrectionStep
             validationErrors={state.validationErrors}
-            onCorrection={actions.handleCorrection}
+            onApplyCorrections={actions.handleCorrection}
             testResults={state.currentTestResults}
             onRecommendationClick={handleRecommendationClick}
           />
