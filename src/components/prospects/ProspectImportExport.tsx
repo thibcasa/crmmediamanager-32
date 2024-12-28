@@ -6,6 +6,10 @@ import Papa from "papaparse";
 import { ProspectService } from "@/services/ProspectService";
 import { LeadStatus } from "@/types/leads";
 
+interface ProspectImportExportProps {
+  onImportSuccess?: () => void;
+}
+
 interface CSVProspectData {
   first_name: string;
   last_name: string;
@@ -18,10 +22,19 @@ interface CSVProspectData {
   notes?: string;
 }
 
-export const ProspectImportExport = () => {
+export const ProspectImportExport = ({ onImportSuccess }: ProspectImportExportProps) => {
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  const validateEmail = (email: string) => {
+    return email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
+
+  const validatePhone = (phone?: string) => {
+    if (!phone) return true;
+    return phone.match(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/);
+  };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -32,8 +45,42 @@ export const ProspectImportExport = () => {
       Papa.parse<CSVProspectData>(file, {
         header: true,
         complete: async (results) => {
+          const errors: string[] = [];
+          const validData: CSVProspectData[] = [];
+
+          results.data.forEach((row, index) => {
+            if (!row.email || !validateEmail(row.email)) {
+              errors.push(`Ligne ${index + 1}: Email invalide`);
+              return;
+            }
+            if (row.phone && !validatePhone(row.phone)) {
+              errors.push(`Ligne ${index + 1}: Numéro de téléphone invalide`);
+              return;
+            }
+            if (!row.first_name || !row.last_name) {
+              errors.push(`Ligne ${index + 1}: Nom ou prénom manquant`);
+              return;
+            }
+            validData.push(row);
+          });
+
+          if (errors.length > 0) {
+            toast({
+              title: "Erreurs dans le fichier",
+              description: (
+                <div className="mt-2 space-y-2">
+                  {errors.map((error, index) => (
+                    <p key={index} className="text-sm text-red-600">{error}</p>
+                  ))}
+                </div>
+              ),
+              variant: "destructive",
+            });
+            return;
+          }
+
           try {
-            for (const row of results.data) {
+            for (const row of validData) {
               await ProspectService.createProspect({
                 first_name: row.first_name,
                 last_name: row.last_name,
@@ -49,8 +96,11 @@ export const ProspectImportExport = () => {
             }
             toast({
               title: "Import réussi",
-              description: `${results.data.length} contacts importés avec succès`,
+              description: `${validData.length} contacts importés avec succès`,
             });
+            if (onImportSuccess) {
+              onImportSuccess();
+            }
           } catch (error) {
             console.error('Error importing contacts:', error);
             toast({
@@ -78,6 +128,9 @@ export const ProspectImportExport = () => {
       });
     } finally {
       setIsImporting(false);
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 

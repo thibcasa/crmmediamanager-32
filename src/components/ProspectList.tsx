@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ProspectService, Prospect } from '@/services/ProspectService';
 import { CalendarService } from '@/services/CalendarService';
@@ -8,6 +9,15 @@ import { AIService } from '@/services/AIService';
 import { ProspectCard } from './prospects/ProspectCard';
 import { ProspectTabs } from './prospects/ProspectTabs';
 import { ProspectImportExport } from './prospects/ProspectImportExport';
+import { ProspectForm } from './prospects/ProspectForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { UserPlus } from 'lucide-react';
 
 export const ProspectList = () => {
   const { toast } = useToast();
@@ -16,6 +26,7 @@ export const ProspectList = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -150,6 +161,11 @@ export const ProspectList = () => {
     }
   };
 
+  const handleAddSuccess = () => {
+    setIsAddDialogOpen(false);
+    loadProspects();
+  };
+
   const filteredProspects = prospects.filter(prospect => {
     if (activeTab === 'all') return true;
     return prospect.qualification === activeTab;
@@ -167,7 +183,23 @@ export const ProspectList = () => {
     <Card className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
-        <ProspectImportExport />
+        <div className="flex gap-4">
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                Ajouter un contact
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Ajouter un nouveau contact</DialogTitle>
+              </DialogHeader>
+              <ProspectForm onSuccess={handleAddSuccess} onCancel={() => setIsAddDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+          <ProspectImportExport onImportSuccess={loadProspects} />
+        </div>
       </div>
       
       <ProspectTabs
