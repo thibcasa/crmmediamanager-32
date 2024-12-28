@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles, Building, Home, TrendingUp, Users, Target, Calendar } from "lucide-react";
+import { Sparkles, Building, Home, TrendingUp, Users, Target, Calendar, MapPin, Banknote, Camera } from "lucide-react";
 
 export const EXAMPLE_PROMPTS = [
   {
@@ -43,6 +43,27 @@ export const EXAMPLE_PROMPTS = [
     prompt: "Développe une stratégie pour créer des partenariats avec des architectes et décorateurs d'intérieur de la Côte d'Azur",
     description: "Plan de développement réseau professionnel",
     icon: Users
+  },
+  {
+    category: "Secteurs Premium",
+    title: "Ciblage Cap d'Antibes",
+    prompt: "Crée une stratégie de prospection spécifique pour les propriétaires de villas au Cap d'Antibes avec un budget > 5M€",
+    description: "Plan de prospection zone premium",
+    icon: MapPin
+  },
+  {
+    category: "Investissement",
+    title: "Rentabilité Locative",
+    prompt: "Génère une analyse détaillée de la rentabilité locative des appartements de standing dans le Carré d'Or à Nice",
+    description: "Analyse financière et ROI",
+    icon: Banknote
+  },
+  {
+    category: "Visuel",
+    title: "Shooting Pro",
+    prompt: "Crée un guide pour optimiser les photos et vidéos de biens de luxe, incluant les prises de vue par drone",
+    description: "Guide photo et vidéo professionnel",
+    icon: Camera
   }
 ];
 
