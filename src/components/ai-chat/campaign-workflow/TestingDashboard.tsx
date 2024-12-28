@@ -17,7 +17,7 @@ interface TestingDashboardProps {
 export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashboardProps) => {
   const { toast } = useToast();
   const [isSimulating, setIsSimulating] = useState(false);
-  const { executeTest, isExecuting } = useTestExecution();
+  const { isTesting, progress, runTest } = useTestExecution(onTestComplete);
 
   const handleSimulation = async () => {
     setIsSimulating(true);
@@ -55,8 +55,7 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
 
   const handleRealTest = async () => {
     try {
-      const results = await executeTest(campaignData);
-      onTestComplete(results);
+      await runTest(campaignData);
       
       toast({
         title: "Test réel complété",
@@ -92,9 +91,9 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
           </Button>
           <Button
             onClick={handleRealTest}
-            disabled={isExecuting}
+            disabled={isTesting}
           >
-            {isExecuting ? 'Test en cours...' : 'Tester en conditions réelles'}
+            {isTesting ? 'Test en cours...' : 'Tester en conditions réelles'}
           </Button>
         </div>
       </div>
@@ -102,8 +101,8 @@ export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashbo
       {campaignData.predictions && (
         <div className="space-y-6">
           <MetricsGrid predictions={campaignData.predictions} />
-          <TestProgress isExecuting={isExecuting || isSimulating} />
-          <PerformanceAlert metrics={campaignData.predictions} />
+          <TestProgress isTesting={isTesting || isSimulating} progress={progress} />
+          <PerformanceAlert predictions={campaignData.predictions} />
           
           {campaignData.predictions.roi < 2 && (
             <div className="flex items-center gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
