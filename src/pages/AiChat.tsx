@@ -5,7 +5,6 @@ import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 import { TestWorkflow } from "@/components/ai-chat/test-workflow/TestWorkflow";
 import { CampaignWorkflowManager } from "@/components/ai-chat/campaign-workflow/CampaignWorkflowManager";
-import { Card } from "@/components/ui/card";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -32,7 +31,7 @@ const AiChat = () => {
       
       const userMessage: Message = { role: 'user', content: input };
       setMessages(prev => [...prev, userMessage]);
-      setCurrentMessage(input); // Store current message for testing workflow
+      setCurrentMessage(input);
 
       const response = await sendMessage(input);
       
