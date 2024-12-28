@@ -9,36 +9,26 @@ interface TestStepProps {
   isAnalyzing: boolean;
   onTest: () => void;
   testResults: TestResults;
+  previousResults?: TestResults;
+  iterationCount: number;
 }
 
-export const TestStep = ({ isAnalyzing, onTest, testResults }: TestStepProps) => {
-  const afterCorrection: TestResults = {
-    ...testResults,
-    engagement: testResults.engagement * 1.2,
-    clickRate: testResults.clickRate * 1.15,
-    conversionRate: testResults.conversionRate * 1.25,
-    cpa: testResults.cpa * 0.8,
-    roi: testResults.roi * 1.3,
-    recommendations: [
-      "Ciblage optimisé pour la zone des Alpes-Maritimes",
-      "Message plus percutant avec call-to-action clair",
-      "Visuels améliorés pour plus d'impact"
-    ],
-    risks: [
-      "Maintenir la qualité des leads pendant la montée en charge",
-      "Surveiller le CPA pendant l'optimisation"
-    ],
-    opportunities: [
-      "Fort potentiel d'amélioration du ROI",
-      "Possibilité d'étendre la zone de ciblage"
-    ]
-  };
-
+export const TestStep = ({ 
+  isAnalyzing, 
+  onTest, 
+  testResults,
+  previousResults,
+  iterationCount 
+}: TestStepProps) => {
   return (
     <div className="space-y-6">
-      <MetricsVisualization before={testResults} after={afterCorrection} />
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-sm font-medium">Résultats du test #{iterationCount}</h4>
+      </div>
+
+      <MetricsVisualization before={previousResults || testResults} after={testResults} />
       
-      <DetailedReport before={testResults} after={afterCorrection} />
+      <DetailedReport before={previousResults || testResults} after={testResults} />
 
       <Button
         variant="outline"

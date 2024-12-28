@@ -21,7 +21,9 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const [progress, setProgress] = useState(0);
   const [testStatus, setTestStatus] = useState<'pending' | 'warning' | 'success'>('pending');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [testResults, setTestResults] = useState<TestResults>({
+  const [iterationCount, setIterationCount] = useState(0);
+  const [testHistory, setTestHistory] = useState<TestResults[]>([]);
+  const [currentTestResults, setCurrentTestResults] = useState<TestResults>({
     engagement: 0,
     clickRate: 0,
     conversionRate: 0,
@@ -66,20 +68,22 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
       updateProgress(2);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Simulate improved results with each iteration
+      const iterationMultiplier = 1 + (iterationCount * 0.15);
       const results = {
-        engagement: 0.85,
-        clickRate: 0.125,
-        conversionRate: 0.032,
-        cpa: 15,
-        roi: 2.5,
+        engagement: Math.min(0.85 * iterationMultiplier, 1),
+        clickRate: Math.min(0.125 * iterationMultiplier, 0.3),
+        conversionRate: Math.min(0.032 * iterationMultiplier, 0.1),
+        cpa: Math.max(15 / iterationMultiplier, 8),
+        roi: Math.min(2.5 * iterationMultiplier, 5),
         recommendations: [
-          "Ajoutez plus de détails sur la localisation",
+          "Optimisez le ciblage géographique",
           "Précisez le type de bien immobilier",
-          "Incluez des informations sur le prix"
+          "Ajoutez des témoignages clients"
         ],
         risks: [
-          "Coût par acquisition élevé",
-          "Ciblage trop large"
+          "Coût par acquisition à surveiller",
+          "Ciblage à affiner"
         ],
         opportunities: [
           "Fort potentiel d'engagement",
@@ -87,7 +91,9 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
         ]
       };
 
-      setTestResults(results);
+      setCurrentTestResults(results);
+      setTestHistory(prev => [...prev, results]);
+      setIterationCount(prev => prev + 1);
       updateProgress(4);
       setTestStatus(validation.isValid ? 'success' : 'warning');
 
@@ -115,6 +121,15 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   };
 
   const handleProduction = () => {
+    if (currentTestResults.roi < 2 || currentTestResults.engagement < 0.6) {
+      toast({
+        title: "Attention",
+        description: "Les performances ne sont pas encore optimales. Continuez les itérations.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setActivePhase('production');
     toast({
       title: "Mise en production",
@@ -122,11 +137,16 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
     });
   };
 
+  const canProceedToProduction = currentTestResults.roi >= 2 && currentTestResults.engagement >= 0.6;
+
   return (
     <Card className="p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Test & Validation</h3>
+          <div className="text-sm text-muted-foreground">
+            Itération {iterationCount}
+          </div>
         </div>
 
         <Tabs value={activePhase} onValueChange={(value: any) => setActivePhase(value)} className="w-full">
@@ -143,7 +163,11 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
               <TestTube className="h-4 w-4" />
               Test
             </TabsTrigger>
-            <TabsTrigger value="production" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="production" 
+              className="flex items-center gap-2"
+              disabled={!canProceedToProduction}
+            >
               <Rocket className="h-4 w-4" />
               Production
             </TabsTrigger>
@@ -153,9 +177,10 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
             <PredictionStep
               isAnalyzing={isAnalyzing}
               progress={progress}
-              testResults={testResults}
+              testResults={currentTestResults}
               onAnalyze={handleTest}
               messageToTest={messageToTest}
+              iterationCount={iterationCount}
             />
           </TabsContent>
 
@@ -163,7 +188,8 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
             <CorrectionStep
               validationErrors={validationErrors}
               onApplyCorrections={handleCorrection}
-              testResults={testResults}
+              testResults={currentTestResults}
+              previousResults={testHistory[testHistory.length - 2]}
             />
           </TabsContent>
 
@@ -171,14 +197,18 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
             <TestStep
               isAnalyzing={isAnalyzing}
               onTest={handleTest}
-              testResults={testResults}
+              testResults={currentTestResults}
+              previousResults={testHistory[testHistory.length - 2]}
+              iterationCount={iterationCount}
             />
           </TabsContent>
 
           <TabsContent value="production">
             <ProductionStep
               onDeploy={handleProduction}
-              testResults={testResults}
+              testResults={currentTestResults}
+              iterationHistory={testHistory}
+              canProceed={canProceedToProduction}
             />
           </TabsContent>
         </Tabs>
