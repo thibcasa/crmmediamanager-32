@@ -21,7 +21,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -74,7 +74,7 @@ serve(async (req) => {
       recommendations: [
         'Augmenter la fréquence des posts pendant les heures de pointe',
         'Cibler les propriétaires de biens de luxe',
-        'Mettre l'accent sur les avantages fiscaux',
+        "Mettre l'accent sur les avantages fiscaux"
       ],
     };
 
