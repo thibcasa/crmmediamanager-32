@@ -9,10 +9,12 @@ import { CampaignCreationWizard } from "@/components/social/campaign-creation/Ca
 import { TrendAnalyzer } from "@/components/analytics/TrendAnalyzer";
 import { PredictiveAnalysis } from "@/components/analytics/PredictiveAnalysis";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
+import { LocationSelector } from "@/components/social/targeting/LocationSelector";
 import { useState } from "react";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   return (
     <div className="space-y-8">
@@ -83,7 +85,13 @@ const Index = () => {
         </TabsList>
 
         <TabsContent value="dashboard">
-          <CRMDashboard />
+          <div className="space-y-6">
+            <LocationSelector 
+              selectedLocations={selectedLocations}
+              onLocationChange={setSelectedLocations}
+            />
+            <CRMDashboard />
+          </div>
         </TabsContent>
 
         <TabsContent value="campaign-creation">
