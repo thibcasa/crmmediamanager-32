@@ -658,6 +658,45 @@ export type Database = {
         }
         Relationships: []
       }
+      personas: {
+        Row: {
+          age_range: Json
+          created_at: string | null
+          id: string
+          income_range: Json | null
+          interests: string[]
+          job_titles: string[]
+          name: string
+          property_types: string[]
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          age_range?: Json
+          created_at?: string | null
+          id?: string
+          income_range?: Json | null
+          interests?: string[]
+          job_titles?: string[]
+          name: string
+          property_types?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          age_range?: Json
+          created_at?: string | null
+          id?: string
+          income_range?: Json | null
+          interests?: string[]
+          job_titles?: string[]
+          name?: string
+          property_types?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       pipeline_stages: {
         Row: {
           automation_rules: Json | null
@@ -727,15 +766,18 @@ export type Database = {
       social_campaigns: {
         Row: {
           ai_feedback: Json | null
+          content_strategy: Json | null
           created_at: string | null
           id: string
           message_template: string | null
           name: string
+          persona_id: string | null
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers: Json | null
           posts: Json | null
           schedule: Json | null
           status: string | null
+          target_locations: string[] | null
           target_metrics: Json | null
           targeting_criteria: Json | null
           updated_at: string | null
@@ -743,15 +785,18 @@ export type Database = {
         }
         Insert: {
           ai_feedback?: Json | null
+          content_strategy?: Json | null
           created_at?: string | null
           id?: string
           message_template?: string | null
           name: string
+          persona_id?: string | null
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
           posts?: Json | null
           schedule?: Json | null
           status?: string | null
+          target_locations?: string[] | null
           target_metrics?: Json | null
           targeting_criteria?: Json | null
           updated_at?: string | null
@@ -759,18 +804,62 @@ export type Database = {
         }
         Update: {
           ai_feedback?: Json | null
+          content_strategy?: Json | null
           created_at?: string | null
           id?: string
           message_template?: string | null
           name?: string
+          persona_id?: string | null
           platform?: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
           posts?: Json | null
           schedule?: Json | null
           status?: string | null
+          target_locations?: string[] | null
           target_metrics?: Json | null
           targeting_criteria?: Json | null
           updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_campaigns_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      target_locations: {
+        Row: {
+          city: string
+          created_at: string | null
+          department: string
+          id: string
+          postal_code: string
+          priority: number | null
+          region: string
+          user_id: string | null
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          department: string
+          id?: string
+          postal_code: string
+          priority?: number | null
+          region: string
+          user_id?: string | null
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          department?: string
+          id?: string
+          postal_code?: string
+          priority?: number | null
+          region?: string
           user_id?: string | null
         }
         Relationships: []
