@@ -3,11 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
-import { MapPin, Search, Loader2 } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Location {
   id: string;
@@ -26,9 +32,9 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const { toast } = useToast();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string>("");
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -45,7 +51,6 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           console.log('Locations fetched:', data.length);
           setLocations(data);
           setSelectedCount(selectedLocations.length);
-          // Update isAllSelected based on whether all locations are selected
           setIsAllSelected(data.length > 0 && selectedLocations.length === data.length);
         }
       } catch (error) {
@@ -63,12 +68,6 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     fetchLocations();
   }, [toast, selectedLocations.length]);
 
-  const filteredLocations = locations.filter(location => {
-    const matchesSearch = location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.postal_code.includes(searchTerm);
-    return matchesSearch;
-  });
-
   const handleSelectAll = () => {
     if (isAllSelected) {
       onLocationChange([]);
@@ -79,6 +78,18 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
       onLocationChange(allLocationIds);
       setSelectedCount(locations.length);
       setIsAllSelected(true);
+    }
+  };
+
+  const handleCitySelect = (cityName: string) => {
+    setSelectedCity(cityName);
+    const location = locations.find(loc => loc.city === cityName);
+    if (location && !selectedLocations.includes(location.id)) {
+      const newLocations = [...selectedLocations, location.id];
+      onLocationChange(newLocations);
+      const newCount = selectedCount + 1;
+      setSelectedCount(newCount);
+      setIsAllSelected(newCount === locations.length);
     }
   };
 
@@ -110,15 +121,21 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
       </p>
 
       <div className="space-y-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher une ville ou un code postal..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-        </div>
+        <Select value={selectedCity} onValueChange={handleCitySelect}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Sélectionnez une ville..." />
+          </SelectTrigger>
+          <SelectContent>
+            {locations.map((location) => (
+              <SelectItem 
+                key={location.id} 
+                value={location.city}
+              >
+                {location.city} ({location.postal_code})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         
         <div className="flex items-center space-x-2 bg-accent/50 p-2 rounded-md">
           <Checkbox 
@@ -142,7 +159,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
       ) : (
         <ScrollArea className="h-[400px] rounded-md border p-4">
           <div className="space-y-2">
-            {filteredLocations.map((location) => (
+            {locations.map((location) => (
               <div
                 key={location.id}
                 className="flex items-start space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
