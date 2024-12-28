@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { AIService } from '@/services/AIService';
 import { ProspectCard } from './prospects/ProspectCard';
 import { ProspectTabs } from './prospects/ProspectTabs';
+import { ProspectImportExport } from './prospects/ProspectImportExport';
 
 export const ProspectList = () => {
   const { toast } = useToast();
@@ -164,7 +165,10 @@ export const ProspectList = () => {
 
   return (
     <Card className="p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Liste des Contacts</h2>
+        <ProspectImportExport />
+      </div>
       
       <ProspectTabs
         prospects={prospects}
