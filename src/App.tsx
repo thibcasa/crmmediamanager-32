@@ -11,6 +11,7 @@ import Prospects from '@/pages/Prospects';
 import Pipeline from '@/pages/Pipeline';
 import Calendar from '@/pages/Calendar';
 import Workflow from '@/pages/Workflow';
+import { SocialApiSettings } from '@/components/settings/SocialApiSettings';
 
 // Create Properties page component
 const Properties = () => (
@@ -155,6 +156,21 @@ export default function App() {
             isAuthenticated ? (
               <ProtectedRoute>
                 <Workflow />
+              </ProtectedRoute>
+            ) : (
+              <Login />
+            )
+          } 
+        />
+        
+        <Route 
+          path="/api-settings" 
+          element={
+            isAuthenticated ? (
+              <ProtectedRoute>
+                <AppLayout>
+                  <SocialApiSettings />
+                </AppLayout>
               </ProtectedRoute>
             ) : (
               <Login />
