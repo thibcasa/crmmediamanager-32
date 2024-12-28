@@ -4,11 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Platform } from '@/services/SocialCampaignService';
 import { useAIOrchestrator } from '@/components/ai-chat/AIOrchestrator';
-import { Target, Users, MessageSquare, Rocket } from 'lucide-react';
+import { Target, Users, MessageSquare, Rocket, Beaker } from 'lucide-react';
 import { PlatformStep } from './steps/PlatformStep';
 import { StrategyStep } from './steps/StrategyStep';
 import { FormatStep } from './steps/FormatStep';
 import { LaunchStep } from './steps/LaunchStep';
+import { TestCellPreview } from '../test-cell/TestCellPreview';
 
 interface StepConfig {
   platform: Platform;
@@ -65,7 +66,7 @@ export const WorkflowSteps = () => {
   return (
     <Card className="p-6">
       <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-5 mb-8">
           <TabsTrigger value="step1" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             Plateforme
@@ -81,6 +82,10 @@ export const WorkflowSteps = () => {
           <TabsTrigger value="step4" className="flex items-center gap-2">
             <Rocket className="w-4 h-4" />
             Lancement
+          </TabsTrigger>
+          <TabsTrigger value="test" className="flex items-center gap-2">
+            <Beaker className="w-4 h-4" />
+            Test
           </TabsTrigger>
         </TabsList>
 
@@ -105,6 +110,10 @@ export const WorkflowSteps = () => {
             onLaunch={handleLaunchCampaign}
             isProcessing={isProcessing}
           />
+        </TabsContent>
+
+        <TabsContent value="test">
+          <TestCellPreview />
         </TabsContent>
       </Tabs>
     </Card>
