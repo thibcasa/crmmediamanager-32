@@ -37,7 +37,7 @@ const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string)
       <WrappedComponent />
     </MonitoringProvider>
   );
-  return <MonitoredComponent />;
+  return MonitoredComponent;
 };
 
 function App() {
@@ -46,7 +46,7 @@ function App() {
       <MonitoringProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={withMonitoring(Login, 'Login')} />
+            <Route path="/login" element={<Login />} />
             <Route
               path="/"
               element={
@@ -55,14 +55,14 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={withMonitoring(Index, 'Index')} />
-              <Route path="pipeline" element={withMonitoring(Pipeline, 'Pipeline')} />
-              <Route path="prospects" element={withMonitoring(Prospects, 'Prospects')} />
-              <Route path="workflow" element={withMonitoring(Workflow, 'Workflow')} />
-              <Route path="ai-chat" element={withMonitoring(AiChat, 'AiChat')} />
-              <Route path="calendar" element={withMonitoring(Calendar, 'Calendar')} />
-              <Route path="campaigns" element={withMonitoring(Campaigns, 'Campaigns')} />
-              <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')} />
+              <Route index element={withMonitoring(Index, 'Index')()} />
+              <Route path="pipeline" element={withMonitoring(Pipeline, 'Pipeline')()} />
+              <Route path="prospects" element={withMonitoring(Prospects, 'Prospects')()} />
+              <Route path="workflow" element={withMonitoring(Workflow, 'Workflow')()} />
+              <Route path="ai-chat" element={withMonitoring(AiChat, 'AiChat')()} />
+              <Route path="calendar" element={withMonitoring(Calendar, 'Calendar')()} />
+              <Route path="campaigns" element={withMonitoring(Campaigns, 'Campaigns')()} />
+              <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')()} />
             </Route>
           </Routes>
           <Toaster />

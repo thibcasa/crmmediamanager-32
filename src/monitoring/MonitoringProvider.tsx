@@ -10,7 +10,7 @@ Sentry.init({
   environment: import.meta.env.MODE,
 });
 
-interface MonitoringConfig {
+export interface MonitoringConfig {
   pageName?: string;
   enableAutoCorrect?: boolean;
   enablePerformanceTracking?: boolean;
