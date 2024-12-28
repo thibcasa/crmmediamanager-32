@@ -15,7 +15,7 @@ export class SocialCampaignService {
       .from('social_campaigns')
       .insert([{ 
         ...campaign, 
-        user_id: user.id,
+        user_id: user.id,  // Explicitly set user_id
         status: campaign.status || 'draft'
       }])
       .select()
@@ -38,7 +38,7 @@ export class SocialCampaignService {
     const { data, error } = await supabase
       .from('social_campaigns')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id)  // Filter by user_id
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -57,6 +57,7 @@ export class SocialCampaignService {
       .from('social_campaigns')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
+      .eq('user_id', userData.user.id)  // Ensure user can only update their own campaigns
       .select()
       .single();
 
