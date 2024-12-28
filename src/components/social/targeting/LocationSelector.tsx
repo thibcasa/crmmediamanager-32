@@ -28,6 +28,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCount, setSelectedCount] = useState(0);
+  const [isAllSelected, setIsAllSelected] = useState(false);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -44,6 +45,8 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           console.log('Locations fetched:', data.length);
           setLocations(data);
           setSelectedCount(selectedLocations.length);
+          // Update isAllSelected based on whether all locations are selected
+          setIsAllSelected(data.length > 0 && selectedLocations.length === data.length);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des locations:', error);
@@ -67,13 +70,15 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   });
 
   const handleSelectAll = () => {
-    if (selectedCount === locations.length) {
+    if (isAllSelected) {
       onLocationChange([]);
       setSelectedCount(0);
+      setIsAllSelected(false);
     } else {
       const allLocationIds = locations.map(loc => loc.id);
       onLocationChange(allLocationIds);
       setSelectedCount(locations.length);
+      setIsAllSelected(true);
     }
   };
 
@@ -118,14 +123,14 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         <div className="flex items-center space-x-2 bg-accent/50 p-2 rounded-md">
           <Checkbox 
             id="select-all"
-            checked={selectedCount === locations.length}
+            checked={isAllSelected}
             onCheckedChange={handleSelectAll}
           />
           <label
             htmlFor="select-all"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            {selectedCount === locations.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+            {isAllSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
           </label>
         </div>
       </div>
@@ -150,7 +155,9 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
                       ? [...selectedLocations, location.id]
                       : selectedLocations.filter(id => id !== location.id);
                     onLocationChange(newLocations);
-                    setSelectedCount(checked ? selectedCount + 1 : selectedCount - 1);
+                    const newCount = checked ? selectedCount + 1 : selectedCount - 1;
+                    setSelectedCount(newCount);
+                    setIsAllSelected(newCount === locations.length);
                   }}
                 />
                 <div className="grid gap-1.5 leading-none">
