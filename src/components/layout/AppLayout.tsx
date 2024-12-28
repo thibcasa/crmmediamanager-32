@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
-import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch, Calendar, Workflow, Network, Megaphone } from "lucide-react";
+import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch, Calendar, Workflow, Network, Megaphone, TrendingUp } from "lucide-react";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -12,7 +12,7 @@ const menuItems = [
   { icon: Calendar, label: "Calendrier", path: "/calendar" },
   { icon: Workflow, label: "Workflow", path: "/workflow" },
   { icon: Network, label: "API", path: "/api-settings" },
-  { icon: BarChart3, label: "Analyses", path: "/analytics" },
+  { icon: TrendingUp, label: "Analytics", path: "/analytics" },
 ];
 
 export function AppLayout() {
