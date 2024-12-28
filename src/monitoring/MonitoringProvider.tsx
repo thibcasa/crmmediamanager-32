@@ -1,6 +1,7 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
+import { supabase } from '@/lib/supabaseClient';
 
 // Initialize Sentry
 Sentry.init({
@@ -20,10 +21,12 @@ export interface MonitoringConfig {
 interface MonitoringContextType {
   isEnabled: boolean;
   config?: MonitoringConfig;
+  isAuthenticated: boolean;
 }
 
 const MonitoringContext = createContext<MonitoringContextType>({
-  isEnabled: true
+  isEnabled: true,
+  isAuthenticated: false
 });
 
 interface MonitoringProviderProps {
@@ -32,8 +35,31 @@ interface MonitoringProviderProps {
 }
 
 export const MonitoringProvider = ({ children, config }: MonitoringProviderProps) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check initial auth state
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
-    <MonitoringContext.Provider value={{ isEnabled: true, config }}>
+    <MonitoringContext.Provider value={{ 
+      isEnabled: true, 
+      config,
+      isAuthenticated 
+    }}>
       {children}
     </MonitoringContext.Provider>
   );

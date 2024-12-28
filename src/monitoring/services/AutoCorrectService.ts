@@ -6,22 +6,31 @@ interface ErrorLog {
   component: string;
   correction_applied: string;
   success: boolean;
+  user_id?: string;
 }
 
 class AutoCorrectService {
   private async logError(errorLog: ErrorLog) {
     try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        console.warn('No authenticated user found when logging error');
+        return;
+      }
+
       const { error } = await supabase
         .from('error_logs')
         .insert([{
-          error_type: errorLog.error_type,
-          error_message: errorLog.error_message,
-          component: errorLog.component,
-          correction_applied: errorLog.correction_applied,
-          success: errorLog.success
+          ...errorLog,
+          user_id: session.user.id,
         }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Failed to log error:', error);
+        throw error;
+      }
     } catch (err) {
       console.error('Failed to log error:', err);
     }
