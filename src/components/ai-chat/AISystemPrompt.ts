@@ -34,6 +34,11 @@ Pour chaque demande, tu dois :
 - Analyse des performances
 - Ajustements recommandés
 
+7. VALIDATION ET CORRECTION
+- Vérification de la cohérence
+- Suggestions d'amélioration
+- Points d'attention
+
 Fournis une réponse structurée avec ces sections, en te concentrant sur la prospection immobilière à Nice.`;
 
 export const getSystemPrompt = () => AI_SYSTEM_PROMPT;

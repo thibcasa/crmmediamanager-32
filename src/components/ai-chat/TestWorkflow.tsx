@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { Brain, Play, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { TestResults } from './types/test-results';
+import { Card } from "@/components/ui/card";
+import { Brain, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 import { TestMetrics } from './TestMetrics';
 import { TestRecommendations } from './TestRecommendations';
+import { ValidationService } from '@/services/ValidationService';
+import { Progress } from "@/components/ui/progress";
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -15,8 +16,13 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { toast } = useToast();
   const [activePhase, setActivePhase] = useState<'test' | 'prediction' | 'correction' | 'production'>('test');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [testResults, setTestResults] = useState<TestResults | null>(null);
+  const [progress, setProgress] = useState(0);
   const [testStatus, setTestStatus] = useState<'pending' | 'warning' | 'success'>('pending');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const updateProgress = (phase: number) => {
+    setProgress(phase * 25); // 4 phases = 25% each
+  };
 
   const handleTest = async () => {
     if (!messageToTest) {
@@ -29,68 +35,98 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
     }
 
     setIsAnalyzing(true);
+    setValidationErrors([]);
+    
     try {
-      // Simulation du test avec le message
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Phase 1: Validation initiale
+      updateProgress(1);
+      const validation = ValidationService.validatePrompt(messageToTest);
+      
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setTestStatus('warning');
+        toast({
+          title: "Attention",
+          description: "Des améliorations sont suggérées pour votre prompt",
+          variant: "warning"
+        });
+      }
+
+      // Phase 2: Correction automatique
+      updateProgress(2);
+      const correctedPrompt = ValidationService.correctPrompt(messageToTest);
+      
+      // Phase 3: Analyse des résultats
+      updateProgress(3);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const results = {
-        engagement: 0.15,
-        clickRate: 0.08,
-        conversionRate: 0.03,
+        engagement: 85,
+        clickRate: 12.5,
+        conversionRate: 3.2,
         recommendations: [
-          "Ajuster le ton pour le marché premium des Alpes-Maritimes",
-          "Ajouter plus de visuels de propriétés de luxe",
-          "Renforcer l'appel à l'action avec des éléments locaux"
+          "Ajoutez plus de détails sur la localisation",
+          "Précisez le type de bien immobilier",
+          "Incluez des informations sur le prix"
         ]
       };
 
-      setTestResults(results);
-      setTestStatus(results.engagement > 0.2 ? 'success' : 'warning');
+      // Phase 4: Finalisation
+      updateProgress(4);
+      setTestStatus(validation.isValid ? 'success' : 'warning');
       setActivePhase('prediction');
-      
-      toast({
-        title: "Test terminé",
-        description: "Les résultats de test sont disponibles",
-      });
+
+      return results;
     } catch (error) {
-      console.error('Error running test:', error);
+      console.error('Error in test workflow:', error);
+      setTestStatus('warning');
       toast({
         title: "Erreur",
-        description: "Impossible de compléter le test",
+        description: "Une erreur est survenue pendant l'analyse",
         variant: "destructive"
       });
     } finally {
       setIsAnalyzing(false);
+      setProgress(100);
     }
-  };
-
-  const handleDeploy = () => {
-    if (testStatus !== 'success') {
-      toast({
-        title: "Action impossible",
-        description: "Veuillez corriger les problèmes avant de déployer",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Campagne déployée",
-      description: "Votre campagne a été mise en production avec succès"
-    });
-    setActivePhase('production');
   };
 
   return (
-    <Card className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Workflow de Test</h3>
-          <p className="text-sm text-muted-foreground">
-            Testez et validez votre campagne avant son lancement
-          </p>
+    <Card className="p-6">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Test & Validation</h3>
+          <div className="flex items-center gap-2">
+            {testStatus === 'warning' && (
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            )}
+            {testStatus === 'success' && (
+              <CheckCircle className="h-5 w-5 text-green-500" />
+            )}
+          </div>
         </div>
-        <div className="flex gap-2">
+
+        {isAnalyzing && (
+          <div className="space-y-2">
+            <Progress value={progress} className="w-full" />
+            <p className="text-sm text-sage-600 text-center">
+              Analyse en cours... {progress}%
+            </p>
+          </div>
+        )}
+
+        {validationErrors.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 className="font-medium text-yellow-800 mb-2">Suggestions d'amélioration :</h4>
+            <ul className="list-disc list-inside space-y-1">
+              {validationErrors.map((error, index) => (
+                <li key={index} className="text-sm text-yellow-700">{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-4">
           <Button
             variant="outline"
             onClick={handleTest}
@@ -98,62 +134,27 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
             className="flex items-center gap-2"
           >
             <Brain className="h-4 w-4" />
-            {isAnalyzing ? 'Analyse...' : 'Lancer le test'}
+            {isAnalyzing ? 'Analyse en cours...' : 'Lancer le test'}
           </Button>
-          <Button
-            onClick={handleDeploy}
-            disabled={testStatus !== 'success' || activePhase === 'production'}
-            className="flex items-center gap-2"
-          >
-            <Play className="h-4 w-4" />
-            Déployer
-          </Button>
+
+          {activePhase !== 'test' && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setActivePhase('correction')}
+                disabled={isAnalyzing}
+                className="flex items-center gap-2"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Passer à la correction
+              </Button>
+
+              <TestMetrics />
+              <TestRecommendations />
+            </>
+          )}
         </div>
       </div>
-
-      <div className="flex items-center gap-4 p-4 bg-background rounded-lg border">
-        {['test', 'prediction', 'correction', 'production'].map((phase, index) => (
-          <div key={phase} className="flex items-center">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-              activePhase === phase 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-muted text-muted-foreground'
-            }`}>
-              {index + 1}
-            </div>
-            <span className="ml-2 text-sm font-medium">
-              {phase.charAt(0).toUpperCase() + phase.slice(1)}
-            </span>
-            {index < 3 && (
-              <div className="mx-2 h-px w-8 bg-border" />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {testResults && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            {testStatus === 'pending' && (
-              <AlertCircle className="h-5 w-5 text-yellow-500" />
-            )}
-            {testStatus === 'warning' && (
-              <AlertCircle className="h-5 w-5 text-orange-500" />
-            )}
-            {testStatus === 'success' && (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            )}
-            <span>
-              {testStatus === 'pending' && "En attente de test"}
-              {testStatus === 'warning' && "Ajustements recommandés"}
-              {testStatus === 'success' && "Tests validés"}
-            </span>
-          </div>
-
-          <TestMetrics results={testResults} />
-          <TestRecommendations recommendations={testResults.recommendations} />
-        </div>
-      )}
     </Card>
   );
 };
