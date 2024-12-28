@@ -22,6 +22,7 @@ Cordialement,
 {agent_name}`,
   whatsapp: `Bonjour {first_name},\n\nJe suis {agent_name}, agent immobilier...`,
   facebook: `🏠 Propriétaire dans les Alpes-Maritimes ?\n\nDécouvrez la valeur...`,
+  instagram: `📸 Découvrez la vraie valeur de votre bien immobilier dans les Alpes-Maritimes ! Estimation gratuite et professionnelle.`
 };
 
 interface CreateCampaignFormProps {
@@ -30,6 +31,7 @@ interface CreateCampaignFormProps {
 
 export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState('Test LinkedIn - Propriétaires Nice');
   const [platform, setPlatform] = useState<Platform>('linkedin');
   const [messageTemplate, setMessageTemplate] = useState(platformTemplates.linkedin);
@@ -45,45 +47,100 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
     days: ["monday", "wednesday", "friday"]
   }, null, 2));
 
+  const validateForm = () => {
+    if (!name.trim()) {
+      toast({
+        title: "Erreur de validation",
+        description: "Le nom de la campagne est requis",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!messageTemplate.trim()) {
+      toast({
+        title: "Erreur de validation",
+        description: "Le message est requis",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      JSON.parse(targetingCriteria);
+      JSON.parse(schedule);
+    } catch (e) {
+      toast({
+        title: "Erreur de validation",
+        description: "Le format JSON du ciblage ou du planning est invalide",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handlePlatformChange = (value: Platform) => {
+    console.log('Changement de plateforme:', value);
     setPlatform(value);
     setMessageTemplate(platformTemplates[value] || '');
   };
 
   const handleCreateCampaign = async () => {
+    if (!validateForm()) return;
+
     try {
+      setIsSubmitting(true);
+      console.log('Début de création de campagne...');
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Erreur",
+          title: "Erreur d'authentification",
           description: "Vous devez être connecté pour créer une campagne",
           variant: "destructive"
         });
         return;
       }
 
-      await SocialCampaignService.createCampaign({
+      console.log('Utilisateur authentifié:', user.id);
+
+      const campaignData = {
         name,
         platform,
         message_template: messageTemplate,
-        targeting_criteria: JSON.parse(targetingCriteria || '{}'),
+        targeting_criteria: JSON.parse(targetingCriteria),
         status: 'draft',
         schedule: schedule ? JSON.parse(schedule) : null,
-        ai_feedback: null // Add this line to include the ai_feedback field
-      });
+        ai_feedback: null
+      };
+
+      console.log('Données de la campagne:', campaignData);
+
+      const result = await SocialCampaignService.createCampaign(campaignData);
+      console.log('Campagne créée avec succès:', result);
       
       onSuccess();
+      toast({
+        title: "Succès",
+        description: "Campagne créée avec succès"
+      });
+
+      // Reset form
       setName('');
       setMessageTemplate('');
       setTargetingCriteria('');
       setSchedule('');
     } catch (error) {
-      console.error('Error creating campaign:', error);
+      console.error('Erreur lors de la création de la campagne:', error);
       toast({
         title: "Erreur",
         description: error.message || "Impossible de créer la campagne",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,8 +220,12 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         />
       </div>
 
-      <Button onClick={handleCreateCampaign} className="w-full">
-        Créer la campagne test
+      <Button 
+        onClick={handleCreateCampaign} 
+        className="w-full"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Création en cours...' : 'Créer la campagne test'}
       </Button>
     </div>
   );
