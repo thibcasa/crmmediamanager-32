@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
@@ -12,12 +13,13 @@ import {
   Network, 
   Megaphone, 
   TrendingUp,
-  PlayCircle 
+  PlayCircle,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabaseClient";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -38,36 +40,89 @@ export function AppLayout() {
   const [simulationResults, setSimulationResults] = useState<string[]>([]);
 
   const runMarketAnalysis = async () => {
-    // Simuler une analyse complète du marché immobilier
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return {
-      socialMediaAnalysis: [
-        "Détection de 127 propriétaires potentiels dans les Alpes-Maritimes via LinkedIn",
-        "15 conversations actives détectées sur Facebook concernant la vente immobilière",
-        "3 zones à fort potentiel identifiées : Antibes, Cannes, Nice"
-      ],
-      contentAnalysis: [
-        "Message type le plus efficace : 'Estimation gratuite de votre bien'",
-        "Meilleur moment pour poster : Mardi et Jeudi 18h-20h",
-        "Taux d'engagement moyen prévu : 4.2%"
-      ],
-      campaignPredictions: [
-        "ROI estimé de la campagne : 320%",
-        "Coût par lead estimé : 45€",
-        "Temps moyen de conversion : 45 jours"
-      ]
-    };
+    try {
+      // 1. Analyse LinkedIn pour détecter les propriétaires
+      const { data: linkedinData, error: linkedinError } = await supabase.functions.invoke('linkedin-integration', {
+        body: { action: 'analyze_profiles', location: 'Alpes-Maritimes' }
+      });
+      
+      if (linkedinError) throw linkedinError;
+
+      // 2. Générer du contenu test avec l'IA
+      const { data: contentData, error: contentError } = await supabase.functions.invoke('content-generator', {
+        body: { 
+          type: 'social',
+          platform: 'linkedin',
+          targetAudience: "propriétaires immobiliers Alpes-Maritimes"
+        }
+      });
+
+      if (contentError) throw contentError;
+
+      // 3. Analyser les performances prédictives
+      const { data: predictiveData, error: predictiveError } = await supabase.functions.invoke('predictive-analysis', {
+        body: { 
+          content: contentData.content,
+          marketContext: {
+            region: "Alpes-Maritimes",
+            propertyType: "all",
+            marketTrends: "rising"
+          }
+        }
+      });
+
+      if (predictiveError) throw predictiveError;
+
+      // 4. Créer une campagne test
+      const { data: campaignData, error: campaignError } = await supabase
+        .from('social_campaigns')
+        .insert({
+          name: `Test Campagne ${new Date().toLocaleDateString()}`,
+          platform: 'linkedin',
+          status: 'draft',
+          targeting_criteria: {
+            location: "Alpes-Maritimes",
+            propertyOwners: true,
+            ageRange: "35-65"
+          },
+          message_template: contentData.content
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      return {
+        socialMediaAnalysis: [
+          `${linkedinData.potentialLeads} propriétaires détectés sur LinkedIn dans les Alpes-Maritimes`,
+          `${linkedinData.activeDiscussions} conversations pertinentes identifiées`,
+          `Zones à fort potentiel : ${linkedinData.hotspots.join(', ')}`
+        ],
+        contentAnalysis: [
+          `Message type optimal : ${contentData.bestPerforming}`,
+          `Meilleurs créneaux : ${contentData.bestTiming}`,
+          `Score d'engagement prévu : ${predictiveData.engagement.rate * 100}%`
+        ],
+        campaignPredictions: [
+          `ROI estimé : ${predictiveData.roi.predicted * 100}%`,
+          `Coût par lead estimé : ${predictiveData.costPerLead}€`,
+          `Leads potentiels : ${predictiveData.projectedLeads} sur 30 jours`
+        ]
+      };
+    } catch (error) {
+      console.error('Erreur dans l\'analyse:', error);
+      throw error;
+    }
   };
 
   const handleSimulation = async () => {
     try {
       setIsSimulating(true);
       toast({
-        title: "Simulation lancée",
-        description: "Analyse complète du marché immobilier en cours...",
+        title: "Simulation complète lancée",
+        description: "Analyse du marché, génération de contenu et prédictions en cours...",
       });
 
-      // Lancer l'analyse de marché
       const results = await runMarketAnalysis();
       setSimulationResults([
         ...results.socialMediaAnalysis,
@@ -77,9 +132,10 @@ export function AppLayout() {
 
       toast({
         title: "Simulation terminée",
-        description: "L'analyse prédictive est disponible",
+        description: "Toutes les analyses ont été complétées avec succès",
       });
     } catch (error) {
+      console.error('Erreur lors de la simulation:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue pendant la simulation",
@@ -107,8 +163,17 @@ export function AppLayout() {
                 onClick={handleSimulation}
                 disabled={isSimulating}
               >
-                <PlayCircle className="w-5 h-5" />
-                {isSimulating ? 'Analyse en cours...' : 'Lancer l\'analyse prédictive'}
+                {isSimulating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Analyse en cours...
+                  </>
+                ) : (
+                  <>
+                    <PlayCircle className="w-5 h-5" />
+                    Lancer la simulation complète
+                  </>
+                )}
               </Button>
             </div>
 
@@ -116,7 +181,7 @@ export function AppLayout() {
             {simulationResults.length > 0 && (
               <div className="px-2">
                 <Alert>
-                  <AlertTitle>Résultats de l'analyse prédictive</AlertTitle>
+                  <AlertTitle>Résultats de la simulation complète</AlertTitle>
                   <AlertDescription>
                     <ul className="list-disc pl-4 space-y-1 text-sm">
                       {simulationResults.map((result, index) => (
