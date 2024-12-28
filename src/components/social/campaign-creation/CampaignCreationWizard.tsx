@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { PersonaForm } from '../persona/PersonaForm';
+import { useToast } from "@/hooks/use-toast";
+import { PersonaFilterManager } from '../../persona/PersonaFilterManager';
 import { LocationSelector } from '../targeting/LocationSelector';
 import { ContentStrategyForm } from '../content/ContentStrategyForm';
 import { supabase } from '@/lib/supabaseClient';
@@ -78,7 +78,15 @@ export const CampaignCreationWizard = () => {
 
         <div className="mt-6">
           <TabsContent value="persona">
-            <PersonaForm onSuccess={() => setActiveStep('location')} />
+            <Card className="p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold">Création de Persona</h2>
+                <p className="text-muted-foreground">
+                  Définissez vos personas cibles pour une meilleure segmentation de votre audience
+                </p>
+              </div>
+              <PersonaFilterManager />
+            </Card>
           </TabsContent>
 
           <TabsContent value="location">
