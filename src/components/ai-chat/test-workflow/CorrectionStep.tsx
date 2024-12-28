@@ -2,10 +2,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
 import { TestResults } from "./types/test-results";
+import { useState } from "react";
 
 interface CorrectionStepProps {
   validationErrors: string[];
-  onApplyCorrections: () => void;
+  onApplyCorrections: (appliedCorrections: string[]) => void;
   testResults: TestResults;
   previousResults?: TestResults;
 }
@@ -16,13 +17,27 @@ export const CorrectionStep = ({
   testResults,
   previousResults
 }: CorrectionStepProps) => {
-  // Séparer les recommandations précédentes des nouvelles corrections
+  const [selectedCorrections, setSelectedCorrections] = useState<string[]>([]);
+  
+  // Get previous recommendations that haven't been applied yet
   const previousRecommendations = previousResults?.recommendations || [];
   const appliedCorrections = testResults.appliedCorrections || [];
   
+  const handleCorrectionSelect = (correction: string) => {
+    setSelectedCorrections(prev => 
+      prev.includes(correction) 
+        ? prev.filter(c => c !== correction)
+        : [...prev, correction]
+    );
+  };
+
+  const handleApplyCorrections = () => {
+    onApplyCorrections(selectedCorrections);
+  };
+  
   return (
     <div className="space-y-6">
-      {/* Afficher les recommandations précédentes */}
+      {/* Previous Recommendations Section */}
       {previousRecommendations.length > 0 && (
         <Card className="p-4 bg-muted">
           <h4 className="font-medium mb-2">Recommandations précédentes</h4>
@@ -34,19 +49,31 @@ export const CorrectionStep = ({
                 ) : (
                   <AlertCircle className="h-4 w-4 text-orange-500" />
                 )}
-                {rec}
+                <span className={appliedCorrections.includes(rec) ? "line-through text-muted-foreground" : ""}>
+                  {rec}
+                </span>
               </li>
             ))}
           </ul>
         </Card>
       )}
 
-      {/* Nouvelles corrections suggérées */}
+      {/* New Corrections Section */}
       <Card className="p-4 border-yellow-200 bg-yellow-50">
         <h4 className="font-medium text-yellow-800 mb-2">Corrections suggérées</h4>
         <ul className="space-y-2">
           {validationErrors.map((error, index) => (
-            <li key={index} className="flex items-center gap-2 text-sm text-yellow-700">
+            <li 
+              key={index} 
+              className="flex items-center gap-2 text-sm text-yellow-700 cursor-pointer hover:bg-yellow-100 p-2 rounded"
+              onClick={() => handleCorrectionSelect(error)}
+            >
+              <input 
+                type="checkbox"
+                checked={selectedCorrections.includes(error)}
+                onChange={() => handleCorrectionSelect(error)}
+                className="mr-2"
+              />
               <ArrowRight className="h-4 w-4" />
               {error}
             </li>
@@ -54,7 +81,7 @@ export const CorrectionStep = ({
         </ul>
       </Card>
 
-      {/* Comparaison des résultats */}
+      {/* Metrics Comparison */}
       {previousResults && (
         <Card className="p-4">
           <h4 className="font-medium mb-4">Impact des corrections</h4>
@@ -79,10 +106,11 @@ export const CorrectionStep = ({
 
       <div className="flex justify-end">
         <Button
-          onClick={onApplyCorrections}
+          onClick={handleApplyCorrections}
           className="flex items-center gap-2"
+          disabled={selectedCorrections.length === 0}
         >
-          Appliquer les corrections et relancer le test
+          Appliquer les corrections sélectionnées ({selectedCorrections.length})
         </Button>
       </div>
     </div>

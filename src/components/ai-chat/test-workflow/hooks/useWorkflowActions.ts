@@ -121,19 +121,22 @@ export const useWorkflowActions = (
     }
   };
 
-  const handleCorrection = () => {
+  const handleCorrection = (appliedCorrections: string[]) => {
     setState(prev => ({ 
       ...prev, 
       activePhase: 'test',
-      validationErrors: [
-        "Optimisez davantage le ton pour le marché premium",
-        "Ajoutez plus de références aux quartiers prisés",
-        "Renforcez la proposition de valeur"
-      ]
+      currentTestResults: {
+        ...prev.currentTestResults,
+        appliedCorrections: [
+          ...(prev.currentTestResults.appliedCorrections || []),
+          ...appliedCorrections
+        ]
+      }
     }));
+    
     toast({
-      title: "Correction en cours",
-      description: "Appliquez les recommandations puis relancez un test.",
+      title: `${appliedCorrections.length} corrections appliquées`,
+      description: "Relancez un test pour voir l'impact des corrections.",
     });
   };
 
