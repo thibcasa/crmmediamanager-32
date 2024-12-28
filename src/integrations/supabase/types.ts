@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      audience_segments: {
+        Row: {
+          created_at: string | null
+          criteria: Json | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       automation_templates: {
         Row: {
           actions: Json | null
@@ -234,6 +264,66 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      editorial_calendar: {
+        Row: {
+          campaign_id: string | null
+          content: Json | null
+          content_type: string
+          created_at: string | null
+          id: string
+          performance_metrics: Json | null
+          platform: string
+          scheduled_date: string
+          status: string | null
+          target_segment: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          content?: Json | null
+          content_type: string
+          created_at?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform: string
+          scheduled_date: string
+          status?: string | null
+          target_segment?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          content?: Json | null
+          content_type?: string
+          created_at?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform?: string
+          scheduled_date?: string
+          status?: string | null
+          target_segment?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_calendar_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "social_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "editorial_calendar_target_segment_fkey"
+            columns: ["target_segment"]
+            isOneToOne: false
+            referencedRelation: "audience_segments"
             referencedColumns: ["id"]
           },
         ]
@@ -827,6 +917,53 @@ export type Database = {
             columns: ["persona_id"]
             isOneToOne: false
             referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_interactions: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          engagement_score: number | null
+          id: string
+          interaction_type: string
+          lead_id: string | null
+          metadata: Json | null
+          platform: string
+          sentiment_score: number | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          interaction_type: string
+          lead_id?: string | null
+          metadata?: Json | null
+          platform: string
+          sentiment_score?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          interaction_type?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          platform?: string
+          sentiment_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
