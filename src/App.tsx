@@ -27,7 +27,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Index />} />
             <Route path="pipeline" element={<Pipeline />} />
             <Route path="prospects" element={<Prospects />} />

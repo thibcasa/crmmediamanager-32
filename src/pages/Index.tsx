@@ -8,7 +8,6 @@ import {
   BarChart3,
   MessageSquare,
   FileText,
-  Video,
   Target,
   Settings
 } from "lucide-react";
@@ -49,7 +48,7 @@ const Index = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="content" className="animate-fadeIn">
+        <TabsContent value="content">
           <Card className="p-6">
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b pb-4">
@@ -69,7 +68,7 @@ const Index = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="social" className="animate-fadeIn">
+        <TabsContent value="social">
           <Card className="p-6">
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b pb-4">
@@ -89,7 +88,7 @@ const Index = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="email" className="animate-fadeIn">
+        <TabsContent value="email">
           <Card className="p-6">
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b pb-4">
@@ -109,7 +108,7 @@ const Index = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="workflow" className="animate-fadeIn">
+        <TabsContent value="workflow">
           <Card className="p-6">
             <div className="space-y-6">
               <div className="flex justify-between items-center border-b pb-4">
