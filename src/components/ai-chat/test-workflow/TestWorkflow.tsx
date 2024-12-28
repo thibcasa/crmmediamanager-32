@@ -43,6 +43,8 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
         title: "Prompt mis à jour",
         description: "Le message a été modifié selon la recommandation"
       });
+      // Automatically run a new prediction
+      handlePrediction();
     }
   };
 
@@ -61,7 +63,11 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
           content={state.content || []}
           onPredictionClick={handlePrediction}
           onRecommendationClick={handleRecommendationClick}
-          recommendations={state.currentTestResults.recommendations || []}
+          recommendations={[
+            ...(state.currentTestResults.recommendations || []),
+            ...(state.currentTestResults.risks || []),
+            ...(state.currentTestResults.opportunities || [])
+          ]}
         />
 
         <Tabs 
@@ -97,7 +103,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
               isAnalyzing={state.isAnalyzing}
               progress={state.progress}
               testResults={state.currentTestResults}
-              onAnalyze={actions.handleTest}
+              onAnalyze={handlePrediction}
               messageToTest={messageToTest}
               iterationCount={state.iterationCount}
             />
