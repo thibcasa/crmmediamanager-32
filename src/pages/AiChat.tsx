@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader2 } from 'lucide-react';
+import { useMonitoring } from '@/monitoring/hooks/useMonitoring';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,6 +15,12 @@ interface Message {
 }
 
 const AiChat = () => {
+  const { trackEvent, trackError } = useMonitoring({ 
+    componentName: 'AiChat',
+    enablePerformance: true,
+    enableErrorTracking: true
+  });
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +51,7 @@ const AiChat = () => {
         
         if (error) {
           console.error("Erreur de session:", error);
+          trackError(error);
           throw error;
         }
         
@@ -60,9 +68,13 @@ const AiChat = () => {
           return;
         }
 
+        trackEvent('session_validated', { userId: session.user.id });
         console.log("Session active:", session.user.id);
       } catch (error) {
         console.error("Erreur lors de la vérification de l'authentification:", error);
+        if (error instanceof Error) {
+          trackError(error);
+        }
         if (mounted) {
           toast({
             title: "Erreur de connexion",
@@ -90,7 +102,7 @@ const AiChat = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, trackEvent, trackError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,6 +110,7 @@ const AiChat = () => {
 
     try {
       setIsLoading(true);
+      trackEvent('message_sent', { messageLength: input.length });
       
       const userMessage = { role: 'user' as const, content: input };
       setMessages(prev => [...prev, userMessage]);
@@ -117,6 +130,9 @@ const AiChat = () => {
 
     } catch (error) {
       console.error('Error in handleSubmit:', error);
+      if (error instanceof Error) {
+        trackError(error);
+      }
       toast({
         title: "Erreur",
         description: "Impossible de traiter votre message. Veuillez réessayer.",
