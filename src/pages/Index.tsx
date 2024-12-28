@@ -10,12 +10,14 @@ import {
   FileText,
   Target,
   Settings,
-  Building2
+  Building2,
+  Brain
 } from "lucide-react";
 import { ContentGenerator } from "@/components/content/ContentGenerator";
 import { EmailCampaign } from "@/components/EmailCampaign";
 import { WorkflowSteps } from "@/components/workflow/WorkflowSteps";
 import { SocialCampaigns } from "@/components/SocialCampaigns";
+import { AIGuidedCampaignWorkflow } from "@/components/social/AIGuidedCampaignWorkflow";
 
 const Index = () => {
   return (
@@ -33,11 +35,11 @@ const Index = () => {
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Users className="w-6 h-6 text-primary" />
+              <Brain className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-medium">Prospects</h3>
-              <p className="text-sm text-muted-foreground">Gestion des contacts</p>
+              <h3 className="font-medium">IA & Prédiction</h3>
+              <p className="text-sm text-muted-foreground">Optimisation intelligente</p>
             </div>
           </div>
         </Card>
@@ -67,8 +69,12 @@ const Index = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="content" className="space-y-6">
-        <TabsList className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <Tabs defaultValue="ai-campaign" className="space-y-6">
+        <TabsList className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <TabsTrigger value="ai-campaign" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            <span>Campagne IA</span>
+          </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center gap-2">
             <Image className="h-4 w-4" />
             <span>Création Contenu</span>
@@ -86,6 +92,10 @@ const Index = () => {
             <span>Workflow</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ai-campaign">
+          <AIGuidedCampaignWorkflow />
+        </TabsContent>
 
         <TabsContent value="content">
           <Card className="p-6">
