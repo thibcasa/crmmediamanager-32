@@ -1,6 +1,21 @@
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
-import { Home, Users, Building2, MessageSquare, BarChart3, GitBranch, Calendar, Workflow, Network, Megaphone, TrendingUp } from "lucide-react";
+import { 
+  Home, 
+  Users, 
+  Building2, 
+  MessageSquare, 
+  BarChart3, 
+  GitBranch, 
+  Calendar, 
+  Workflow, 
+  Network, 
+  Megaphone, 
+  TrendingUp,
+  PlayCircle 
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -16,6 +31,16 @@ const menuItems = [
 ];
 
 export function AppLayout() {
+  const { toast } = useToast();
+
+  const handleSimulation = () => {
+    toast({
+      title: "Simulation lancée",
+      description: "La simulation de l'environnement de production a démarré",
+    });
+    // Ici nous pouvons ajouter la logique de simulation plus tard
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -25,6 +50,18 @@ export function AppLayout() {
               <div className="w-8 h-8 rounded-full bg-sage-500" />
               <span className="font-semibold text-lg">ImmoAI</span>
             </div>
+            
+            {/* Bouton de simulation proéminent */}
+            <div className="px-2">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-white flex items-center gap-2 h-12"
+                onClick={handleSimulation}
+              >
+                <PlayCircle className="w-5 h-5" />
+                Lancer la simulation
+              </Button>
+            </div>
+
             <nav className="space-y-1 px-2">
               {menuItems.map((item) => (
                 <a
