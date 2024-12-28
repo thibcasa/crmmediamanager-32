@@ -4,7 +4,7 @@ import { TestRecommendations } from "../TestRecommendations";
 
 interface CorrectionStepProps {
   validationErrors: string[];
-  onApplyCorrections: (corrections: string[]) => void;
+  onApplyCorrections: () => void;
   testResults: TestResults;
   previousResults?: TestResults;
   onRecommendationClick: (recommendation: string) => void;

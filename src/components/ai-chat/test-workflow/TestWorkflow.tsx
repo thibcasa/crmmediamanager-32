@@ -30,6 +30,9 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
         title: "Recommandation appliquée",
         description: "Une nouvelle analyse va être lancée avec cette amélioration.",
       });
+
+      // Move to prediction phase
+      actions.setActivePhase('prediction');
     }
   };
 
