@@ -7,13 +7,24 @@ import {
   DollarSign,
   GraduationCap,
   Clock,
-  MessageCircle
+  MessageCircle,
+  LucideIcon
 } from 'lucide-react';
 
-export const filterSections = [
+interface FilterSection {
+  title: string;
+  icon: LucideIcon;
+  filters: Array<{
+    id: string;
+    label: string;
+    value: string;
+  }>;
+}
+
+export const filterSections: FilterSection[] = [
   {
     title: "Données Démographiques",
-    icon: <Users className="w-5 h-5 text-primary" />,
+    icon: Users,
     filters: [
       { id: "age-18-24", label: "18-24 ans", value: "18-24" },
       { id: "age-25-34", label: "25-34 ans", value: "25-34" },
@@ -27,7 +38,7 @@ export const filterSections = [
   },
   {
     title: "Comportements",
-    icon: <Target className="w-5 h-5 text-primary" />,
+    icon: Target,
     filters: [
       { id: "platform-instagram", label: "Utilise Instagram", value: "instagram" },
       { id: "platform-facebook", label: "Utilise Facebook", value: "facebook" },
@@ -40,7 +51,7 @@ export const filterSections = [
   },
   {
     title: "Intérêts",
-    icon: <Heart className="w-5 h-5 text-primary" />,
+    icon: Heart,
     filters: [
       { id: "interest-realestate", label: "Immobilier", value: "realestate" },
       { id: "interest-investment", label: "Investissement", value: "investment" },
@@ -66,7 +77,7 @@ export const filterSections = [
   },
   {
     title: "Professionnel",
-    icon: <Briefcase className="w-5 h-5 text-primary" />,
+    icon: Briefcase,
     filters: [
       { id: "job-unemployed", label: "Sans emploi", value: "unemployed" },
       { id: "job-student", label: "Étudiant", value: "student" },
@@ -87,7 +98,7 @@ export const filterSections = [
   },
   {
     title: "Éducation",
-    icon: <GraduationCap className="w-5 h-5 text-primary" />,
+    icon: GraduationCap,
     filters: [
       { id: "edu-none", label: "Sans diplôme", value: "none" },
       { id: "edu-brevet", label: "Brevet des collèges", value: "brevet" },
@@ -105,7 +116,7 @@ export const filterSections = [
   },
   {
     title: "Revenus",
-    icon: <DollarSign className="w-5 h-5 text-primary" />,
+    icon: DollarSign,
     filters: [
       { id: "income-low", label: "< 2000€/mois", value: "low" },
       { id: "income-medium-low", label: "2000€ - 3000€/mois", value: "medium-low" },
