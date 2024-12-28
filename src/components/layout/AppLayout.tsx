@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -32,13 +34,44 @@ const menuItems = [
 
 export function AppLayout() {
   const { toast } = useToast();
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<string[]>([]);
 
-  const handleSimulation = () => {
-    toast({
-      title: "Simulation lancée",
-      description: "La simulation de l'environnement de production a démarré",
-    });
-    // Ici nous pouvons ajouter la logique de simulation plus tard
+  const runMarketAnalysis = async () => {
+    // Simuler une analyse de marché
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return [
+      "Détection de 127 propriétaires potentiels dans les Alpes-Maritimes",
+      "Analyse des tendances de vente : +15% ce trimestre",
+      "Identification de 3 zones à fort potentiel"
+    ];
+  };
+
+  const handleSimulation = async () => {
+    try {
+      setIsSimulating(true);
+      toast({
+        title: "Simulation lancée",
+        description: "Analyse du marché immobilier en cours...",
+      });
+
+      // Lancer l'analyse de marché
+      const results = await runMarketAnalysis();
+      setSimulationResults(results);
+
+      toast({
+        title: "Simulation terminée",
+        description: "L'analyse du marché a été complétée avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue pendant la simulation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   return (
@@ -56,11 +89,28 @@ export function AppLayout() {
               <Button 
                 className="w-full bg-primary hover:bg-primary/90 text-white flex items-center gap-2 h-12"
                 onClick={handleSimulation}
+                disabled={isSimulating}
               >
                 <PlayCircle className="w-5 h-5" />
-                Lancer la simulation
+                {isSimulating ? 'Simulation en cours...' : 'Lancer la simulation'}
               </Button>
             </div>
+
+            {/* Affichage des résultats de simulation */}
+            {simulationResults.length > 0 && (
+              <div className="px-2">
+                <Alert>
+                  <AlertTitle>Résultats de l'analyse</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-1 text-sm">
+                      {simulationResults.map((result, index) => (
+                        <li key={index}>{result}</li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
 
             <nav className="space-y-1 px-2">
               {menuItems.map((item) => (
