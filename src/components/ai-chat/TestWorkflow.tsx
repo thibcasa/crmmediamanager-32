@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Brain, Play, AlertCircle, CheckCircle2, BarChart2 } from 'lucide-react';
+import { Brain, Play, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { TestResults } from './types/test-results';
 import { TestMetrics } from './TestMetrics';
 import { TestRecommendations } from './TestRecommendations';
@@ -138,34 +137,8 @@ export const TestWorkflow = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <Card className="p-4">
-              <p className="text-sm font-medium">Engagement estimé</p>
-              <p className="text-2xl font-bold">{(testResults.engagement * 100).toFixed(1)}%</p>
-            </Card>
-            <Card className="p-4">
-              <p className="text-sm font-medium">Taux de clic</p>
-              <p className="text-2xl font-bold">{(testResults.clickRate * 100).toFixed(1)}%</p>
-            </Card>
-            <Card className="p-4">
-              <p className="text-sm font-medium">Taux de conversion</p>
-              <p className="text-2xl font-bold">{(testResults.conversionRate * 100).toFixed(1)}%</p>
-            </Card>
-          </div>
-
-          {testResults.recommendations.length > 0 && (
-            <Card className="p-4">
-              <h4 className="text-sm font-medium mb-2">Recommandations</h4>
-              <ul className="space-y-2">
-                {testResults.recommendations.map((rec, index) => (
-                  <li key={index} className="text-sm flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-orange-500" />
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
+          <TestMetrics results={testResults} />
+          <TestRecommendations recommendations={testResults.recommendations} />
         </div>
       )}
     </Card>
