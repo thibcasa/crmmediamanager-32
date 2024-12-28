@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChatMessages } from '@/components/ai-chat/ChatMessages';
 import { ChatInput } from '@/components/ai-chat/ChatInput';
 import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/CampaignWorkflowManager';
@@ -16,6 +17,8 @@ const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
   const [campaignData, setCampaignData] = useState<CampaignData>({
     objective: '',
     creatives: [],
@@ -23,9 +26,40 @@ const AiChat = () => {
   });
   const { toast } = useToast();
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (!session) {
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          navigate('/login');
+          return;
+        }
+        
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Erreur de vérification de session:', error);
+        toast({
+          title: "Erreur d'authentification",
+          description: "Une erreur est survenue, veuillez vous reconnecter",
+          variant: "destructive",
+        });
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || !isAuthenticated) return;
 
     try {
       setIsLoading(true);
@@ -73,7 +107,7 @@ const AiChat = () => {
         throw new Error('Format de réponse invalide pour les créatives');
       }
 
-      // Update campaign data with proper typing
+      // Update campaign data
       const updatedCampaignData: CampaignData = {
         objective: input,
         creatives: creativesData.images.map((url: string) => ({
@@ -114,6 +148,10 @@ const AiChat = () => {
       setIsLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return null; // Ne rien afficher pendant la vérification de l'authentification
+  }
 
   return (
     <div className="space-y-6">
