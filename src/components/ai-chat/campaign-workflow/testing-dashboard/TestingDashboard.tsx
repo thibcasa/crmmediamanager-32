@@ -1,11 +1,11 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { TestTube } from 'lucide-react';
-import { CampaignData } from '../../types/campaign';
-import { useTestExecution } from './hooks/useTestExecution';
+import { useEffect } from 'react';
 import { TestProgress } from './components/TestProgress';
 import { MetricsGrid } from './components/MetricsGrid';
 import { PerformanceAlert } from './components/PerformanceAlert';
+import { useTestExecution } from './hooks/useTestExecution';
+import { CampaignData } from '../../types/campaign';
+import { ConfigurationService } from '@/services/ConfigurationService';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TestingDashboardProps {
   campaignData: CampaignData;
@@ -13,30 +13,61 @@ interface TestingDashboardProps {
 }
 
 export const TestingDashboard = ({ campaignData, onTestComplete }: TestingDashboardProps) => {
+  const { toast } = useToast();
   const { isTesting, progress, runTest } = useTestExecution(onTestComplete);
 
+  useEffect(() => {
+    const backupConfiguration = async () => {
+      try {
+        await ConfigurationService.saveConfiguration(
+          'testing_interface',
+          {
+            components: {
+              testProgress: true,
+              metricsGrid: true,
+              performanceAlert: true
+            },
+            layout: 'default',
+            metrics: [
+              'engagement',
+              'costPerLead',
+              'roi',
+              'estimatedLeads'
+            ]
+          },
+          'Initial testing interface configuration backup'
+        );
+        
+        toast({
+          title: "Configuration sauvegardée",
+          description: "La configuration de l'interface de test a été sauvegardée avec succès."
+        });
+      } catch (error) {
+        console.error('Error backing up configuration:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de sauvegarder la configuration.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    backupConfiguration();
+  }, [toast]);
+
   return (
-    <Card className="p-6 space-y-6">
-      <div>
-        <h3 className="text-lg font-medium mb-2">Test de la Campagne</h3>
-        <p className="text-sm text-muted-foreground">
-          Analysez les performances attendues de votre campagne
-        </p>
-      </div>
-
+    <div className="space-y-6">
       <TestProgress isTesting={isTesting} progress={progress} />
-
-      <Button
-        onClick={() => runTest(campaignData)}
-        disabled={isTesting}
-        className="w-full"
-      >
-        <TestTube className="mr-2 h-4 w-4" />
-        {isTesting ? 'Test en cours...' : 'Lancer le test'}
-      </Button>
-
       <MetricsGrid predictions={campaignData.predictions} />
       <PerformanceAlert predictions={campaignData.predictions} />
-    </Card>
+      
+      <button
+        onClick={() => runTest(campaignData)}
+        disabled={isTesting}
+        className="w-full bg-primary text-white p-2 rounded-md hover:bg-primary/90 disabled:opacity-50"
+      >
+        {isTesting ? 'Test en cours...' : 'Lancer le test'}
+      </button>
+    </div>
   );
 };

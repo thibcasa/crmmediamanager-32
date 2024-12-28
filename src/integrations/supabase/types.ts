@@ -134,6 +134,39 @@ export type Database = {
           },
         ]
       }
+      configuration_history: {
+        Row: {
+          configuration_data: Json
+          configuration_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          configuration_data: Json
+          configuration_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id: string
+          version: number
+        }
+        Update: {
+          configuration_data?: Json
+          configuration_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       content_templates: {
         Row: {
           content: string
