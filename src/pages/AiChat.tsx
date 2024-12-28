@@ -20,12 +20,8 @@ const AiChat = () => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [campaignData, setCampaignData] = useState({
-    objective: '',
-    creatives: [],
-    content: []
-  });
 
+  // Vérification de l'authentification au montage
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -37,28 +33,17 @@ const AiChat = () => {
         }
         
         if (!session) {
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter",
-            variant: "destructive",
-          });
+          console.log('Pas de session active, redirection vers login');
           navigate('/login');
           return;
         }
 
-        // Écouter les changements d'authentification
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (!session) {
-            navigate('/login');
-          }
-        });
-
-        return () => subscription.unsubscribe();
+        console.log('Session active:', session.user.id);
       } catch (error) {
         console.error('Erreur lors de la vérification de l\'authentification:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la vérification de l'authentification",
+          title: "Erreur de connexion",
+          description: "Une erreur est survenue, veuillez réessayer",
           variant: "destructive",
         });
         navigate('/login');
@@ -68,6 +53,15 @@ const AiChat = () => {
     };
 
     checkAuth();
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,10 +130,7 @@ const AiChat = () => {
         </Card>
 
         <div className="space-y-6">
-          <CampaignWorkflowManager 
-            initialData={campaignData}
-            onUpdate={(updates) => setCampaignData(prev => ({ ...prev, ...updates }))}
-          />
+          <CampaignWorkflowManager />
         </div>
       </div>
     </div>
