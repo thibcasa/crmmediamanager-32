@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useWorkflowState } from './hooks/useWorkflowState';
