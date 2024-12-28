@@ -33,12 +33,11 @@ export const FacebookSettings = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium mb-2">Configuration de l'API Facebook</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Configurez votre clé API Facebook pour gérer vos campagnes publicitaires.
-      </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="Facebook" />
-    </div>
+    <ApiKeyForm 
+      serviceName="Facebook"
+      onSave={handleSave}
+      isLoading={isLoading}
+      placeholder="Entrez votre clé API Facebook"
+    />
   );
 };

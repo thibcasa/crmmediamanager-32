@@ -2,18 +2,26 @@ import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { FirecrawlService } from '@/utils/FirecrawlService';
 
 interface ApiKeyFormProps {
   onSave?: (key: string) => Promise<void>;
   isLoading?: boolean;
   serviceName?: string;
+  defaultValue?: string;
+  placeholder?: string;
 }
 
-export const ApiKeyForm = ({ onSave, isLoading = false, serviceName = 'Firecrawl' }: ApiKeyFormProps) => {
+export const ApiKeyForm = ({ 
+  onSave, 
+  isLoading = false, 
+  serviceName = 'Firecrawl',
+  defaultValue = '',
+  placeholder = ''
+}: ApiKeyFormProps) => {
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(defaultValue);
 
   const handleSaveApiKey = async () => {
     if (!apiKey) {
@@ -56,13 +64,16 @@ export const ApiKeyForm = ({ onSave, isLoading = false, serviceName = 'Firecrawl
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-2">Clé API {serviceName}</label>
+        <h3 className="text-lg font-medium mb-2">Clé API {serviceName}</h3>
+        <p className="text-sm text-muted-foreground mb-6">
+          Configurez votre clé API {serviceName} pour activer les fonctionnalités associées.
+        </p>
         <div className="flex gap-2">
           <Input
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={`Entrez votre clé API ${serviceName}`}
+            placeholder={placeholder || `Entrez votre clé API ${serviceName}`}
             className="flex-1"
           />
           <Button onClick={handleSaveApiKey} disabled={isLoading}>

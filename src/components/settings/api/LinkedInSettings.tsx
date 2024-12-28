@@ -33,12 +33,11 @@ export const LinkedInSettings = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium mb-2">Configuration de l'API LinkedIn</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Configurez votre clé API LinkedIn pour gérer vos campagnes de prospection.
-      </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="LinkedIn" />
-    </div>
+    <ApiKeyForm 
+      serviceName="LinkedIn"
+      onSave={handleSave}
+      isLoading={isLoading}
+      placeholder="Entrez votre clé API LinkedIn"
+    />
   );
 };

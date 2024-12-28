@@ -33,12 +33,11 @@ export const InstagramSettings = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium mb-2">Configuration de l'API Instagram</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Configurez votre clé API Instagram pour gérer vos campagnes sociales.
-      </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="Instagram" />
-    </div>
+    <ApiKeyForm 
+      serviceName="Instagram"
+      onSave={handleSave}
+      isLoading={isLoading}
+      placeholder="Entrez votre clé API Instagram"
+    />
   );
 };

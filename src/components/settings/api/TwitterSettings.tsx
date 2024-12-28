@@ -33,12 +33,11 @@ export const TwitterSettings = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium mb-2">Configuration de l'API Twitter</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Configurez votre clé API Twitter pour gérer vos campagnes sociales.
-      </p>
-      <ApiKeyForm onSave={handleSave} isLoading={isLoading} serviceName="Twitter" />
-    </div>
+    <ApiKeyForm 
+      serviceName="Twitter"
+      onSave={handleSave}
+      isLoading={isLoading}
+      placeholder="Entrez votre clé API Twitter"
+    />
   );
 };
