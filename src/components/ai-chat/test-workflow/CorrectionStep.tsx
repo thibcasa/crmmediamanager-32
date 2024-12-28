@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
 import { TestResults } from "./types/test-results";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CorrectionStepProps {
   validationErrors: string[];
@@ -62,17 +63,20 @@ export const CorrectionStep = ({
           {validationErrors.map((error, index) => (
             <li 
               key={index} 
-              className="flex items-center gap-2 text-sm text-yellow-700 cursor-pointer hover:bg-yellow-100 p-2 rounded"
-              onClick={() => handleCorrectionSelect(error)}
+              className="flex items-center gap-2 text-sm text-yellow-700 p-2 rounded"
             >
-              <input 
-                type="checkbox"
+              <Checkbox
+                id={`correction-${index}`}
                 checked={selectedCorrections.includes(error)}
-                onChange={() => handleCorrectionSelect(error)}
-                className="mr-2"
+                onCheckedChange={() => handleCorrectionSelect(error)}
               />
-              <ArrowRight className="h-4 w-4" />
-              {error}
+              <label
+                htmlFor={`correction-${index}`}
+                className="flex items-center gap-2 cursor-pointer flex-1"
+              >
+                <ArrowRight className="h-4 w-4" />
+                {error}
+              </label>
             </li>
           ))}
         </ul>
