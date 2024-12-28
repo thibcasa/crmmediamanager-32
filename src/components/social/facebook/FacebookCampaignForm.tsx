@@ -44,6 +44,9 @@ export const FacebookCampaignForm = () => {
     }
   });
 
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
@@ -73,7 +76,7 @@ export const FacebookCampaignForm = () => {
           duration: campaignData.budget.duration,
           distribution: campaignData.budget.distribution
         },
-        ai_feedback: null,
+        user_id: user.id,
         posts: [],
         post_triggers: [],
         target_metrics: {
@@ -81,7 +84,15 @@ export const FacebookCampaignForm = () => {
           cpl: campaignData.kpis.targetCPL,
           conversion_rate: campaignData.kpis.targetConversionRate
         },
-        user_id: user.id // Add the user_id field
+        ai_feedback: null,
+        persona_id: selectedPersonaId,
+        target_locations: selectedLocations,
+        content_strategy: {
+          post_types: ["image", "carousel"],
+          posting_frequency: "daily",
+          best_times: ["09:00", "12:00", "17:00"],
+          content_themes: ["property_showcase"]
+        }
       };
 
       await SocialCampaignService.createCampaign(formattedCampaign);

@@ -9,21 +9,11 @@ import { Facebook, Instagram, Linkedin, MessageCircle } from 'lucide-react';
 import { LinkedInStatus } from '../linkedin/LinkedInStatus';
 import { supabase } from '@/lib/supabaseClient';
 
-const platformTemplates = {
-  linkedin: `Bonjour {first_name},
-
-Je suis agent immobilier dans les Alpes-Maritimes et je remarque que vous êtes propriétaire dans la région.
-
-Avez-vous déjà pensé à faire estimer votre bien ? Je propose une estimation gratuite et détaillée, basée sur une analyse approfondie du marché local.
-
-Je reste à votre disposition pour échanger à ce sujet.
-
-Cordialement,
-{agent_name}`,
-  whatsapp: `Bonjour {first_name},\n\nJe suis {agent_name}, agent immobilier...`,
-  facebook: `🏠 Propriétaire dans les Alpes-Maritimes ?\n\nDécouvrez la valeur...`,
-  instagram: `📸 Découvrez la vraie valeur de votre bien immobilier dans les Alpes-Maritimes ! Estimation gratuite et professionnelle.`
-};
+// Move templates to a separate file for better organization
+import { platformTemplates } from './utils/platformTemplates';
+import { CampaignTargeting } from './campaign/CampaignTargeting';
+import { CampaignSchedule } from './campaign/CampaignSchedule';
+import { PersonaSelector } from './campaign/PersonaSelector';
 
 interface CreateCampaignFormProps {
   onSuccess: () => void;
@@ -35,51 +25,19 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   const [name, setName] = useState('Test LinkedIn - Propriétaires Nice');
   const [platform, setPlatform] = useState<Platform>('linkedin');
   const [messageTemplate, setMessageTemplate] = useState(platformTemplates.linkedin);
-  const [targetingCriteria, setTargetingCriteria] = useState(JSON.stringify({
+  const [targetingCriteria, setTargetingCriteria] = useState({
     location: "Nice, Alpes-Maritimes",
     jobTitles: ["Propriétaire", "Investisseur immobilier"],
     industries: ["Real Estate", "Property Management"],
     keywords: ["propriétaire", "immobilier", "investissement"]
-  }, null, 2));
-  const [schedule, setSchedule] = useState(JSON.stringify({
+  });
+  const [schedule, setSchedule] = useState({
     frequency: "daily",
     times: ["09:00", "14:00", "17:00"],
     days: ["monday", "wednesday", "friday"]
-  }, null, 2));
-
-  const validateForm = () => {
-    if (!name.trim()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le nom de la campagne est requis",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!messageTemplate.trim()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le message est requis",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    try {
-      JSON.parse(targetingCriteria);
-      JSON.parse(schedule);
-    } catch (e) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le format JSON du ciblage ou du planning est invalide",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    return true;
-  };
+  });
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   const handlePlatformChange = (value: Platform) => {
     setPlatform(value);
@@ -87,7 +45,14 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   };
 
   const handleCreateCampaign = async () => {
-    if (!validateForm()) return;
+    if (!selectedPersonaId) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez sélectionner un persona",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -106,14 +71,22 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         name,
         platform,
         message_template: messageTemplate,
-        targeting_criteria: JSON.parse(targetingCriteria),
+        targeting_criteria: targetingCriteria,
         status: 'draft',
-        schedule: schedule ? JSON.parse(schedule) : null,
+        schedule: schedule,
         user_id: user.id,
         posts: [],
         post_triggers: [],
         target_metrics: {},
-        ai_feedback: null // Add the missing required field
+        ai_feedback: null,
+        persona_id: selectedPersonaId,
+        target_locations: selectedLocations,
+        content_strategy: {
+          post_types: ["image", "carousel"],
+          posting_frequency: "daily",
+          best_times: ["09:00", "12:00", "17:00"],
+          content_themes: ["property_showcase"]
+        }
       };
 
       await SocialCampaignService.createCampaign(campaignData);
@@ -127,8 +100,19 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
       // Reset form
       setName('');
       setMessageTemplate('');
-      setTargetingCriteria('');
-      setSchedule('');
+      setTargetingCriteria({
+        location: "",
+        jobTitles: [],
+        industries: [],
+        keywords: []
+      });
+      setSchedule({
+        frequency: "daily",
+        times: [],
+        days: []
+      });
+      setSelectedPersonaId(null);
+      setSelectedLocations([]);
     } catch (error) {
       console.error('Erreur lors de la création de la campagne:', error);
       toast({
@@ -189,6 +173,18 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         </Select>
       </div>
 
+      <PersonaSelector
+        selectedPersonaId={selectedPersonaId}
+        onPersonaSelect={setSelectedPersonaId}
+      />
+
+      <CampaignTargeting
+        selectedLocations={selectedLocations}
+        onLocationsChange={setSelectedLocations}
+        targetingCriteria={targetingCriteria}
+        onTargetingChange={setTargetingCriteria}
+      />
+
       <div>
         <label className="block text-sm font-medium mb-2">Template de message</label>
         <Textarea
@@ -199,30 +195,17 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Critères de ciblage (JSON)</label>
-        <Textarea
-          value={targetingCriteria}
-          onChange={(e) => setTargetingCriteria(e.target.value)}
-          className="font-mono text-sm"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Planning de publication (JSON)</label>
-        <Textarea
-          value={schedule}
-          onChange={(e) => setSchedule(e.target.value)}
-          className="font-mono text-sm"
-        />
-      </div>
+      <CampaignSchedule
+        schedule={schedule}
+        onChange={setSchedule}
+      />
 
       <Button 
         onClick={handleCreateCampaign} 
         className="w-full"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Création en cours...' : 'Créer la campagne test'}
+        {isSubmitting ? 'Création en cours...' : 'Créer la campagne'}
       </Button>
     </div>
   );
