@@ -7,7 +7,7 @@ import { CorrectionStep } from './test-workflow/CorrectionStep';
 import { TestStep } from './test-workflow/TestStep';
 import { ProductionStep } from './test-workflow/ProductionStep';
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabaseClient";
+import { useCampaignOrder } from './hooks/useCampaignOrder';
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -16,6 +16,7 @@ interface TestWorkflowProps {
 export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { toast } = useToast();
   const { state, actions } = useWorkflowState(messageToTest);
+  const { createCampaign, updateMetrics } = useCampaignOrder();
   const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
 
   const handleRecommendationClick = async (recommendation: string) => {
@@ -23,102 +24,56 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
       const updatedMessage = `${messageToTest}\n\nAméliorations appliquées:\n- ${recommendation}`;
       actions.setMessageToTest(updatedMessage);
       
-      // Create or update workflow template
-      const { data: workflowData, error: workflowError } = await supabase
-        .from('workflow_templates')
-        .upsert({
-          name: `Campagne ${new Date().toLocaleDateString()}`,
-          description: updatedMessage,
-          triggers: [
+      try {
+        // Créer ou mettre à jour la campagne avec le nouveau message
+        const campaignOrder = {
+          objective: updatedMessage,
+          target_audience: "Propriétaires immobiliers Alpes-Maritimes",
+          success_metrics: {
+            min_leads: 10,
+            target_roi: 2,
+            min_engagement: 0.6
+          },
+          posts: [
             {
-              type: 'campaign_engagement',
-              config: { threshold: 0.5 }
+              content: updatedMessage,
+              trigger_conditions: [
+                {
+                  metric: "engagement",
+                  operator: ">",
+                  value: 0.3
+                }
+              ],
+              status: 'draft'
             }
           ],
-          actions: [
-            {
-              type: 'analyze_performance',
-              config: {
-                metrics: ['engagement', 'conversion', 'roi'],
-                frequency: 'daily'
-              }
-            },
-            {
-              type: 'generate_report',
-              config: {
-                type: 'performance_summary',
-                schedule: 'weekly'
-              }
-            }
-          ]
-        });
-
-      if (workflowError) {
-        console.error('Error creating workflow:', workflowError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de créer le workflow",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Create pipeline stages
-      const { data: pipelineData, error: pipelineError } = await supabase
-        .from('pipeline_stages')
-        .insert([
-          {
-            name: "Analyse prédictive",
-            order_index: 0,
-            automation_rules: [
-              {
-                condition: "metrics.engagement > 0.6",
-                action: "proceed_to_next_stage"
-              }
-            ]
-          },
-          {
-            name: "Optimisation",
-            order_index: 1,
-            automation_rules: [
-              {
-                condition: "metrics.roi > 2",
-                action: "proceed_to_next_stage"
-              }
-            ]
-          },
-          {
-            name: "Production",
-            order_index: 2,
-            automation_rules: [
-              {
-                condition: "metrics.conversion > 0.1",
-                action: "activate_campaign"
-              }
-            ]
+          workflow_config: {
+            frequency: "daily",
+            max_posts_per_day: 3,
+            optimal_posting_times: ["09:00", "12:00", "17:00"]
           }
-        ]);
+        };
 
-      if (pipelineError) {
-        console.error('Error creating pipeline:', pipelineError);
+        await createCampaign(campaignOrder);
+
+        // Déclencher une nouvelle prédiction
+        actions.handlePrediction();
+        
+        toast({
+          title: "Recommandation appliquée",
+          description: "Une nouvelle analyse va être lancée avec cette amélioration.",
+        });
+
+        // Passer à la phase de prédiction
+        actions.setActivePhase('prediction');
+      } catch (error) {
+        console.error('Error applying recommendation:', error);
         toast({
           title: "Erreur",
-          description: "Impossible de créer le pipeline",
+          description: "Impossible d'appliquer la recommandation",
           variant: "destructive"
         });
-        return;
       }
-
-      // Automatically trigger a new prediction
-      actions.handlePrediction();
-      
-      toast({
-        title: "Recommandation appliquée",
-        description: "Une nouvelle analyse va être lancée avec cette amélioration.",
-      });
-
-      // Move to prediction phase
-      actions.setActivePhase('prediction');
     }
   };
 
