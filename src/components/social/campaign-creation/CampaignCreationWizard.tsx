@@ -1,26 +1,18 @@
-import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { PersonaFilterManager } from '../../persona/PersonaFilterManager';
+import { useToast } from "@/components/ui/use-toast";
+import { PersonaFilterManager } from '@/components/persona/PersonaFilterManager';
 import { LocationSelector } from '../targeting/LocationSelector';
 import { ContentStrategyForm } from '../content/ContentStrategyForm';
 import { supabase } from '@/lib/supabaseClient';
-import { Target, MapPin, Users, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
 
 export const CampaignCreationWizard = () => {
   const { toast } = useToast();
   const [activeStep, setActiveStep] = useState('persona');
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [contentStrategy, setContentStrategy] = useState({
-    postTypes: ['image', 'carousel'],
-    postingFrequency: 'daily',
-    bestTimes: ['09:00', '12:00', '17:00'],
-    contentThemes: ['property_showcase']
-  });
 
-  const handleCreateCampaign = async () => {
+  const handleSaveCampaign = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
@@ -28,12 +20,17 @@ export const CampaignCreationWizard = () => {
       const { data, error } = await supabase
         .from('social_campaigns')
         .insert({
-          name: `Campagne Immobilière ${new Date().toLocaleDateString()}`,
+          user_id: user.id,
+          name: 'Nouvelle Campagne',
           platform: 'linkedin',
           status: 'draft',
-          target_locations: selectedLocations,
-          content_strategy: contentStrategy,
-          user_id: user.id
+          targeting_criteria: {},
+          content_strategy: {
+            posting_frequency: 'daily',
+            best_times: ['09:00', '12:00', '17:00'],
+            post_types: ['image', 'carousel', 'video', 'story'],
+            content_themes: ['property_showcase', 'market_insights', 'testimonials']
+          }
         })
         .select()
         .single();
@@ -42,38 +39,33 @@ export const CampaignCreationWizard = () => {
 
       toast({
         title: "Campagne créée",
-        description: "La campagne a été créée avec succès"
+        description: "La campagne a été créée avec succès",
       });
+
     } catch (error) {
       console.error('Erreur lors de la création de la campagne:', error);
       toast({
         title: "Erreur",
         description: "Impossible de créer la campagne",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   return (
     <Card className="p-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold">Création de Campagne</h2>
+        <p className="text-muted-foreground">
+          Configurez votre campagne de prospection immobilière
+        </p>
+      </div>
+
       <Tabs value={activeStep} onValueChange={setActiveStep}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="persona" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Persona
-          </TabsTrigger>
-          <TabsTrigger value="location" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Zones
-          </TabsTrigger>
-          <TabsTrigger value="targeting" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            Ciblage
-          </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Contenu
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="persona">Persona</TabsTrigger>
+          <TabsTrigger value="location">Localisation</TabsTrigger>
+          <TabsTrigger value="content">Contenu</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
@@ -90,30 +82,42 @@ export const CampaignCreationWizard = () => {
           </TabsContent>
 
           <TabsContent value="location">
-            <LocationSelector
-              selectedLocations={selectedLocations}
-              onLocationChange={setSelectedLocations}
-            />
-          </TabsContent>
-
-          <TabsContent value="targeting">
-            <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4">Critères de ciblage</h3>
-              {/* Critères de ciblage spécifiques */}
-            </Card>
+            <LocationSelector />
           </TabsContent>
 
           <TabsContent value="content">
-            <ContentStrategyForm
-              initialStrategy={contentStrategy}
-              onChange={setContentStrategy}
-            />
-            <div className="mt-6">
-              <Button onClick={handleCreateCampaign} className="w-full">
-                Créer la campagne
-              </Button>
-            </div>
+            <ContentStrategyForm />
           </TabsContent>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-4">
+          {activeStep !== 'persona' && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                const steps = ['persona', 'location', 'content'];
+                const currentIndex = steps.indexOf(activeStep);
+                setActiveStep(steps[currentIndex - 1]);
+              }}
+            >
+              Précédent
+            </Button>
+          )}
+          {activeStep === 'content' ? (
+            <Button onClick={handleSaveCampaign}>
+              Créer la campagne
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                const steps = ['persona', 'location', 'content'];
+                const currentIndex = steps.indexOf(activeStep);
+                setActiveStep(steps[currentIndex + 1]);
+              }}
+            >
+              Suivant
+            </Button>
+          )}
         </div>
       </Tabs>
     </Card>
