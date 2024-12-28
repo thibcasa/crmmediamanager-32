@@ -68,6 +68,57 @@ const filterSections = [
       { id: "interest-eco-living", label: "Mode de vie écologique", value: "eco-living" }
     ]
   },
+  {
+    title: "Professionnel",
+    icon: <Briefcase className="w-5 h-5 text-primary" />,
+    filters: [
+      { id: "job-unemployed", label: "Sans emploi", value: "unemployed" },
+      { id: "job-student", label: "Étudiant", value: "student" },
+      { id: "job-worker", label: "Ouvrier", value: "worker" },
+      { id: "job-employee", label: "Employé", value: "employee" },
+      { id: "job-technician", label: "Technicien", value: "technician" },
+      { id: "job-executive", label: "Cadre", value: "executive" },
+      { id: "job-senior-executive", label: "Cadre supérieur", value: "senior-executive" },
+      { id: "job-director", label: "Directeur", value: "director" },
+      { id: "job-ceo", label: "PDG", value: "ceo" },
+      { id: "job-entrepreneur", label: "Entrepreneur", value: "entrepreneur" },
+      { id: "job-freelance", label: "Freelance", value: "freelance" },
+      { id: "job-consultant", label: "Consultant", value: "consultant" },
+      { id: "job-retired", label: "Retraité", value: "retired" },
+      { id: "job-civil-servant", label: "Fonctionnaire", value: "civil-servant" },
+      { id: "job-liberal", label: "Profession libérale", value: "liberal" }
+    ]
+  },
+  {
+    title: "Éducation",
+    icon: <GraduationCap className="w-5 h-5 text-primary" />,
+    filters: [
+      { id: "edu-none", label: "Sans diplôme", value: "none" },
+      { id: "edu-brevet", label: "Brevet des collèges", value: "brevet" },
+      { id: "edu-cap", label: "CAP/BEP", value: "cap" },
+      { id: "edu-bac", label: "Baccalauréat", value: "bac" },
+      { id: "edu-bac2", label: "Bac+2 (DUT, BTS)", value: "bac2" },
+      { id: "edu-bachelor", label: "Licence / Bachelor", value: "bachelor" },
+      { id: "edu-master", label: "Master", value: "master" },
+      { id: "edu-engineering", label: "École d'ingénieur", value: "engineering" },
+      { id: "edu-business", label: "École de commerce", value: "business" },
+      { id: "edu-phd", label: "Doctorat", value: "phd" },
+      { id: "edu-self", label: "Autodidacte", value: "self-taught" },
+      { id: "edu-professional", label: "Formation professionnelle", value: "professional" }
+    ]
+  },
+  {
+    title: "Revenus",
+    icon: <DollarSign className="w-5 h-5 text-primary" />,
+    filters: [
+      { id: "income-low", label: "< 2000€/mois", value: "low" },
+      { id: "income-medium-low", label: "2000€ - 3000€/mois", value: "medium-low" },
+      { id: "income-medium", label: "3000€ - 5000€/mois", value: "medium" },
+      { id: "income-medium-high", label: "5000€ - 8000€/mois", value: "medium-high" },
+      { id: "income-high", label: "8000€ - 12000€/mois", value: "high" },
+      { id: "income-very-high", label: "12000€+/mois", value: "very-high" }
+    ]
+  }
 ];
 
 export const PersonaFilterManager = () => {
