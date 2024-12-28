@@ -51,36 +51,23 @@ const filterSections = [
       { id: "interest-luxury", label: "Luxe", value: "luxury" },
       { id: "interest-tech", label: "Technologie", value: "tech" },
       { id: "interest-travel", label: "Voyage", value: "travel" },
+      { id: "interest-architecture", label: "Architecture", value: "architecture" },
+      { id: "interest-interior-design", label: "Décoration intérieure", value: "interior-design" },
+      { id: "interest-sustainable-living", label: "Habitat durable", value: "sustainable-living" },
+      { id: "interest-smart-home", label: "Maison connectée", value: "smart-home" },
+      { id: "interest-property-management", label: "Gestion locative", value: "property-management" },
+      { id: "interest-renovation", label: "Rénovation", value: "renovation" },
+      { id: "interest-gastronomy", label: "Gastronomie", value: "gastronomy" },
+      { id: "interest-wine", label: "Vin & Spiritueux", value: "wine" },
+      { id: "interest-art", label: "Art & Culture", value: "art" },
+      { id: "interest-golf", label: "Golf", value: "golf" },
+      { id: "interest-yachting", label: "Yachting", value: "yachting" },
+      { id: "interest-wellness", label: "Bien-être", value: "wellness" },
+      { id: "interest-finance", label: "Finance", value: "finance" },
+      { id: "interest-entrepreneurship", label: "Entrepreneuriat", value: "entrepreneurship" },
+      { id: "interest-eco-living", label: "Mode de vie écologique", value: "eco-living" }
     ]
   },
-  {
-    title: "Professionnel",
-    icon: <Briefcase className="w-5 h-5 text-primary" />,
-    filters: [
-      { id: "job-executive", label: "Cadre", value: "executive" },
-      { id: "job-entrepreneur", label: "Entrepreneur", value: "entrepreneur" },
-      { id: "job-freelance", label: "Freelance", value: "freelance" },
-      { id: "job-retired", label: "Retraité", value: "retired" },
-    ]
-  },
-  {
-    title: "Revenus",
-    icon: <DollarSign className="w-5 h-5 text-primary" />,
-    filters: [
-      { id: "income-medium", label: "3000€ - 5000€/mois", value: "medium" },
-      { id: "income-high", label: "5000€ - 8000€/mois", value: "high" },
-      { id: "income-very-high", label: "8000€+/mois", value: "very-high" },
-    ]
-  },
-  {
-    title: "Éducation",
-    icon: <GraduationCap className="w-5 h-5 text-primary" />,
-    filters: [
-      { id: "edu-bachelor", label: "Licence", value: "bachelor" },
-      { id: "edu-master", label: "Master", value: "master" },
-      { id: "edu-phd", label: "Doctorat", value: "phd" },
-    ]
-  }
 ];
 
 export const PersonaFilterManager = () => {
@@ -97,7 +84,6 @@ export const PersonaFilterManager = () => {
 
   const handleApplyFilters = async () => {
     try {
-      // Ici nous pourrions appeler l'API pour appliquer les filtres
       toast({
         title: "Filtres appliqués",
         description: `${selectedFilters.length} filtres sélectionnés`
