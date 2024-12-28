@@ -1,14 +1,73 @@
 import { Card } from "@/components/ui/card";
-import { AlertCircle, AlertTriangle, Rocket } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Rocket, CheckCircle } from 'lucide-react';
+import { TestResults } from '../types/test-results';
 
 interface TestRecommendationsProps {
-  recommendations: string[];
-  risks: string[];
-  opportunities: string[];
+  results: TestResults;
+  previousResults?: TestResults;
 }
 
-export const TestRecommendations = ({ recommendations, risks, opportunities }: TestRecommendationsProps) => {
-  if (!recommendations.length && !risks.length && !opportunities.length) return null;
+export const TestRecommendations = ({ results, previousResults }: TestRecommendationsProps) => {
+  const getRecommendations = () => {
+    const recommendations = [];
+    
+    if (results.engagement < 0.4) {
+      recommendations.push("Optimisez le contenu pour augmenter l'engagement");
+    }
+    
+    if (results.conversionRate < 0.1) {
+      recommendations.push("Renforcez les appels à l'action");
+    }
+    
+    if (results.roi < 2) {
+      recommendations.push("Améliorez le ciblage pour augmenter le ROI");
+    }
+
+    return recommendations;
+  };
+
+  const getOpportunities = () => {
+    const opportunities = [];
+    
+    if (results.engagement > previousResults?.engagement) {
+      opportunities.push("Le taux d'engagement est en hausse, continuez sur cette lancée");
+    }
+    
+    if (results.roi > 2.5) {
+      opportunities.push("Le ROI est excellent, envisagez d'augmenter le budget");
+    }
+
+    return opportunities;
+  };
+
+  const getRisks = () => {
+    const risks = [];
+    
+    if (results.engagement < previousResults?.engagement) {
+      risks.push("Baisse de l'engagement, revoyez le contenu");
+    }
+    
+    if (results.roi < 1) {
+      risks.push("ROI négatif, optimisation urgente nécessaire");
+    }
+
+    return risks;
+  };
+
+  const recommendations = getRecommendations();
+  const opportunities = getOpportunities();
+  const risks = getRisks();
+
+  if (!recommendations.length && !opportunities.length && !risks.length) {
+    return (
+      <Card className="p-4">
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <p className="text-sm">Aucune recommandation nécessaire, les métriques sont optimales.</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-4 space-y-4">
