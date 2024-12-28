@@ -38,7 +38,7 @@ export const TumblrSettings = () => {
     <div className="space-y-4">
       <h3 className="text-lg font-medium mb-2">Configuration Tumblr</h3>
       <p className="text-sm text-gray-500 mb-4">
-        Configurez l'API Tumblr pour gérer vos blogs et posts.
+        Configurez l'API Tumblr pour gérer vos blogs et publications.
       </p>
       <div>
         <label className="block text-sm font-medium mb-1">API Key</label>
