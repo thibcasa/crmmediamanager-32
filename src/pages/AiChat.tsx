@@ -4,22 +4,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PredictiveAnalysis } from '@/components/analytics/PredictiveAnalysis';
 import { ContactImport } from '@/components/contacts/ContactImport';
 import { ContactSegmentation } from '@/components/contacts/ContactSegmentation';
-import { Brain, Users, TrendingUp } from 'lucide-react';
+import { TestWorkflow } from '@/components/ai-chat/TestWorkflow';
+import { Brain, Users, TrendingUp, TestTube2 } from 'lucide-react';
 
 const AiChat = () => {
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('test');
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold tracking-tight">Assistant IA</h1>
         <p className="text-muted-foreground mt-2">
-          Analysez et optimisez vos campagnes marketing
+          Analysez, testez et optimisez vos campagnes marketing
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="test" className="flex items-center gap-2">
+            <TestTube2 className="w-4 h-4" />
+            Test & Validation
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <Brain className="w-4 h-4" />
             Analyse Prédictive
@@ -33,6 +38,10 @@ const AiChat = () => {
             Performance
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="test" className="space-y-6">
+          <TestWorkflow />
+        </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
           <PredictiveAnalysis campaignId="default" />
