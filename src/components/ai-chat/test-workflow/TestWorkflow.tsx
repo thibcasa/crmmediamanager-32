@@ -2,10 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Brain, Wrench, TestTube, Rocket } from 'lucide-react';
 import { useWorkflowState } from './hooks/useWorkflowState';
-import { PredictionStep } from './test-workflow/PredictionStep';
-import { CorrectionStep } from './test-workflow/CorrectionStep';
-import { TestStep } from './test-workflow/TestStep';
-import { ProductionStep } from './test-workflow/ProductionStep';
+import { PredictionStep } from './PredictionStep';
+import { CorrectionStep } from './CorrectionStep';
+import { TestStep } from './TestStep';
+import { ProductionStep } from './ProductionStep';
 
 interface TestWorkflowProps {
   messageToTest?: string;
@@ -14,10 +14,6 @@ interface TestWorkflowProps {
 export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
   const { state, actions } = useWorkflowState(messageToTest);
   const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
-
-  const handleCorrections = (appliedCorrections: string[]) => {
-    actions.handleCorrection(appliedCorrections);
-  };
 
   return (
     <Card className="p-6">
@@ -71,7 +67,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
           <TabsContent value="correction">
             <CorrectionStep
               validationErrors={state.validationErrors}
-              onApplyCorrections={handleCorrections}
+              onApplyCorrections={actions.handleCorrection}
               testResults={state.currentTestResults}
               previousResults={state.testHistory[state.testHistory.length - 2]}
             />
