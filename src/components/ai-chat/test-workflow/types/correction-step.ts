@@ -5,4 +5,5 @@ export interface CorrectionStepProps {
   onApplyCorrections: () => void;
   testResults: TestResults;
   previousResults?: TestResults;
+  onRecommendationClick: (recommendation: string) => void;
 }

@@ -6,14 +6,121 @@ import { PredictionStep } from './test-workflow/PredictionStep';
 import { CorrectionStep } from './test-workflow/CorrectionStep';
 import { TestStep } from './test-workflow/TestStep';
 import { ProductionStep } from './test-workflow/ProductionStep';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabaseClient";
 
 interface TestWorkflowProps {
   messageToTest?: string;
 }
 
 export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
+  const { toast } = useToast();
   const { state, actions } = useWorkflowState(messageToTest);
   const canProceedToProduction = state.currentTestResults.roi >= 2 && state.currentTestResults.engagement >= 0.6;
+
+  const handleRecommendationClick = async (recommendation: string) => {
+    if (messageToTest) {
+      const updatedMessage = `${messageToTest}\n\nAméliorations appliquées:\n- ${recommendation}`;
+      actions.setMessageToTest(updatedMessage);
+      
+      // Create or update workflow template
+      const { data: workflowData, error: workflowError } = await supabase
+        .from('workflow_templates')
+        .upsert({
+          name: `Campagne ${new Date().toLocaleDateString()}`,
+          description: updatedMessage,
+          triggers: [
+            {
+              type: 'campaign_engagement',
+              config: { threshold: 0.5 }
+            }
+          ],
+          actions: [
+            {
+              type: 'analyze_performance',
+              config: {
+                metrics: ['engagement', 'conversion', 'roi'],
+                frequency: 'daily'
+              }
+            },
+            {
+              type: 'generate_report',
+              config: {
+                type: 'performance_summary',
+                schedule: 'weekly'
+              }
+            }
+          ]
+        });
+
+      if (workflowError) {
+        console.error('Error creating workflow:', workflowError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer le workflow",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create pipeline stages
+      const { data: pipelineData, error: pipelineError } = await supabase
+        .from('pipeline_stages')
+        .insert([
+          {
+            name: "Analyse prédictive",
+            order_index: 0,
+            automation_rules: [
+              {
+                condition: "metrics.engagement > 0.6",
+                action: "proceed_to_next_stage"
+              }
+            ]
+          },
+          {
+            name: "Optimisation",
+            order_index: 1,
+            automation_rules: [
+              {
+                condition: "metrics.roi > 2",
+                action: "proceed_to_next_stage"
+              }
+            ]
+          },
+          {
+            name: "Production",
+            order_index: 2,
+            automation_rules: [
+              {
+                condition: "metrics.conversion > 0.1",
+                action: "activate_campaign"
+              }
+            ]
+          }
+        ]);
+
+      if (pipelineError) {
+        console.error('Error creating pipeline:', pipelineError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer le pipeline",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Automatically trigger a new prediction
+      actions.handlePrediction();
+      
+      toast({
+        title: "Recommandation appliquée",
+        description: "Une nouvelle analyse va être lancée avec cette amélioration.",
+      });
+
+      // Move to prediction phase
+      actions.setActivePhase('prediction');
+    }
+  };
 
   return (
     <Card className="p-6">
@@ -70,6 +177,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
               onApplyCorrections={actions.handleCorrection}
               testResults={state.currentTestResults}
               previousResults={state.testHistory[state.testHistory.length - 2]}
+              onRecommendationClick={handleRecommendationClick}
             />
           </TabsContent>
 
