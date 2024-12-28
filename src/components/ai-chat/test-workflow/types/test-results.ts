@@ -53,6 +53,7 @@ export interface TestResults {
   recommendations: string[];
   risks: string[];
   opportunities: string[];
+  appliedCorrections?: string[]; // Nouvelles corrections appliquées
   audienceInsights?: {
     segments: AudienceSegment[];
     demographics: Demographics;
