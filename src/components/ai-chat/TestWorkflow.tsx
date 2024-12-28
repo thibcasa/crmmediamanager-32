@@ -44,7 +44,7 @@ export const TestWorkflow = ({ messageToTest }: TestWorkflowProps) => {
                   value: 0.3
                 }
               ],
-              status: 'draft'
+              status: "draft" as const // Fix: Explicitly type the status
             }
           ],
           workflow_config: {

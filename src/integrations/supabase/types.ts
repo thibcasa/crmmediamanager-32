@@ -732,8 +732,11 @@ export type Database = {
           message_template: string | null
           name: string
           platform: Database["public"]["Enums"]["social_platform"]
+          post_triggers: Json | null
+          posts: Json | null
           schedule: Json | null
           status: string | null
+          target_metrics: Json | null
           targeting_criteria: Json | null
           updated_at: string | null
           user_id: string | null
@@ -745,8 +748,11 @@ export type Database = {
           message_template?: string | null
           name: string
           platform: Database["public"]["Enums"]["social_platform"]
+          post_triggers?: Json | null
+          posts?: Json | null
           schedule?: Json | null
           status?: string | null
+          target_metrics?: Json | null
           targeting_criteria?: Json | null
           updated_at?: string | null
           user_id?: string | null
@@ -758,8 +764,11 @@ export type Database = {
           message_template?: string | null
           name?: string
           platform?: Database["public"]["Enums"]["social_platform"]
+          post_triggers?: Json | null
+          posts?: Json | null
           schedule?: Json | null
           status?: string | null
+          target_metrics?: Json | null
           targeting_criteria?: Json | null
           updated_at?: string | null
           user_id?: string | null
