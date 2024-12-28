@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
 
 // Wrapper pour ajouter le monitoring à chaque page
 const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string) => {
-  return () => (
+  const MonitoredComponent = () => (
     <MonitoringProvider
       config={{
         pageName,
@@ -37,6 +37,7 @@ const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string)
       <WrappedComponent />
     </MonitoringProvider>
   );
+  return <MonitoredComponent />;
 };
 
 function App() {

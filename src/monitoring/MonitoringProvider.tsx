@@ -10,17 +10,30 @@ Sentry.init({
   environment: import.meta.env.MODE,
 });
 
+interface MonitoringConfig {
+  pageName?: string;
+  enableAutoCorrect?: boolean;
+  enablePerformanceTracking?: boolean;
+  enableErrorTracking?: boolean;
+}
+
 interface MonitoringContextType {
   isEnabled: boolean;
+  config?: MonitoringConfig;
 }
 
 const MonitoringContext = createContext<MonitoringContextType>({
   isEnabled: true
 });
 
-export const MonitoringProvider = ({ children }: { children: ReactNode }) => {
+interface MonitoringProviderProps {
+  children: ReactNode;
+  config?: MonitoringConfig;
+}
+
+export const MonitoringProvider = ({ children, config }: MonitoringProviderProps) => {
   return (
-    <MonitoringContext.Provider value={{ isEnabled: true }}>
+    <MonitoringContext.Provider value={{ isEnabled: true, config }}>
       {children}
     </MonitoringContext.Provider>
   );

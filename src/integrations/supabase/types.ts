@@ -205,6 +205,39 @@ export type Database = {
           },
         ]
       }
+      error_logs: {
+        Row: {
+          component: string
+          correction_applied: string | null
+          created_at: string | null
+          error_message: string
+          error_type: string
+          id: string
+          success: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          component: string
+          correction_applied?: string | null
+          created_at?: string | null
+          error_message: string
+          error_type: string
+          id?: string
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          component?: string
+          correction_applied?: string | null
+          created_at?: string | null
+          error_message?: string
+          error_type?: string
+          id?: string
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       generated_visuals: {
         Row: {
           created_at: string | null
