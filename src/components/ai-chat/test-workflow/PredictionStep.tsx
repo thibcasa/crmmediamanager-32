@@ -2,24 +2,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Brain } from "lucide-react";
-import { TestMetrics } from "./TestMetrics";
-import { TestRecommendations } from "./TestRecommendations";
-import { TestResults } from "../types/test-results";
-
-interface PredictionStepProps {
-  isAnalyzing: boolean;
-  progress: number;
-  testResults: TestResults;
-  onAnalyze: () => void;
-  messageToTest?: string;
-}
+import { TestMetrics } from "../TestMetrics";
+import { TestRecommendations } from "../TestRecommendations";
+import { PredictionStepProps } from "./types/prediction-step";
 
 export const PredictionStep = ({ 
   isAnalyzing, 
   progress, 
   testResults, 
   onAnalyze,
-  messageToTest 
+  messageToTest,
+  iterationCount
 }: PredictionStepProps) => {
   return (
     <div className="space-y-4">

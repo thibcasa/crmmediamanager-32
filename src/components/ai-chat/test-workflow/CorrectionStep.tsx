@@ -1,18 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wrench, AlertTriangle } from "lucide-react";
-import { TestResults } from "../types/test-results";
-
-interface CorrectionStepProps {
-  validationErrors: string[];
-  onApplyCorrections: () => void;
-  testResults: TestResults;
-}
+import { Wrench } from "lucide-react";
+import { CorrectionStepProps } from "./types/correction-step";
+import { DetailedReport } from "./DetailedReport";
 
 export const CorrectionStep = ({ 
   validationErrors, 
   onApplyCorrections,
-  testResults 
+  testResults,
+  previousResults
 }: CorrectionStepProps) => {
   return (
     <div className="space-y-4">
@@ -27,16 +23,7 @@ export const CorrectionStep = ({
         </Card>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4">
-          <h4 className="font-medium mb-2">Avant correction</h4>
-          <div className="space-y-2">
-            <p className="text-sm">Engagement: {(testResults.engagement * 100).toFixed(1)}%</p>
-            <p className="text-sm">CPA: {testResults.cpa}€</p>
-            <p className="text-sm">ROI: {(testResults.roi * 100).toFixed(1)}%</p>
-          </div>
-        </Card>
-      </div>
+      <DetailedReport before={previousResults || testResults} after={testResults} />
 
       <Button
         variant="outline"
