@@ -6,7 +6,7 @@ import { CampaignWorkflowManager } from '@/components/ai-chat/campaign-workflow/
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabaseClient';
-import { CampaignData, CampaignContent, CampaignCreative } from '@/types/campaign';
+import { Loader2 } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,20 +17,24 @@ const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const navigate = useNavigate();
-  const [campaignData, setCampaignData] = useState<CampaignData>({
+  const { toast } = useToast();
+  const [campaignData, setCampaignData] = useState({
     objective: '',
     creatives: [],
     content: []
   });
-  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        
+        if (error) {
+          console.error('Erreur de vérification de session:', error);
+          throw error;
+        }
         
         if (!session) {
           toast({
@@ -41,16 +45,25 @@ const AiChat = () => {
           navigate('/login');
           return;
         }
-        
-        setIsAuthenticated(true);
+
+        // Écouter les changements d'authentification
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!session) {
+            navigate('/login');
+          }
+        });
+
+        return () => subscription.unsubscribe();
       } catch (error) {
-        console.error('Erreur de vérification de session:', error);
+        console.error('Erreur lors de la vérification de l\'authentification:', error);
         toast({
-          title: "Erreur d'authentification",
-          description: "Une erreur est survenue, veuillez vous reconnecter",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la vérification de l'authentification",
           variant: "destructive",
         });
         navigate('/login');
+      } finally {
+        setIsAuthChecking(false);
       }
     };
 
@@ -59,89 +72,34 @@ const AiChat = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !isAuthenticated) return;
+    if (!input.trim()) return;
 
     try {
       setIsLoading(true);
       
-      // Add user message
+      // Ajouter le message de l'utilisateur
       const userMessage = { role: 'user' as const, content: input };
       setMessages(prev => [...prev, userMessage]);
       setInput('');
 
-      // Generate campaign content
-      console.log('Generating campaign content...');
-      const { data: campaignResponse, error: campaignError } = await supabase.functions.invoke('content-generator', {
-        body: {
-          prompt: input,
-          type: 'campaign',
-          targetAudience: "propriétaires immobiliers Alpes-Maritimes",
-          tone: "professionnel et stratégique"
-        }
-      });
-
-      if (campaignError) {
-        console.error('Campaign generation error:', campaignError);
-        throw campaignError;
-      }
-
-      // Generate creative visuals
-      console.log('Generating creative visuals...');
-      const { data: creativesData, error: creativesError } = await supabase.functions.invoke('openai-image-generation', {
-        body: {
-          prompt: `Professional real estate marketing visual for: ${input}`,
-          n: 2,
-          size: "1024x1024",
-          quality: "standard",
-          style: "natural"
-        }
-      });
-
-      if (creativesError) {
-        console.error('Creatives generation error:', creativesError);
-        throw creativesError;
-      }
-
-      if (!creativesData?.images) {
-        console.error('Invalid creatives data:', creativesData);
-        throw new Error('Format de réponse invalide pour les créatives');
-      }
-
-      // Update campaign data
-      const updatedCampaignData: CampaignData = {
-        objective: input,
-        creatives: creativesData.images.map((url: string) => ({
-          type: 'image',
-          url,
-          format: 'linkedin'
-        })) as CampaignCreative[],
-        content: [{
-          type: 'post',
-          text: campaignResponse.content
-        }] as CampaignContent[]
-      };
-
-      console.log('Setting campaign data:', updatedCampaignData);
-      setCampaignData(updatedCampaignData);
-
-      // Add assistant response
+      // Simuler une réponse de l'assistant (à remplacer par votre logique réelle)
       const assistantMessage = {
         role: 'assistant' as const,
-        content: `J'ai généré une campagne basée sur votre demande. Vous pouvez voir les créatives et le contenu dans le panneau de droite. Voici un résumé de la stratégie proposée :\n\n${campaignResponse.content}`
+        content: `J'ai bien reçu votre message : "${input}". Je vais traiter votre demande.`
       };
       
       setMessages(prev => [...prev, assistantMessage]);
 
       toast({
-        title: "Campagne générée",
-        description: "Les créatives et le contenu ont été générés avec succès.",
+        title: "Message envoyé",
+        description: "Votre message a été traité avec succès.",
       });
 
     } catch (error) {
-      console.error('Error generating campaign:', error);
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer la campagne. Veuillez réessayer.",
+        description: "Impossible de traiter votre message. Veuillez réessayer.",
         variant: "destructive"
       });
     } finally {
@@ -149,8 +107,12 @@ const AiChat = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return null; // Ne rien afficher pendant la vérification de l'authentification
+  if (isAuthChecking) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
+      </div>
+    );
   }
 
   return (
