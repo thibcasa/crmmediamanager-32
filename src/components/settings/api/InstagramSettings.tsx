@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Instagram } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
-import { ApiKeyForm } from '@/components/lead-scraper/ApiKeyForm';
 
 export const InstagramSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,11 +35,27 @@ export const InstagramSettings = () => {
   };
 
   return (
-    <ApiKeyForm 
-      serviceName="Instagram"
-      onSave={handleSave}
-      isLoading={isLoading}
-      placeholder="Entrez votre clé API Instagram"
-    />
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium mb-2">Configuration Instagram</h3>
+      <p className="text-sm text-gray-500 mb-4">
+        Configurez l'API Instagram pour gérer votre présence visuelle et vos stories.
+      </p>
+      <div>
+        <label className="block text-sm font-medium mb-1">Access Token</label>
+        <Input
+          type="password"
+          placeholder="Entrez votre Access Token Instagram"
+          className="w-full"
+        />
+      </div>
+      <Button 
+        onClick={() => handleSave('test')}
+        disabled={isLoading}
+        className="flex items-center gap-2"
+      >
+        <Instagram className="w-4 h-4" />
+        Sauvegarder
+      </Button>
+    </div>
   );
 };
