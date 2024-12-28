@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { MapPin, Search } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 interface Location {
   id: string;
@@ -26,6 +27,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCount, setSelectedCount] = useState(0);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -38,6 +40,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
 
         if (error) throw error;
         setLocations(data);
+        setSelectedCount(selectedLocations.length);
       } catch (error) {
         console.error('Erreur lors du chargement des locations:', error);
         toast({
@@ -51,7 +54,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     };
 
     fetchLocations();
-  }, [toast]);
+  }, [toast, selectedLocations.length]);
 
   const filteredLocations = locations.filter(location => {
     const matchesSearch = location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,11 +62,27 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     return matchesSearch;
   });
 
+  const handleSelectAll = () => {
+    if (selectedCount === locations.length) {
+      onLocationChange([]);
+      setSelectedCount(0);
+    } else {
+      const allLocationIds = locations.map(loc => loc.id);
+      onLocationChange(allLocationIds);
+      setSelectedCount(locations.length);
+    }
+  };
+
   return (
     <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <MapPin className="h-5 w-5 text-primary" />
-        <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-primary" />
+          <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
+        </div>
+        <Badge variant="secondary">
+          {selectedCount} zone{selectedCount > 1 ? 's' : ''} sélectionnée{selectedCount > 1 ? 's' : ''}
+        </Badge>
       </div>
       
       <p className="text-sm text-muted-foreground mb-4">
@@ -79,6 +98,20 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
           />
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="select-all"
+            checked={selectedCount === locations.length}
+            onCheckedChange={handleSelectAll}
+          />
+          <label
+            htmlFor="select-all"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {selectedCount === locations.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+          </label>
         </div>
       </div>
 
@@ -100,6 +133,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
                       ? [...selectedLocations, location.id]
                       : selectedLocations.filter(id => id !== location.id);
                     onLocationChange(newLocations);
+                    setSelectedCount(checked ? selectedCount + 1 : selectedCount - 1);
                   }}
                 />
                 <div className="grid gap-1.5 leading-none">
