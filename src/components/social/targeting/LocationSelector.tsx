@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import { CitySelect } from './components/CitySelect';
-import { SelectAllCheckbox } from './components/SelectAllCheckbox';
 import { LocationList } from './components/LocationList';
 import { Location } from './types';
+import { Input } from "@/components/ui/input";
 
 interface LocationSelectorProps {
   selectedLocations: string[];
@@ -19,7 +17,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const { toast } = useToast();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAllSelected, setIsAllSelected] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -35,13 +33,12 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         if (data) {
           console.log('Locations fetched:', data.length);
           setLocations(data);
-          setIsAllSelected(data.length > 0 && selectedLocations.length === data.length);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des locations:', error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les zones géographiques",
+          description: "Impossible de charger les villes",
           variant: "destructive"
         });
       } finally {
@@ -50,27 +47,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     };
 
     fetchLocations();
-  }, [toast, selectedLocations.length]);
-
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      onLocationChange([]);
-      setIsAllSelected(false);
-    } else {
-      const allLocationIds = locations.map(loc => loc.id);
-      onLocationChange(allLocationIds);
-      setIsAllSelected(true);
-    }
-  };
-
-  const handleCitySelect = (locationId: string) => {
-    const newLocations = selectedLocations.includes(locationId)
-      ? selectedLocations.filter(id => id !== locationId)
-      : [...selectedLocations, locationId];
-    
-    onLocationChange(newLocations);
-    setIsAllSelected(newLocations.length === locations.length);
-  };
+  }, [toast]);
 
   const handleLocationToggle = (locationId: string, checked: boolean) => {
     const newLocations = checked
@@ -78,60 +55,50 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
       : selectedLocations.filter(id => id !== locationId);
     
     onLocationChange(newLocations);
-    setIsAllSelected(newLocations.length === locations.length);
   };
+
+  const filteredLocations = locations.filter(location =>
+    location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    location.postal_code.includes(searchTerm)
+  );
 
   if (loading) {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center space-x-2">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <p>Chargement des zones...</p>
+          <p>Chargement des villes...</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 border-2 border-primary/20">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
-          <Label className="text-lg font-medium">Zones des Alpes-Maritimes</Label>
+    <Card className="p-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-medium">Villes des Alpes-Maritimes</h3>
+          </div>
+          <Badge variant="secondary">
+            {selectedLocations.length} ville{selectedLocations.length > 1 ? 's' : ''} sélectionnée{selectedLocations.length > 1 ? 's' : ''}
+          </Badge>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          {selectedLocations.length} zone{selectedLocations.length > 1 ? 's' : ''} sélectionnée{selectedLocations.length > 1 ? 's' : ''}
-        </Badge>
-      </div>
-      
-      <p className="text-sm text-muted-foreground mb-4">
-        Sélectionnez les zones des Alpes-Maritimes où vous souhaitez diffuser vos campagnes
-      </p>
 
-      <div className="space-y-4 mb-6">
-        <CitySelect
-          locations={locations}
-          onCitySelect={handleCitySelect}
-          selectedLocations={selectedLocations}
+        <Input
+          placeholder="Rechercher une ville..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
         />
-        
-        <SelectAllCheckbox
-          isAllSelected={isAllSelected}
-          onSelectAll={handleSelectAll}
-        />
-      </div>
 
-      {locations.length === 0 ? (
-        <div className="text-center py-4 bg-muted/50 rounded-lg">
-          Aucune zone disponible
-        </div>
-      ) : (
         <LocationList
-          locations={locations}
+          locations={filteredLocations}
           selectedLocations={selectedLocations}
           onLocationToggle={handleLocationToggle}
         />
-      )}
+      </div>
     </Card>
   );
 };

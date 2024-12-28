@@ -9,27 +9,35 @@ interface LocationListProps {
 }
 
 export const LocationList = ({ locations, selectedLocations, onLocationToggle }: LocationListProps) => {
+  if (locations.length === 0) {
+    return (
+      <div className="text-center py-8 bg-muted/20 rounded-lg">
+        <p className="text-muted-foreground">Aucune ville disponible</p>
+      </div>
+    );
+  }
+
   return (
-    <ScrollArea className="h-[400px] rounded-md border p-4">
-      <div className="space-y-2">
+    <ScrollArea className="h-[400px] rounded-md border">
+      <div className="p-4 space-y-2">
         {locations.map((location) => (
           <div
             key={location.id}
-            className="flex items-start space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
+            className="flex items-center space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
           >
             <Checkbox
               id={location.id}
               checked={selectedLocations.includes(location.id)}
               onCheckedChange={(checked) => onLocationToggle(location.id, checked as boolean)}
             />
-            <div className="grid gap-1.5 leading-none">
+            <div className="grid gap-1">
               <label
                 htmlFor={location.id}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none cursor-pointer"
               >
                 {location.city}
               </label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {location.postal_code}
               </p>
             </div>
