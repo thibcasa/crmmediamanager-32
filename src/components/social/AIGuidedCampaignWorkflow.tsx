@@ -9,6 +9,7 @@ import { TestCellPreview } from "@/components/test-cell/TestCellPreview";
 import { WorkflowPreview } from "@/components/test-cell/WorkflowPreview";
 import { MetricsPreview } from "@/components/test-cell/MetricsPreview";
 import { Platform } from '@/services/SocialCampaignService';
+import { supabase } from '@/lib/supabaseClient';
 
 interface AIRecommendation {
   platform: Platform;
@@ -48,6 +49,45 @@ export const AIGuidedCampaignWorkflow = () => {
       });
 
       if (error) throw error;
+
+      // Automatically create workflow templates based on AI recommendations
+      await supabase.from('workflow_templates').insert({
+        name: `Workflow ${platform} - ${new Date().toLocaleDateString()}`,
+        description: "Workflow automatisé basé sur l'analyse IA",
+        triggers: [
+          {
+            type: 'campaign_engagement',
+            config: { platform, threshold: data.recommendations.metrics.minEngagement }
+          },
+          {
+            type: 'lead_score_changed',
+            config: { min_score: 70 }
+          }
+        ],
+        actions: [
+          {
+            type: 'analyze_performance',
+            config: {
+              metrics: ['engagement', 'conversion', 'roi'],
+              frequency: 'daily'
+            }
+          },
+          {
+            type: 'schedule_meeting',
+            config: {
+              conditions: { engagement_score: '>70' },
+              template: 'discovery_call'
+            }
+          },
+          {
+            type: 'move_pipeline_stage',
+            config: {
+              conditions: { lead_score: '>80' },
+              target_stage: 'qualified'
+            }
+          }
+        ]
+      });
 
       setRecommendations(data.recommendations);
       toast({
@@ -104,7 +144,7 @@ export const AIGuidedCampaignWorkflow = () => {
             </TabsTrigger>
             <TabsTrigger value="launch" className="flex items-center gap-2">
               <Rocket className="h-4 w-4" />
-              Lancement
+              Production
             </TabsTrigger>
           </TabsList>
 
