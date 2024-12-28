@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,33 +11,43 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json()
-    console.log('Analyzing campaign message:', message)
+    const { message, iterationCount = 1 } = await req.json()
+    console.log('Analyzing campaign message:', message, 'Iteration:', iterationCount)
+
+    // Simulate improvement based on iteration count
+    const iterationMultiplier = 1 + (iterationCount * 0.15)
 
     const analysis = {
-      engagement: 0.85,
-      clickRate: 0.125,
-      conversionRate: 0.032,
-      cpa: 15,
-      roi: 2.5,
+      engagement: Math.min(0.85 * iterationMultiplier, 1),
+      clickRate: Math.min(0.125 * iterationMultiplier, 0.25),
+      conversionRate: Math.min(0.032 * iterationMultiplier, 0.08),
+      cpa: Math.max(15 / iterationMultiplier, 8),
+      roi: Math.min(2.5 * iterationMultiplier, 5),
       recommendations: [
-        "Optimisez le ciblage géographique",
-        "Précisez le type de bien immobilier",
-        "Ajoutez des témoignages clients"
+        "Optimisez le ciblage géographique sur les Alpes-Maritimes",
+        "Ajoutez des témoignages de propriétaires satisfaits",
+        "Incluez des statistiques sur le marché local"
       ],
       risks: [
-        "Coût par acquisition à surveiller",
-        "Ciblage à affiner"
+        "Coût par acquisition à optimiser",
+        "Ciblage à affiner pour les propriétaires premium"
       ],
       opportunities: [
-        "Fort potentiel d'engagement",
-        "Zone géographique attractive"
+        "Fort potentiel d'engagement sur LinkedIn",
+        "Zone géographique attractive pour l'immobilier"
       ],
       audienceInsights: {
         segments: [
-          { name: "Propriétaires 45-65 ans", score: 0.85, potential: 0.92 },
-          { name: "Investisseurs", score: 0.75, potential: 0.88 },
-          { name: "Résidents locaux", score: 0.65, potential: 0.78 }
+          { 
+            name: "Propriétaires 45-65 ans", 
+            score: Math.min(0.85 * iterationMultiplier, 1), 
+            potential: Math.min(0.92 * iterationMultiplier, 1) 
+          },
+          { 
+            name: "Investisseurs", 
+            score: Math.min(0.75 * iterationMultiplier, 1), 
+            potential: Math.min(0.88 * iterationMultiplier, 1) 
+          }
         ],
         demographics: {
           age: ["45-54", "55-65"],
@@ -47,36 +56,37 @@ serve(async (req) => {
         }
       },
       predictedMetrics: {
-        leadsPerWeek: 12,
-        costPerLead: 45,
+        leadsPerWeek: Math.floor(12 * iterationMultiplier),
+        costPerLead: Math.max(45 / iterationMultiplier, 25),
         totalBudget: 2000,
-        revenueProjection: 15000
+        revenueProjection: Math.floor(15000 * iterationMultiplier)
       },
       campaignDetails: {
         creatives: [
-          { type: "image", content: "Vue mer panoramique", performance: 0.88 },
-          { type: "video", content: "Visite virtuelle", performance: 0.92 },
-          { type: "text", content: "Description détaillée", performance: 0.75 }
+          { 
+            type: "image", 
+            content: "Vue mer panoramique", 
+            performance: Math.min(0.88 * iterationMultiplier, 1) 
+          },
+          { 
+            type: "video", 
+            content: "Visite virtuelle", 
+            performance: Math.min(0.92 * iterationMultiplier, 1) 
+          }
         ],
         content: {
           messages: [
             "Valorisez votre bien immobilier sur la Côte d'Azur",
-            "Expertise locale pour une vente optimale"
+            "Expertise locale pour une vente optimale",
+            "Webinaire gratuit : Maximisez votre investissement immobilier"
           ],
           headlines: [
-            "Estimation gratuite de votre propriété",
-            "Vendez au meilleur prix"
+            "Webinaire Immobilier Alpes-Maritimes",
+            "Optimisez votre Patrimoine"
           ],
           callsToAction: [
-            "Demandez une estimation",
-            "Contactez un expert"
-          ]
-        },
-        workflow: {
-          steps: [
-            { name: "Analyse du marché", status: "completed" },
-            { name: "Création des visuels", status: "in_progress" },
-            { name: "Lancement campagne", status: "pending" }
+            "Inscrivez-vous au webinaire",
+            "Réservez votre place"
           ]
         }
       }

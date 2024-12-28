@@ -25,10 +25,10 @@ export const PredictionStep = ({
   iterationCount
 }: PredictionStepProps) => {
   const performanceData = [
-    { name: 'Semaine 1', leads: testResults.predictedMetrics?.leadsPerWeek || 0 },
-    { name: 'Semaine 2', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.2 },
-    { name: 'Semaine 3', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.5 },
-    { name: 'Semaine 4', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.8 },
+    { name: 'Jour 1', leads: testResults.predictedMetrics?.leadsPerWeek || 0 },
+    { name: 'Jour 3', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.2 },
+    { name: 'Jour 5', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.5 },
+    { name: 'Jour 7', leads: (testResults.predictedMetrics?.leadsPerWeek || 0) * 1.8 },
   ];
 
   return (
@@ -73,7 +73,7 @@ export const PredictionStep = ({
             <TestMetrics results={testResults} />
             
             <div className="mt-6">
-              <h4 className="text-sm font-medium mb-4">Projection des leads</h4>
+              <h4 className="text-sm font-medium mb-4">Projection des inscriptions</h4>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={performanceData}>
