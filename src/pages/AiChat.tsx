@@ -20,8 +20,21 @@ const AiChat = () => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [campaignData, setCampaignData] = useState({
+    objective: '',
+    creatives: [],
+    content: [],
+    predictions: {
+      engagement: 0,
+      costPerLead: 0,
+      roi: 0,
+      estimatedLeads: 0
+    },
+    workflow: {
+      steps: []
+    }
+  });
 
-  // Vérification de l'authentification au montage
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -34,6 +47,11 @@ const AiChat = () => {
         
         if (!session) {
           console.log('Pas de session active, redirection vers login');
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
           navigate('/login');
           return;
         }
@@ -54,7 +72,6 @@ const AiChat = () => {
 
     checkAuth();
 
-    // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         navigate('/login');
@@ -130,7 +147,10 @@ const AiChat = () => {
         </Card>
 
         <div className="space-y-6">
-          <CampaignWorkflowManager />
+          <CampaignWorkflowManager 
+            initialData={campaignData}
+            onUpdate={(updates) => setCampaignData(prev => ({ ...prev, ...updates }))}
+          />
         </div>
       </div>
     </div>
