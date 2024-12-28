@@ -10,6 +10,7 @@ import Workflow from "./pages/Workflow";
 import AiChat from "./pages/AiChat";
 import Calendar from "./pages/Calendar";
 import Campaigns from "./pages/Campaigns";
+import ApiSettings from "./pages/ApiSettings";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -35,6 +36,7 @@ function App() {
             <Route path="ai-chat" element={<AiChat />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="campaigns" element={<Campaigns />} />
+            <Route path="api-settings" element={<ApiSettings />} />
           </Route>
         </Routes>
         <Toaster />
