@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("workflow");
 
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -42,33 +42,18 @@ const Index = () => {
           Dashboard CRM Immobilier
         </h1>
         <p className="text-xl text-muted-foreground">
-          Gérez vos campagnes et suivez vos performances
+          Gérez vos workflows et suivez vos performances
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card 
-          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
-          onClick={() => setActiveTab("campaigns")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Building2 className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-medium">Campagnes</h3>
-              <p className="text-sm text-muted-foreground">Suivez vos campagnes</p>
-            </div>
-          </div>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card 
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
           onClick={() => setActiveTab("workflow")}
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-primary" />
+              <Building2 className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h3 className="font-medium">Workflows</h3>
@@ -94,13 +79,9 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="campaigns" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            Campagnes
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="workflow" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <Building2 className="h-4 w-4" />
             Workflows
           </TabsTrigger>
           <TabsTrigger value="pipeline" className="flex items-center gap-2">
@@ -108,10 +89,6 @@ const Index = () => {
             Pipeline
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="campaigns" className="space-y-4">
-          <CRMDashboard />
-        </TabsContent>
 
         <TabsContent value="workflow" className="space-y-4">
           <Card className="p-6">
