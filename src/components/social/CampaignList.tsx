@@ -31,20 +31,35 @@ export const CampaignList = ({ campaigns, onSelectCampaign }: CampaignListProps)
       {campaigns.map((campaign) => (
         <Card
           key={campaign.id}
-          className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+          className="p-4 hover:bg-accent/50 transition-colors cursor-pointer relative group"
           onClick={() => onSelectCampaign(campaign)}
         >
           <div className="flex items-center space-x-4">
-            {getPlatformIcon(campaign.platform)}
-            <div>
-              <h3 className="font-medium">{campaign.name}</h3>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              {getPlatformIcon(campaign.platform)}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium group-hover:text-primary transition-colors">
+                {campaign.name}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Créée le {new Date(campaign.created_at || '').toLocaleDateString()}
               </p>
             </div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs text-muted-foreground">
+                Cliquez pour voir les détails →
+              </span>
+            </div>
           </div>
         </Card>
       ))}
+
+      {campaigns.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Aucune campagne trouvée</p>
+        </div>
+      )}
     </div>
   );
 };
