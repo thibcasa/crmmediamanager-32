@@ -1,7 +1,7 @@
 import { PersonaSelectionService } from './PersonaSelectionService';
-import { ContentGenerationService } from '../ContentGenerationService';
 import { StrategyOptimizationService } from '../StrategyOptimizationService';
-import { supabase } from '@/lib/supabaseClient';
+import { PlatformStrategies } from './strategies/PlatformStrategies';
+import { CampaignCreator } from './campaign/CampaignCreator';
 
 export class CampaignOrchestrator {
   static async orchestrateCampaign(objective: string) {
@@ -17,8 +17,13 @@ export class CampaignOrchestrator {
       
       // 3. Pour chaque plateforme, créer une campagne adaptée
       for (const platform of platforms) {
-        const strategy = await this.generatePlatformStrategy(platform, objective);
-        const campaign = await this.createPlatformCampaign(platform, strategy, selectedPersona, objective);
+        const strategy = await PlatformStrategies.generatePlatformStrategy(platform);
+        const campaign = await CampaignCreator.createPlatformCampaign(
+          platform, 
+          strategy, 
+          selectedPersona, 
+          objective
+        );
         campaignResults.push(campaign);
       }
 
@@ -55,84 +60,5 @@ export class CampaignOrchestrator {
       console.error('Erreur dans l\'orchestration:', error);
       throw error;
     }
-  }
-
-  private static async generatePlatformStrategy(platform: string, objective: string) {
-    const platformStrategies = {
-      linkedin: {
-        contentType: 'educational',
-        format: 'article',
-        frequency: 'daily',
-        bestTimes: ['09:00', '12:00', '17:00'],
-        approach: 'thought_leadership'
-      },
-      facebook: {
-        contentType: 'conversion',
-        format: 'form',
-        frequency: 'daily',
-        bestTimes: ['10:00', '15:00', '19:00'],
-        approach: 'direct_response'
-      },
-      instagram: {
-        contentType: 'visual',
-        format: 'reel',
-        frequency: 'daily',
-        bestTimes: ['11:00', '14:00', '20:00'],
-        approach: 'storytelling'
-      }
-    };
-
-    return platformStrategies[platform];
-  }
-
-  private static async createPlatformCampaign(platform: string, strategy: any, persona: any, objective: string) {
-    const { data: campaign, error: campaignError } = await supabase
-      .from('social_campaigns')
-      .insert({
-        name: `Campagne ${platform} - ${objective.substring(0, 50)}...`,
-        platform,
-        status: 'draft',
-        persona_id: persona.id,
-        targeting_criteria: {
-          location: "Nice, Alpes-Maritimes",
-          interests: persona.interests,
-          property_types: persona.property_types
-        },
-        content_strategy: {
-          content_type: strategy.contentType,
-          format: strategy.format,
-          frequency: strategy.frequency,
-          best_times: strategy.bestTimes,
-          approach: strategy.approach
-        },
-        target_metrics: {
-          daily_meetings: 1,
-          engagement_rate: 0.05,
-          conversion_rate: 0.02
-        }
-      })
-      .select()
-      .single();
-
-    if (campaignError) throw campaignError;
-
-    // Générer le contenu adapté à la plateforme
-    const content = await ContentGenerationService.generateOptimizedContent({
-      objective,
-      persona,
-      platform,
-      strategy
-    });
-
-    // Mettre à jour la campagne avec le contenu
-    await supabase
-      .from('social_campaigns')
-      .update({
-        message_template: content.template,
-        posts: content.posts
-      })
-      .eq('id', campaign.id);
-
-    return campaign;
   }
 }
