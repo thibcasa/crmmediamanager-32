@@ -62,13 +62,22 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
     }
   };
 
+  const handleCampaignClick = (campaign: SocialCampaign) => {
+    onSelectCampaign(campaign);
+    // Changer automatiquement vers l'onglet analytics
+    const analyticsTab = document.querySelector('[value="analytics"]') as HTMLElement;
+    if (analyticsTab) {
+      analyticsTab.click();
+    }
+  };
+
   return (
     <div className="space-y-4">
       {campaigns.map((campaign) => (
         <Card
           key={campaign.id}
           className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => onSelectCampaign(campaign)}
+          onClick={() => handleCampaignClick(campaign)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
