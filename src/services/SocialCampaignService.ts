@@ -46,6 +46,10 @@ export class SocialCampaignService {
   }
 
   static async updateCampaign(id: string, updates: Partial<SocialCampaign>) {
+    if (!id) {
+      throw new Error('Campaign ID is required for update');
+    }
+
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User not authenticated');
 
@@ -63,6 +67,10 @@ export class SocialCampaignService {
   }
 
   static async duplicateCampaign(campaignId: string) {
+    if (!campaignId) {
+      throw new Error('Campaign ID is required for duplication');
+    }
+
     const { data: originalCampaign, error: fetchError } = await supabase
       .from('social_campaigns')
       .select('*')
@@ -88,6 +96,10 @@ export class SocialCampaignService {
   }
 
   static async deleteCampaign(id: string) {
+    if (!id) {
+      throw new Error('Campaign ID is required for deletion');
+    }
+
     const { error } = await supabase
       .from('social_campaigns')
       .delete()
@@ -97,6 +109,10 @@ export class SocialCampaignService {
   }
 
   static async optimizeCampaign(id: string) {
+    if (!id) {
+      throw new Error('Campaign ID is required for optimization');
+    }
+
     const { data: campaign, error: fetchError } = await supabase
       .from('social_campaigns')
       .select('*')

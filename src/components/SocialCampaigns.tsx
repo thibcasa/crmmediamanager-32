@@ -27,12 +27,22 @@ export const SocialCampaigns = () => {
   };
 
   const handleUpdateCampaign = async (campaign: any) => {
+    if (!campaign?.id) {
+      toast({
+        title: "Erreur",
+        description: "ID de campagne invalide",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       if (campaign.status === 'deleted') {
         await SocialCampaignService.deleteCampaign(campaign.id);
       } else {
         await SocialCampaignService.updateCampaign(campaign.id, campaign);
       }
+      
       toast({
         title: "Succès",
         description: campaign.status === 'deleted' ? 
