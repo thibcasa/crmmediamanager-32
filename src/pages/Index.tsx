@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Building2, Loader2 } from 'lucide-react';
 import { useQuery } from "@tanstack/react-query";
@@ -6,11 +5,10 @@ import { supabase } from "@/lib/supabaseClient";
 import { ActiveCampaigns } from "@/components/campaigns/ActiveCampaigns";
 
 const Index = () => {
-  const { data: user, isLoading: isUserLoading } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ['user'],
     queryFn: async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      const { data: { user } } = await supabase.auth.getUser();
       return user;
     }
   });
@@ -25,21 +23,20 @@ const Index = () => {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold mb-4">Erreur d'authentification</h1>
+      <div className="text-center p-8">
         <p>Veuillez vous connecter pour accéder à cette page.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 p-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Dashboard CRM Immobilier
+    <div className="container mx-auto p-4 space-y-6">
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Bonjour {user.email}
         </h1>
-        <p className="text-xl text-muted-foreground">
-          Gérez vos campagnes et suivez vos performances
+        <p className="text-muted-foreground">
+          Voici un aperçu de vos campagnes en cours
         </p>
       </div>
 
@@ -50,8 +47,8 @@ const Index = () => {
               <Building2 className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-medium">Campagnes en cours</h3>
-              <p className="text-sm text-muted-foreground">Gérer vos campagnes actives</p>
+              <h3 className="font-semibold">Campagnes</h3>
+              <p className="text-sm text-muted-foreground">Gérez vos campagnes marketing</p>
             </div>
           </div>
         </Card>
