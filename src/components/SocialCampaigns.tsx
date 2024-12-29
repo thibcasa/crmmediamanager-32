@@ -9,10 +9,12 @@ import { CampaignAnalytics } from './social/CampaignAnalytics';
 import { CreateCampaignForm } from './social/CreateCampaignForm';
 import { SocialApiSettings } from './settings/SocialApiSettings';
 import { CampaignActions } from './social/campaign/CampaignActions';
+import { CampaignAnalysisPage } from './social/campaign/CampaignAnalysisPage';
 
 export const SocialCampaigns = () => {
   const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const { data: campaigns, refetch } = useQuery({
     queryKey: ['social-campaigns'],
@@ -61,6 +63,23 @@ export const SocialCampaigns = () => {
     }
   };
 
+  const handleSelectCampaign = (campaign: any) => {
+    setSelectedCampaign(campaign);
+    setShowAnalysis(true);
+  };
+
+  if (showAnalysis && selectedCampaign) {
+    return (
+      <CampaignAnalysisPage 
+        campaign={selectedCampaign}
+        onClose={() => {
+          setShowAnalysis(false);
+          setSelectedCampaign(null);
+        }}
+      />
+    );
+  }
+
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Campagnes Social Media</h2>
@@ -81,10 +100,10 @@ export const SocialCampaigns = () => {
           <div className="space-y-4">
             <CampaignList 
               campaigns={campaigns || []} 
-              onSelectCampaign={setSelectedCampaign}
+              onSelectCampaign={handleSelectCampaign}
               onUpdate={handleUpdateCampaign}
             />
-            {selectedCampaign && (
+            {selectedCampaign && !showAnalysis && (
               <CampaignActions
                 campaignId={selectedCampaign.id}
                 status={selectedCampaign.status}

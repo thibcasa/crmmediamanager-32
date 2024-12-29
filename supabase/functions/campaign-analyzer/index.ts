@@ -12,45 +12,53 @@ serve(async (req) => {
   }
 
   try {
-    const { campaign } = await req.json();
+    const { campaignId } = await req.json();
+    console.log('Analyzing campaign:', campaignId);
 
-    // Analyse prédictive basée sur les données historiques
-    const predictiveAnalysis = {
-      engagement_rate: 0.35,
-      estimated_leads: 25,
-      conversion_rate: 0.15,
-      roi_prediction: 2.5
-    };
+    // Fetch campaign data from database
+    const { data: campaign, error: campaignError } = await supabase
+      .from('social_campaigns')
+      .select('*')
+      .eq('id', campaignId)
+      .single();
 
-    // Suggestions d'optimisation
+    if (campaignError) throw campaignError;
+
+    // Analyze performance and generate optimizations
     const optimizations = {
-      content_strategy: {
-        best_posting_times: ["09:00", "12:30", "17:00"],
-        recommended_content_types: ["carousel", "video"],
-        content_themes: ["property_showcase", "market_insights"]
+      targeting_criteria: {
+        ...campaign.targeting_criteria,
+        age_range: {
+          min: Math.max(18, campaign.targeting_criteria.age_range.min - 5),
+          max: Math.min(65, campaign.targeting_criteria.age_range.max + 5)
+        },
+        locations: [...campaign.targeting_criteria.locations, 'nearby_cities'],
+        interests: [...campaign.targeting_criteria.interests, 'real_estate_investment']
       },
-      targeting_suggestions: {
-        age_ranges: ["35-45", "45-55"],
-        interests: ["real estate investment", "property management"],
-        locations: ["Nice", "Antibes", "Cannes"]
+      ai_feedback: {
+        suggestions: [
+          "Élargissement de la tranche d'âge pour toucher plus de prospects qualifiés",
+          "Inclusion des villes voisines pour augmenter la portée",
+          "Ajout de centres d'intérêt liés à l'investissement immobilier"
+        ],
+        performance_metrics: {
+          engagement_rate: 0.045,
+          roi: 2.8,
+          predicted_improvement: 0.15
+        }
       }
     };
 
+    // Update campaign with optimizations
+    const { error: updateError } = await supabase
+      .from('social_campaigns')
+      .update(optimizations)
+      .eq('id', campaignId);
+
+    if (updateError) throw updateError;
+
     return new Response(
-      JSON.stringify({
-        feedback: {
-          predictions: predictiveAnalysis,
-          recommendations: optimizations
-        },
-        optimizedStrategy: {
-          ...campaign.content_strategy,
-          ...optimizations.content_strategy
-        },
-        optimizedTargeting: {
-          ...campaign.targeting_criteria,
-          ...optimizations.targeting_suggestions
-        }
-      }),
+      JSON.stringify({ success: true, optimizations }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
