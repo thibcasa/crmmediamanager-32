@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ab_tests: {
+        Row: {
+          end_date: string | null
+          id: string
+          metadata: Json | null
+          performance_score: number | null
+          post_id: string
+          start_date: string | null
+          status: string | null
+          user_id: string
+          variant_content: string
+          variant_type: string
+        }
+        Insert: {
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          performance_score?: number | null
+          post_id: string
+          start_date?: string | null
+          status?: string | null
+          user_id: string
+          variant_content: string
+          variant_type: string
+        }
+        Update: {
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          performance_score?: number | null
+          post_id?: string
+          start_date?: string | null
+          status?: string | null
+          user_id?: string
+          variant_content?: string
+          variant_type?: string
+        }
+        Relationships: []
+      }
       audience_segments: {
         Row: {
           created_at: string | null
@@ -35,6 +74,39 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      automation_logs: {
+        Row: {
+          action_type: string
+          applied_at: string | null
+          created_at: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          applied_at?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          applied_at?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
@@ -475,6 +547,45 @@ export type Database = {
           property_types?: string[]
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      post_performances: {
+        Row: {
+          clicks: number | null
+          created_at: string | null
+          engagement_rate: number | null
+          id: string
+          impressions: number | null
+          metadata: Json | null
+          platform: string
+          post_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clicks?: number | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          id?: string
+          impressions?: number | null
+          metadata?: Json | null
+          platform: string
+          post_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clicks?: number | null
+          created_at?: string | null
+          engagement_rate?: number | null
+          id?: string
+          impressions?: number | null
+          metadata?: Json | null
+          platform?: string
+          post_id?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
