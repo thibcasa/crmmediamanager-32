@@ -858,9 +858,11 @@ export type Database = {
           ai_feedback: Json | null
           content_strategy: Json | null
           created_at: string | null
+          current_prediction: Json | null
           id: string
           message_template: string | null
           name: string
+          optimization_cycles: Json | null
           persona_id: string | null
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers: Json | null
@@ -877,9 +879,11 @@ export type Database = {
           ai_feedback?: Json | null
           content_strategy?: Json | null
           created_at?: string | null
+          current_prediction?: Json | null
           id?: string
           message_template?: string | null
           name: string
+          optimization_cycles?: Json | null
           persona_id?: string | null
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
@@ -896,9 +900,11 @@ export type Database = {
           ai_feedback?: Json | null
           content_strategy?: Json | null
           created_at?: string | null
+          current_prediction?: Json | null
           id?: string
           message_template?: string | null
           name?: string
+          optimization_cycles?: Json | null
           persona_id?: string | null
           platform?: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
@@ -930,9 +936,11 @@ export type Database = {
           interaction_type: string
           lead_id: string | null
           metadata: Json | null
+          optimization_feedback: Json | null
           platform: string
           sentiment_score: number | null
           user_id: string
+          workflow_step: string | null
         }
         Insert: {
           content?: string | null
@@ -942,9 +950,11 @@ export type Database = {
           interaction_type: string
           lead_id?: string | null
           metadata?: Json | null
+          optimization_feedback?: Json | null
           platform: string
           sentiment_score?: number | null
           user_id: string
+          workflow_step?: string | null
         }
         Update: {
           content?: string | null
@@ -954,9 +964,11 @@ export type Database = {
           interaction_type?: string
           lead_id?: string | null
           metadata?: Json | null
+          optimization_feedback?: Json | null
           platform?: string
           sentiment_score?: number | null
           user_id?: string
+          workflow_step?: string | null
         }
         Relationships: [
           {
@@ -1004,38 +1016,65 @@ export type Database = {
       workflow_templates: {
         Row: {
           actions: Json | null
+          campaign_id: string | null
           conditions: Json | null
           created_at: string | null
           description: string | null
           id: string
           name: string
+          optimization_history: Json | null
+          pipeline_id: string | null
+          prediction_metrics: Json | null
           triggers: Json | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           actions?: Json | null
+          campaign_id?: string | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
           name: string
+          optimization_history?: Json | null
+          pipeline_id?: string | null
+          prediction_metrics?: Json | null
           triggers?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           actions?: Json | null
+          campaign_id?: string | null
           conditions?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
           name?: string
+          optimization_history?: Json | null
+          pipeline_id?: string | null
+          prediction_metrics?: Json | null
           triggers?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "workflow_templates_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "social_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_templates_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
