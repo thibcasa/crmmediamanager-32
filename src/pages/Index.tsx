@@ -51,7 +51,7 @@ const Index = () => {
           CRM Immobilier
         </h1>
         <p className="text-xl text-muted-foreground">
-          Gérez vos contacts et campagnes de prospection immobilière
+          Gérez vos contacts et campagnes de prospection immobilière via le chat IA
         </p>
       </div>
 
@@ -80,7 +80,7 @@ const Index = () => {
               <Brain className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-medium">Création de Campagne</h3>
+              <h3 className="font-medium">Chat IA</h3>
               <p className="text-sm text-muted-foreground">Assistant intelligent</p>
             </div>
           </div>
@@ -110,7 +110,7 @@ const Index = () => {
           </TabsTrigger>
           <TabsTrigger value="campaign-creation" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            Campagnes
+            Chat IA
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
@@ -123,7 +123,16 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="campaign-creation" className="space-y-4">
-          <CampaignCreationWizard />
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Assistant IA</h2>
+              <p className="text-muted-foreground mb-6">
+                Utilisez le chat IA pour créer et gérer vos campagnes de prospection immobilière.
+                L'assistant vous guidera dans la création de campagnes optimisées.
+              </p>
+              {/* Ici sera intégré le composant de chat IA */}
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">

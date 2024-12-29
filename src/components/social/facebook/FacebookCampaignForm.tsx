@@ -92,7 +92,9 @@ export const FacebookCampaignForm = () => {
           posting_frequency: "daily",
           best_times: ["09:00", "12:00", "17:00"],
           content_themes: ["property_showcase"]
-        }
+        },
+        current_prediction: {},
+        optimization_cycles: []
       };
 
       await SocialCampaignService.createCampaign(formattedCampaign);

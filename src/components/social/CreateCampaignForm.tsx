@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { SocialCampaignService, Platform } from '@/services/SocialCampaignService';
+import { SocialCampaignService } from '@/services/SocialCampaignService';
 import { LinkedInStatus } from '../linkedin/LinkedInStatus';
 import { supabase } from '@/lib/supabaseClient';
 import { SocialPlatform } from '@/types/social';
@@ -21,7 +21,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState('Test LinkedIn - Propriétaires Nice');
-  const [platform, setPlatform] = useState<Platform>('linkedin');
+  const [platform, setPlatform] = useState<SocialPlatform>('linkedin');
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(['linkedin']);
   const [messageTemplate, setMessageTemplate] = useState(platformTemplates.linkedin);
   const [targetingCriteria, setTargetingCriteria] = useState({
@@ -38,7 +38,7 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
-  const handlePlatformChange = (value: Platform) => {
+  const handlePlatformChange = (value: SocialPlatform) => {
     setPlatform(value);
     setMessageTemplate(platformTemplates[value] || '');
   };
@@ -85,7 +85,9 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
           posting_frequency: "daily",
           best_times: ["09:00", "12:00", "17:00"],
           content_themes: ["property_showcase"]
-        }
+        },
+        current_prediction: {},
+        optimization_cycles: []
       };
 
       await SocialCampaignService.createCampaign(campaignData);
