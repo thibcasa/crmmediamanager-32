@@ -47,7 +47,7 @@ export const WorkflowSteps = () => {
       const prompt = `Créer une campagne ${config.strategy} pour ${config.platform} 
         avec le format ${config.format} ciblant les propriétaires à Nice`;
       
-      await executeWorkflow(prompt, config.platform);
+      await executeWorkflow(prompt);
       
       toast({
         title: "Succès",
