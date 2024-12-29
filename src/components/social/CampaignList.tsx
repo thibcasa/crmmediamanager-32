@@ -76,11 +76,13 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
       {campaigns.map((campaign) => (
         <Card
           key={campaign.id}
-          className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => handleCampaignClick(campaign)}
+          className="p-4 hover:shadow-md transition-shadow"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => handleCampaignClick(campaign)}
+          >
+            <div className="flex items-center space-x-4 flex-grow">
               {getPlatformIcon(campaign.platform)}
               <div>
                 <h3 className="font-medium">{campaign.name}</h3>
@@ -90,14 +92,11 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleStatusToggle(campaign);
-                }}
+                onClick={() => handleStatusToggle(campaign)}
               >
                 {campaign.status === 'active' ? (
                   <Pause className="h-4 w-4" />
@@ -109,10 +108,7 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDuplicate(campaign);
-                }}
+                onClick={() => handleDuplicate(campaign)}
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -120,10 +116,7 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(campaign);
-                }}
+                onClick={() => handleDelete(campaign)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
