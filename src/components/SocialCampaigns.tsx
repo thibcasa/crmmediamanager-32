@@ -8,6 +8,7 @@ import { CampaignList } from './social/CampaignList';
 import { CampaignAnalytics } from './social/CampaignAnalytics';
 import { CreateCampaignForm } from './social/CreateCampaignForm';
 import { SocialApiSettings } from './settings/SocialApiSettings';
+import { CampaignActions } from './social/campaign/CampaignActions';
 
 export const SocialCampaigns = () => {
   const { toast } = useToast();
@@ -67,7 +68,7 @@ export const SocialCampaigns = () => {
       <Tabs defaultValue="create" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="create">Nouvelle Campagne</TabsTrigger>
-          <TabsTrigger value="list">Campagnes Existantes</TabsTrigger>
+          <TabsTrigger value="list">Campagnes Actives</TabsTrigger>
           <TabsTrigger value="analytics">Analyse</TabsTrigger>
           <TabsTrigger value="settings">Configuration API</TabsTrigger>
         </TabsList>
@@ -77,11 +78,20 @@ export const SocialCampaigns = () => {
         </TabsContent>
 
         <TabsContent value="list">
-          <CampaignList 
-            campaigns={campaigns || []} 
-            onSelectCampaign={setSelectedCampaign}
-            onUpdate={handleUpdateCampaign}
-          />
+          <div className="space-y-4">
+            <CampaignList 
+              campaigns={campaigns || []} 
+              onSelectCampaign={setSelectedCampaign}
+              onUpdate={handleUpdateCampaign}
+            />
+            {selectedCampaign && (
+              <CampaignActions
+                campaignId={selectedCampaign.id}
+                status={selectedCampaign.status}
+                onUpdate={refetch}
+              />
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics">
