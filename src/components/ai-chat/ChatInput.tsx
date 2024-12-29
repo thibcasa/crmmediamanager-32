@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Progress } from "@/components/ui/progress";
 
@@ -18,6 +18,7 @@ interface ChatInputProps {
 export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInputProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
+  const hasShownToast = useRef(false);
 
   // Vérification de l'authentification au montage
   useEffect(() => {
@@ -30,8 +31,9 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
           throw error;
         }
         
-        if (!session) {
+        if (!session && !hasShownToast.current) {
           console.log("Pas de session active");
+          hasShownToast.current = true;
           toast({
             title: "Session expirée",
             description: "Veuillez vous reconnecter",
@@ -41,14 +43,19 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
           return;
         }
 
-        console.log("Session active:", session.user.id);
+        if (session) {
+          console.log("Session active:", session.user.id);
+        }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'authentification:", error);
-        toast({
-          title: "Erreur de connexion",
-          description: "Une erreur est survenue, veuillez réessayer",
-          variant: "destructive",
-        });
+        if (!hasShownToast.current) {
+          hasShownToast.current = true;
+          toast({
+            title: "Erreur de connexion",
+            description: "Une erreur est survenue, veuillez réessayer",
+            variant: "destructive",
+          });
+        }
       }
     };
 
