@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SocialCampaign } from "@/types/social";
 import { Facebook, Instagram, Linkedin, Twitter, MessageSquare, Pause, Play, Copy, Trash2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface CampaignListProps {
   campaigns: SocialCampaign[];
@@ -10,6 +11,8 @@ interface CampaignListProps {
 }
 
 export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: CampaignListProps) => {
+  const { toast } = useToast();
+
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case 'facebook':
@@ -40,6 +43,23 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
       status: 'draft'
     };
     onUpdate(duplicatedCampaign);
+  };
+
+  const handleDelete = async (campaign: SocialCampaign) => {
+    try {
+      onUpdate({ ...campaign, status: 'deleted' });
+      toast({
+        title: "Succès",
+        description: "La campagne a été supprimée"
+      });
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la campagne",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -93,7 +113,7 @@ export const CampaignList = ({ campaigns, onSelectCampaign, onUpdate }: Campaign
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onUpdate({ ...campaign, status: 'deleted' });
+                  handleDelete(campaign);
                 }}
               >
                 <Trash2 className="h-4 w-4" />

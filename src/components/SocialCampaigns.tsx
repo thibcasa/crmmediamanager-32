@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { SocialCampaignService, Platform } from '@/services/SocialCampaignService';
+import { useToast } from "@/hooks/use-toast";
+import { SocialCampaignService } from '@/services/SocialCampaignService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignList } from './social/CampaignList';
 import { CampaignAnalytics } from './social/CampaignAnalytics';
 import { CreateCampaignForm } from './social/CreateCampaignForm';
 import { SocialApiSettings } from './settings/SocialApiSettings';
-import { supabase } from '@/lib/supabaseClient';
 
 export const SocialCampaigns = () => {
   const { toast } = useToast();
@@ -29,17 +28,23 @@ export const SocialCampaigns = () => {
 
   const handleUpdateCampaign = async (campaign: any) => {
     try {
-      await SocialCampaignService.updateCampaign(campaign.id, campaign);
+      if (campaign.status === 'deleted') {
+        await SocialCampaignService.deleteCampaign(campaign.id);
+      } else {
+        await SocialCampaignService.updateCampaign(campaign.id, campaign);
+      }
       toast({
         title: "Succès",
-        description: "Campagne mise à jour avec succès"
+        description: campaign.status === 'deleted' ? 
+          "Campagne supprimée avec succès" : 
+          "Campagne mise à jour avec succès"
       });
       refetch();
     } catch (error) {
       console.error('Error updating campaign:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour la campagne",
+        description: "Une erreur est survenue lors de la mise à jour de la campagne",
         variant: "destructive"
       });
     }
