@@ -4,14 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { MonitoringProvider } from "./monitoring/MonitoringProvider";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
-import Pipeline from "./pages/Pipeline";
 import Prospects from "./pages/Prospects";
 import Properties from "./pages/Properties";
-import Workflow from "./pages/Workflow";
 import AiChat from "./pages/AiChat";
 import Calendar from "./pages/Calendar";
-import Campaigns from "./pages/Campaigns";
-import Analytics from "./pages/Analytics";
 import ApiSettings from "./pages/ApiSettings";
 import Meetings from "./pages/Meetings";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -58,14 +54,10 @@ function App() {
               }
             >
               <Route index element={withMonitoring(Index, 'Index')()} />
-              <Route path="pipeline" element={withMonitoring(Pipeline, 'Pipeline')()} />
               <Route path="prospects" element={withMonitoring(Prospects, 'Prospects')()} />
               <Route path="properties" element={withMonitoring(Properties, 'Properties')()} />
-              <Route path="workflow" element={withMonitoring(Workflow, 'Workflow')()} />
               <Route path="ai-chat" element={withMonitoring(AiChat, 'AiChat')()} />
               <Route path="calendar" element={withMonitoring(Calendar, 'Calendar')()} />
-              <Route path="campaigns" element={withMonitoring(Campaigns, 'Campaigns')()} />
-              <Route path="analytics" element={withMonitoring(Analytics, 'Analytics')()} />
               <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')()} />
               <Route path="meetings" element={withMonitoring(Meetings, 'Meetings')()} />
             </Route>
