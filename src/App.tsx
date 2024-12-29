@@ -22,22 +22,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const withMonitoring = (WrappedComponent: React.ComponentType, pageName: string) => {
-  const MonitoredComponent = () => (
-    <MonitoringProvider
-      config={{
-        pageName,
-        enableAutoCorrect: true,
-        enablePerformanceTracking: true,
-        enableErrorTracking: true
-      }}
-    >
-      <WrappedComponent />
-    </MonitoringProvider>
-  );
-  return MonitoredComponent;
-};
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -53,13 +37,13 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={withMonitoring(Index, 'Index')()} />
-              <Route path="prospects" element={withMonitoring(Prospects, 'Prospects')()} />
-              <Route path="properties" element={withMonitoring(Properties, 'Properties')()} />
-              <Route path="ai-chat" element={withMonitoring(AiChat, 'AiChat')()} />
-              <Route path="calendar" element={withMonitoring(Calendar, 'Calendar')()} />
-              <Route path="api-settings" element={withMonitoring(ApiSettings, 'ApiSettings')()} />
-              <Route path="meetings" element={withMonitoring(Meetings, 'Meetings')()} />
+              <Route index element={<Index />} />
+              <Route path="prospects" element={<Prospects />} />
+              <Route path="properties" element={<Properties />} />
+              <Route path="ai-chat" element={<AiChat />} />
+              <Route path="calendar" element={<Calendar />} />
+              <Route path="api-settings" element={<ApiSettings />} />
+              <Route path="meetings" element={<Meetings />} />
             </Route>
           </Routes>
           <Toaster />
