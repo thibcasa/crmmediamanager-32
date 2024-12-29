@@ -11,10 +11,17 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        navigate('/');
+      }
+    };
+    
+    checkUser();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Événement d'authentification:", event);
       if (event === 'SIGNED_IN' && session) {
-        console.log("Session utilisateur:", session);
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
@@ -23,19 +30,6 @@ const Login = () => {
       }
     });
 
-    const checkUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      console.log("Vérification de l'utilisateur:", user);
-      if (error) {
-        console.error('Erreur lors de la vérification de l\'utilisateur:', error);
-        return;
-      }
-      if (user) {
-        navigate('/');
-      }
-    };
-    
-    checkUser();
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
@@ -87,6 +81,7 @@ const Login = () => {
               },
             },
           }}
+          theme="default"
         />
       </Card>
     </div>
