@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, BarChart3, Loader2 } from 'lucide-react';
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
-import { CRMDashboard } from "@/components/crm/CRMDashboard";
+import { ActiveCampaigns } from "@/components/campaigns/ActiveCampaigns";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("workflow");
@@ -42,11 +42,26 @@ const Index = () => {
           Dashboard CRM Immobilier
         </h1>
         <p className="text-xl text-muted-foreground">
-          Gérez vos workflows et suivez vos performances
+          Gérez vos campagnes et suivez vos performances
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card 
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
+          onClick={() => setActiveTab("campaigns")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Building2 className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-medium">Campagnes en cours</h3>
+              <p className="text-sm text-muted-foreground">Gérer vos campagnes actives</p>
+            </div>
+          </div>
+        </Card>
+
         <Card 
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
           onClick={() => setActiveTab("workflow")}
@@ -79,7 +94,11 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="campaigns" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Campagnes en cours
+          </TabsTrigger>
           <TabsTrigger value="workflow" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Workflows
@@ -89,6 +108,10 @@ const Index = () => {
             Pipeline
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="campaigns" className="space-y-4">
+          <ActiveCampaigns />
+        </TabsContent>
 
         <TabsContent value="workflow" className="space-y-4">
           <Card className="p-6">
