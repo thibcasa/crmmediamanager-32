@@ -18,13 +18,13 @@ export class CampaignOrchestrator {
       // 3. Pour chaque plateforme, créer une campagne adaptée
       for (const platform of platforms) {
         const strategy = await this.generatePlatformStrategy(platform, objective);
-        const campaign = await this.createPlatformCampaign(platform, strategy, selectedPersona);
+        const campaign = await this.createPlatformCampaign(platform, strategy, selectedPersona, objective);
         campaignResults.push(campaign);
       }
 
       // 4. Créer les automatisations de suivi
       await StrategyOptimizationService.setupAutomations({
-        campaignId: campaignResults[0].id, // Campaign principale (LinkedIn)
+        campaignId: campaignResults[0].id,
         objective,
         strategy: {
           targetMetrics: {
@@ -85,11 +85,11 @@ export class CampaignOrchestrator {
     return platformStrategies[platform];
   }
 
-  private static async createPlatformCampaign(platform: string, strategy: any, persona: any) {
+  private static async createPlatformCampaign(platform: string, strategy: any, persona: any, objective: string) {
     const { data: campaign, error: campaignError } = await supabase
       .from('social_campaigns')
       .insert({
-        name: `Campagne ${platform} - Estimations immobilières`,
+        name: `Campagne ${platform} - ${objective.substring(0, 50)}...`,
         platform,
         status: 'draft',
         persona_id: persona.id,
