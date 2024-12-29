@@ -61,19 +61,61 @@
   }
 }
 
+/* Ajout de transitions douces pour éviter le scintillement */
 .animate-enter {
-  animation: enter 0.2s ease-out;
+  animation: enter 0.3s ease-out;
 }
 
 @keyframes enter {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.98);
   }
   100% {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Transitions plus douces pour les changements de thème */
+* {
+  transition: background-color 0.3s ease-in-out, 
+              color 0.3s ease-in-out,
+              border-color 0.3s ease-in-out,
+              opacity 0.3s ease-in-out;
+}
+
+/* Désactivation des transitions pour les utilisateurs qui préfèrent les animations réduites */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Optimisation du rendu */
+* {
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Stabilisation du layout */
+html, body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Prévention du CLS (Cumulative Layout Shift) */
+main {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Animation plus douce pour le gradient */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
 }
 
 @keyframes gradient {
@@ -86,17 +128,4 @@
   100% {
     background-position: 0% 50%;
   }
-}
-
-.animate-gradient {
-  animation: gradient 15s ease infinite;
-  background-size: 400% 400%;
-}
-
-.delay-200 {
-  animation-delay: 200ms;
-}
-
-.delay-300 {
-  animation-delay: 300ms;
 }
