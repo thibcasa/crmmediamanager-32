@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { CampaignData } from '../types/campaign';
-import { useContentGeneration } from './hooks/useContentGeneration';
-import { ContentForm } from './content-generator/ContentForm';
-import { ContentDisplay } from './content-generator/ContentDisplay';
+import { ContentWorkflowForm } from './content-generator/ContentWorkflowForm';
+import { ContentWorkflowDisplay } from './content-generator/ContentWorkflowDisplay';
+import { useState } from 'react';
 
 interface ContentGeneratorProps {
   onContentGenerated: (content: CampaignData['content']) => void;
@@ -10,38 +10,33 @@ interface ContentGeneratorProps {
 }
 
 export const ContentGenerator = ({ onContentGenerated, existingContent }: ContentGeneratorProps) => {
-  const {
-    isGenerating,
-    contentType,
-    setContentType,
-    platform,
-    setPlatform,
-    objective,
-    setObjective,
-    generateContent
-  } = useContentGeneration(onContentGenerated, existingContent);
+  const [generatedContent, setGeneratedContent] = useState<any>(null);
+
+  const handleContentGenerated = (content: any) => {
+    setGeneratedContent(content);
+    onContentGenerated([
+      ...existingContent,
+      {
+        type: 'post',
+        text: content.content
+      }
+    ]);
+  };
 
   return (
     <Card className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-medium mb-2">Génération de Contenu</h3>
         <p className="text-sm text-muted-foreground">
-          Décrivez l'objectif de votre contenu et choisissez le format
+          Créez du contenu optimisé pour vos réseaux sociaux
         </p>
       </div>
 
-      <ContentForm
-        isGenerating={isGenerating}
-        contentType={contentType}
-        platform={platform}
-        objective={objective}
-        onContentTypeChange={setContentType}
-        onPlatformChange={setPlatform}
-        onObjectiveChange={setObjective}
-        onGenerate={generateContent}
-      />
-
-      <ContentDisplay content={existingContent} />
+      <ContentWorkflowForm onContentGenerated={handleContentGenerated} />
+      
+      {generatedContent && (
+        <ContentWorkflowDisplay content={generatedContent} />
+      )}
     </Card>
   );
 };
