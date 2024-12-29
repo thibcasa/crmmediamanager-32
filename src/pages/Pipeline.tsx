@@ -9,37 +9,47 @@ import { useEffect } from "react";
 const Pipeline = () => {
   const { toast } = useToast();
 
-  // Fetch active pipelines with their associated campaigns and workflows
+  // Fetch active pipelines
   const { data: pipelines, isLoading } = useQuery({
     queryKey: ['active-pipelines'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      // First fetch pipelines
+      const { data: pipelinesData, error: pipelinesError } = await supabase
         .from('pipelines')
-        .select(`
-          *,
-          marketing_campaigns (
-            id,
-            name,
-            status,
-            metadata
-          ),
-          workflow_templates (
-            id,
-            name,
-            triggers,
-            actions,
-            optimization_history,
-            prediction_metrics
-          )
-        `)
+        .select('*, stages')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (pipelinesError) throw pipelinesError;
+
+      // Then fetch associated campaigns and workflows for each pipeline
+      const pipelinesWithRelations = await Promise.all(
+        pipelinesData.map(async (pipeline) => {
+          // Fetch associated campaign if exists
+          const { data: campaignData } = await supabase
+            .from('marketing_campaigns')
+            .select('id, name, status, metadata')
+            .eq('pipeline_id', pipeline.id)
+            .single();
+
+          // Fetch associated workflows
+          const { data: workflowData } = await supabase
+            .from('workflow_templates')
+            .select('id, name, triggers, actions, optimization_history, prediction_metrics')
+            .eq('pipeline_id', pipeline.id);
+
+          return {
+            ...pipeline,
+            marketing_campaigns: campaignData || null,
+            workflow_templates: workflowData || []
+          };
+        })
+      );
+
+      return pipelinesWithRelations;
     }
   });
 
@@ -91,7 +101,7 @@ const Pipeline = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">
-                {pipeline.marketing_campaigns?.[0]?.name || "Pipeline sans campagne"}
+                {pipeline.marketing_campaigns?.name || "Pipeline sans campagne"}
               </h2>
               <span className="text-sm text-muted-foreground">
                 Créé le {new Date(pipeline.created_at).toLocaleDateString()}
