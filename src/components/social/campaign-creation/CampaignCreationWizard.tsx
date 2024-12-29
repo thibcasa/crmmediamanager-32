@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { PersonaFilterManager } from '@/components/persona/PersonaFilterManager';
 import { LocationSelector } from '../targeting/LocationSelector';
 import { ContentStrategyForm } from '../content/ContentStrategyForm';

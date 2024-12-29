@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabaseClient';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +22,13 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   useEffect(() => {
     const fetchLocations = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Non authentifié');
+
         const { data, error } = await supabase
           .from('target_locations')
           .select('*')
-          .eq('department', 'Alpes-Maritimes')
-          .order('city');
+          .eq('department', 'Alpes-Maritimes');
 
         if (error) throw error;
         
