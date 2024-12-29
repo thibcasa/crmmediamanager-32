@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Calendar, Send } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 export const CampaignAutomationModule = () => {
   const { toast } = useToast();
@@ -11,7 +12,34 @@ export const CampaignAutomationModule = () => {
   const scheduleCampaign = async () => {
     setIsScheduling(true);
     try {
-      // Logique d'automatisation à implémenter
+      const { data, error } = await supabase
+        .from('automations')
+        .insert([
+          {
+            name: 'Campagne Automatisée LinkedIn',
+            trigger_type: 'schedule',
+            trigger_config: {
+              frequency: 'daily',
+              times: ['09:00', '12:00', '17:00']
+            },
+            actions: [
+              {
+                type: 'post_content',
+                platform: 'linkedin',
+                template: 'property_showcase'
+              },
+              {
+                type: 'engage_leads',
+                delay: '1h',
+                action: 'send_connection'
+              }
+            ]
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
       toast({
         title: "Campagne programmée",
         description: "La campagne a été planifiée avec succès",

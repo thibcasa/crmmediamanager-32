@@ -3,8 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { AIService } from '@/services/AIService';
 import { MessageSquare, Wand2 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 export const ContentGenerationModule = () => {
   const { toast } = useToast();
@@ -14,12 +14,17 @@ export const ContentGenerationModule = () => {
   const generateContent = async () => {
     setIsGenerating(true);
     try {
-      const prompt = `Générer un message marketing personnalisé pour des propriétaires 
-        immobiliers dans les Alpes-Maritimes, en mettant l'accent sur la valorisation 
-        de leur bien et les opportunités du marché actuel.`;
+      const { data, error } = await supabase.functions.invoke('content-generator', {
+        body: {
+          type: 'social',
+          platform: 'linkedin',
+          targetAudience: "propriétaires immobiliers Alpes-Maritimes"
+        }
+      });
 
-      const content = await AIService.generateContent('social', prompt);
-      setGeneratedContent(content);
+      if (error) throw error;
+
+      setGeneratedContent(data.content);
       
       toast({
         title: "Contenu généré",
