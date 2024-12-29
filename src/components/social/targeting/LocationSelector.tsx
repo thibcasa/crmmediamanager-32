@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from '@/lib/supabaseClient';
-import { MapPin, Loader2 } from 'lucide-react';
+import { supabase } from "@/lib/supabaseClient";
+import { MapPin, Loader2, Search } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { LocationList } from './components/LocationList';
 import { Location } from './types';
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface LocationSelectorProps {
   selectedLocations: string[];
@@ -18,6 +20,10 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    postalCode: '',
+    city: '',
+  });
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -25,10 +31,20 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Non authentifié');
 
-        const { data, error } = await supabase
+        let query = supabase
           .from('target_locations')
           .select('*')
           .eq('department', 'Alpes-Maritimes');
+
+        if (filters.city) {
+          query = query.ilike('city', `%${filters.city}%`);
+        }
+
+        if (filters.postalCode) {
+          query = query.ilike('postal_code', `%${filters.postalCode}%`);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         
@@ -49,7 +65,7 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     };
 
     fetchLocations();
-  }, [toast]);
+  }, [toast, filters]);
 
   const handleLocationToggle = (locationId: string, checked: boolean) => {
     const newLocations = checked
@@ -59,10 +75,14 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
     onLocationChange(newLocations);
   };
 
-  const filteredLocations = locations.filter(location =>
-    location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    location.postal_code.includes(searchTerm)
-  );
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    if (value.match(/^\d/)) {
+      setFilters(prev => ({ ...prev, postalCode: value, city: '' }));
+    } else {
+      setFilters(prev => ({ ...prev, city: value, postalCode: '' }));
+    }
+  };
 
   if (loading) {
     return (
@@ -88,18 +108,44 @@ export const LocationSelector = ({ selectedLocations, onLocationChange }: Locati
           </Badge>
         </div>
 
-        <Input
-          placeholder="Rechercher une ville..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Rechercher une ville ou un code postal..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
 
-        <LocationList
-          locations={filteredLocations}
-          selectedLocations={selectedLocations}
-          onLocationToggle={handleLocationToggle}
-        />
+        <ScrollArea className="h-[300px] rounded-md border">
+          <div className="p-4 space-y-4">
+            {locations.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucune ville trouvée
+              </div>
+            ) : (
+              locations.map((location) => (
+                <div
+                  key={location.id}
+                  className="flex items-center space-x-3 hover:bg-accent rounded-lg p-2 transition-colors"
+                >
+                  <Checkbox
+                    id={location.id}
+                    checked={selectedLocations.includes(location.id)}
+                    onCheckedChange={(checked) => handleLocationToggle(location.id, checked as boolean)}
+                  />
+                  <label
+                    htmlFor={location.id}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                  >
+                    {location.city} ({location.postal_code})
+                  </label>
+                </div>
+              ))
+            )}
+          </div>
+        </ScrollArea>
       </div>
     </Card>
   );
