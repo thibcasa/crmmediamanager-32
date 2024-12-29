@@ -69,8 +69,6 @@ const Login = () => {
               input: 'auth-input',
             }
           }}
-          providers={['linkedin']}
-          redirectTo={window.location.origin}
           localization={{
             variables: {
               sign_in: {
@@ -78,7 +76,6 @@ const Login = () => {
                 password_label: 'Mot de passe',
                 button_label: 'Se connecter',
                 loading_button_label: 'Connexion en cours...',
-                social_provider_text: 'Se connecter avec {{provider}}',
                 link_text: 'Vous avez déjà un compte ? Connectez-vous',
               },
               sign_up: {
@@ -86,7 +83,6 @@ const Login = () => {
                 password_label: 'Mot de passe',
                 button_label: "S'inscrire",
                 loading_button_label: 'Inscription en cours...',
-                social_provider_text: "S'inscrire avec {{provider}}",
                 link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
               },
             },
