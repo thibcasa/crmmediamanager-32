@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
@@ -7,11 +8,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
     const { campaignId } = await req.json();
     console.log('Analyzing campaign:', campaignId);
 
@@ -29,11 +36,11 @@ serve(async (req) => {
       targeting_criteria: {
         ...campaign.targeting_criteria,
         age_range: {
-          min: Math.max(18, campaign.targeting_criteria.age_range.min - 5),
-          max: Math.min(65, campaign.targeting_criteria.age_range.max + 5)
+          min: Math.max(18, campaign.targeting_criteria?.age_range?.min - 5 || 25),
+          max: Math.min(65, campaign.targeting_criteria?.age_range?.max + 5 || 55)
         },
-        locations: [...campaign.targeting_criteria.locations, 'nearby_cities'],
-        interests: [...campaign.targeting_criteria.interests, 'real_estate_investment']
+        locations: [...(campaign.targeting_criteria?.locations || []), 'nearby_cities'],
+        interests: [...(campaign.targeting_criteria?.interests || []), 'real_estate_investment']
       },
       ai_feedback: {
         suggestions: [
