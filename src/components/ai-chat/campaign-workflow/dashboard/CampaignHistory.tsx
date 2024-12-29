@@ -4,13 +4,18 @@ import { format } from 'date-fns';
 
 interface CampaignHistoryProps {
   campaigns: any[];
+  onCampaignClick: (campaignId: string) => void;
 }
 
-export const CampaignHistory = ({ campaigns }: CampaignHistoryProps) => {
+export const CampaignHistory = ({ campaigns, onCampaignClick }: CampaignHistoryProps) => {
   return (
     <div className="space-y-4">
       {campaigns.map((campaign) => (
-        <Card key={campaign.id} className="p-4">
+        <Card 
+          key={campaign.id} 
+          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          onClick={() => onCampaignClick(campaign.id)}
+        >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium">{campaign.name}</h3>

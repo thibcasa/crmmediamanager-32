@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { CampaignMetrics } from './dashboard/CampaignMetrics';
 import { CampaignHistory } from './dashboard/CampaignHistory';
 import { CampaignSettings } from './dashboard/CampaignSettings';
+import { useNavigate } from 'react-router-dom';
 
 interface Campaign {
   id: string;
@@ -19,6 +20,7 @@ interface Campaign {
 
 export const CampaignDashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,6 +53,10 @@ export const CampaignDashboard = () => {
     }
   };
 
+  const handleCampaignClick = (campaignId: string) => {
+    navigate(`/campaigns/${campaignId}`);
+  };
+
   return (
     <Card className="p-6">
       <div className="mb-6">
@@ -77,11 +83,11 @@ export const CampaignDashboard = () => {
         </TabsList>
 
         <TabsContent value="metrics">
-          <CampaignMetrics campaigns={campaigns} />
+          <CampaignMetrics campaigns={campaigns} onCampaignClick={handleCampaignClick} />
         </TabsContent>
 
         <TabsContent value="history">
-          <CampaignHistory campaigns={campaigns} />
+          <CampaignHistory campaigns={campaigns} onCampaignClick={handleCampaignClick} />
         </TabsContent>
 
         <TabsContent value="settings">
