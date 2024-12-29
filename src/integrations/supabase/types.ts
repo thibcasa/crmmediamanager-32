@@ -575,6 +575,7 @@ export type Database = {
           metadata: Json | null
           name: string
           pipeline_config: Json | null
+          pipeline_id: string | null
           reference: string
           start_date: string | null
           status: string | null
@@ -590,6 +591,7 @@ export type Database = {
           metadata?: Json | null
           name: string
           pipeline_config?: Json | null
+          pipeline_id?: string | null
           reference: string
           start_date?: string | null
           status?: string | null
@@ -605,6 +607,7 @@ export type Database = {
           metadata?: Json | null
           name?: string
           pipeline_config?: Json | null
+          pipeline_id?: string | null
           reference?: string
           start_date?: string | null
           status?: string | null
@@ -612,7 +615,15 @@ export type Database = {
           user_id?: string
           workflow_config?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_pipeline_id_fkey"
+            columns: ["pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meetings: {
         Row: {
@@ -825,6 +836,7 @@ export type Database = {
       }
       pipelines: {
         Row: {
+          campaign_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -834,6 +846,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          campaign_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -843,6 +856,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          campaign_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -851,7 +865,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pipelines_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_campaigns: {
         Row: {

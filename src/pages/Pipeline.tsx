@@ -9,7 +9,7 @@ import { useEffect } from "react";
 const Pipeline = () => {
   const { toast } = useToast();
 
-  // Fetch active pipelines
+  // Fetch active pipelines with social media data
   const { data: pipelines, isLoading } = useQuery({
     queryKey: ['active-pipelines'],
     queryFn: async () => {
@@ -25,17 +25,23 @@ const Pipeline = () => {
 
       if (pipelinesError) throw pipelinesError;
 
-      // Then fetch associated campaigns and workflows for each pipeline
+      // Then fetch associated campaigns and social media data for each pipeline
       const pipelinesWithRelations = await Promise.all(
         pipelinesData.map(async (pipeline) => {
-          // Fetch associated campaign if exists
+          // Fetch associated campaign
           const { data: campaignData } = await supabase
             .from('marketing_campaigns')
             .select('id, name, status, metadata')
-            .eq('pipeline_id', pipeline.id)
+            .eq('id', pipeline.campaign_id)
             .single();
 
-          // Fetch associated workflows
+          // Fetch social media campaigns
+          const { data: socialData } = await supabase
+            .from('social_campaigns')
+            .select('*')
+            .eq('campaign_id', pipeline.campaign_id);
+
+          // Fetch workflow templates
           const { data: workflowData } = await supabase
             .from('workflow_templates')
             .select('id, name, triggers, actions, optimization_history, prediction_metrics')
@@ -43,7 +49,8 @@ const Pipeline = () => {
 
           return {
             ...pipeline,
-            marketing_campaigns: campaignData || null,
+            marketing_campaign: campaignData || null,
+            social_campaigns: socialData || [],
             workflow_templates: workflowData || []
           };
         })
@@ -92,7 +99,7 @@ const Pipeline = () => {
       <div>
         <h1 className="text-4xl font-bold tracking-tight">Pipeline de vente</h1>
         <p className="text-muted-foreground mt-2">
-          Visualisez l'évolution de vos pipelines de vente gérés par l'IA.
+          Gestion automatisée des leads et des interactions sur les réseaux sociaux
         </p>
       </div>
 
@@ -101,7 +108,7 @@ const Pipeline = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">
-                {pipeline.marketing_campaigns?.name || "Pipeline sans campagne"}
+                {pipeline.marketing_campaign?.name || "Pipeline sans campagne"}
               </h2>
               <span className="text-sm text-muted-foreground">
                 Créé le {new Date(pipeline.created_at).toLocaleDateString()}
@@ -134,25 +141,27 @@ const Pipeline = () => {
               ))}
             </div>
 
-            {/* Workflow Predictions & Metrics */}
-            {pipeline.workflow_templates?.[0] && (
+            {/* Social Media Activity & Metrics */}
+            {pipeline.social_campaigns?.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <Card className="p-4">
-                  <h4 className="font-medium mb-2">Prédictions IA</h4>
+                  <h4 className="font-medium mb-2">Activité Réseaux Sociaux</h4>
                   <div className="space-y-2">
-                    {Object.entries(pipeline.workflow_templates[0].prediction_metrics || {}).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{key}</span>
-                        <span className="font-medium">{value}</span>
+                    {pipeline.social_campaigns.map((campaign: any) => (
+                      <div key={campaign.id} className="text-sm">
+                        <div className="font-medium">{campaign.platform}</div>
+                        <div className="text-muted-foreground">
+                          {campaign.posts?.length || 0} posts programmés
+                        </div>
                       </div>
                     ))}
                   </div>
                 </Card>
 
                 <Card className="p-4">
-                  <h4 className="font-medium mb-2">Optimisations</h4>
+                  <h4 className="font-medium mb-2">Optimisations IA</h4>
                   <div className="space-y-2">
-                    {(pipeline.workflow_templates[0].optimization_history || []).slice(-3).map((opt: any, index: number) => (
+                    {pipeline.workflow_templates?.[0]?.optimization_history?.slice(-3).map((opt: any, index: number) => (
                       <div key={index} className="text-sm text-muted-foreground">
                         {opt.action} - {new Date(opt.timestamp).toLocaleDateString()}
                       </div>
@@ -161,9 +170,9 @@ const Pipeline = () => {
                 </Card>
 
                 <Card className="p-4">
-                  <h4 className="font-medium mb-2">Actions en cours</h4>
+                  <h4 className="font-medium mb-2">Prochaines Actions</h4>
                   <div className="space-y-2">
-                    {(pipeline.workflow_templates[0].actions || []).map((action: any, index: number) => (
+                    {pipeline.workflow_templates?.[0]?.actions?.map((action: any, index: number) => (
                       <div key={index} className="text-sm text-muted-foreground">
                         {action.type} - {action.config?.frequency || 'N/A'}
                       </div>
