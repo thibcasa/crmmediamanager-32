@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { LocationSelector } from '../targeting/LocationSelector';
 import { ContentStrategyForm } from '../content/ContentStrategyForm';
 import { MultiChannelSelector } from '../targeting/MultiChannelSelector';
 import { supabase } from '@/lib/supabaseClient';
-import { useState } from 'react';
 import { SocialPlatform } from '@/types/social';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from "lucide-react";
@@ -81,8 +81,8 @@ export const CampaignCreationWizard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

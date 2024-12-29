@@ -10,14 +10,12 @@ import { CampaignCreationWizard } from "@/components/social/campaign-creation/Ca
 import { TrendAnalyzer } from "@/components/analytics/TrendAnalyzer";
 import { PredictiveAnalysis } from "@/components/analytics/PredictiveAnalysis";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
-import { LocationSelector } from "@/components/social/targeting/LocationSelector";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
   // Vérifier que l'utilisateur est bien authentifié
   const { data: user, isLoading: isUserLoading } = useQuery({
@@ -32,7 +30,7 @@ const Index = () => {
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -125,13 +123,7 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="campaign-creation" className="space-y-4">
-          <div className="space-y-6">
-            <LocationSelector 
-              selectedLocations={selectedLocations}
-              onLocationChange={setSelectedLocations}
-            />
-            <CampaignCreationWizard />
-          </div>
+          <CampaignCreationWizard />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
