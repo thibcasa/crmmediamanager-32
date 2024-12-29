@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,72 +10,21 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('Vérification de l\'authentification...');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Erreur d\'authentification:', error);
-          throw error;
-        }
-        
-        if (!session) {
-          console.log('Pas de session active, redirection vers login');
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous connecter pour accéder à cette page",
-            variant: "destructive",
-          });
-          navigate('/login', { replace: true });
-          return;
-        }
-
-        console.log('Session active:', session.user.id);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Erreur lors de la vérification de l\'authentification:', error);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
         toast({
-          title: "Erreur de session",
-          description: "Une erreur est survenue, veuillez vous reconnecter",
+          title: "Session terminée",
+          description: "Vous avez été déconnecté",
           variant: "destructive",
         });
         navigate('/login', { replace: true });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Changement d\'état d\'authentification:', event, session);
-      if (event === 'SIGNED_OUT' || !session) {
-        setIsAuthenticated(false);
-        navigate('/login', { replace: true });
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-sage-600" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return <>{children}</>;
 };
