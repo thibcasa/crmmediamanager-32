@@ -10,8 +10,11 @@ export class CampaignOrchestrator {
 
       // 1. Sélection automatique du persona optimal
       const selectedPersona = await PersonaSelectionService.selectOptimalPersona(objective);
+      
+      // 2. Génération de la stratégie optimale
+      const strategy = await StrategyOptimizationService.generateStrategy(objective, selectedPersona);
 
-      // 2. Création de la campagne avec le persona sélectionné
+      // 3. Création de la campagne avec le persona sélectionné
       const { data: campaign, error: campaignError } = await supabase
         .from('social_campaigns')
         .insert({
@@ -36,24 +39,26 @@ export class CampaignOrchestrator {
 
       if (campaignError) throw campaignError;
 
-      // 3. Génération du contenu optimisé
+      // 4. Génération du contenu optimisé
       const content = await ContentGenerationService.generateOptimizedContent({
         objective,
         persona: selectedPersona,
-        platform: 'linkedin'
+        platform: 'linkedin',
+        strategy
       });
 
-      // 4. Configuration des automatisations
+      // 5. Configuration des automatisations
       await StrategyOptimizationService.setupAutomations({
         campaignId: campaign.id,
         objective,
-        persona: selectedPersona
+        strategy
       });
 
       return {
         campaign,
         selectedPersona,
         content,
+        strategy,
         nextSteps: [
           {
             type: 'content_generation',

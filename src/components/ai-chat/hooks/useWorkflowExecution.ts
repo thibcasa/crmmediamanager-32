@@ -2,17 +2,16 @@ import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { CampaignOrchestrator } from '@/services/ai/orchestration/CampaignOrchestrator';
-import { WorkflowConfig } from '../types/workflow';
 
 export const useWorkflowExecution = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const executeWorkflow = async (aiResponse: string, platform: string) => {
+  const executeWorkflow = async (aiResponse: string) => {
     setIsProcessing(true);
     try {
-      console.log(`Démarrage de l'exécution du workflow pour ${platform}`);
+      console.log('Démarrage de l\'exécution du workflow avec la réponse IA:', aiResponse);
       
       // Orchestration automatique de la campagne
       const result = await CampaignOrchestrator.orchestrateCampaign(aiResponse);
