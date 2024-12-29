@@ -5,7 +5,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { SegmentationModule } from './modules/SegmentationModule';
-import { ContentGenerationModule } from './modules/ContentGenerationModule';
 import { CampaignAutomationModule } from './modules/CampaignAutomationModule';
 import { PredictiveAnalysisModule } from './modules/PredictiveAnalysisModule';
 
@@ -29,19 +28,14 @@ export const AutomationWorkflow = () => {
   return (
     <Card className="p-6">
       <Tabs value={activeModule} onValueChange={setActiveModule}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="segmentation">Segmentation</TabsTrigger>
-          <TabsTrigger value="content">Génération Contenu</TabsTrigger>
           <TabsTrigger value="automation">Automatisation</TabsTrigger>
           <TabsTrigger value="analysis">Analyse Prédictive</TabsTrigger>
         </TabsList>
 
         <TabsContent value="segmentation">
           <SegmentationModule leads={leads || []} isLoading={isLoading} />
-        </TabsContent>
-
-        <TabsContent value="content">
-          <ContentGenerationModule />
         </TabsContent>
 
         <TabsContent value="automation">
