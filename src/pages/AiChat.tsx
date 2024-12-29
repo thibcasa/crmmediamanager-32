@@ -8,6 +8,10 @@ import { CampaignWorkflowManager } from "@/components/ai-chat/campaign-workflow/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, TestTube, Rocket, History } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { PersonaSelector } from "@/components/social/campaign/PersonaSelector";
+import { LocationSelector } from "@/components/social/targeting/LocationSelector";
+import { MultiChannelSelector } from "@/components/social/targeting/MultiChannelSelector";
+import { SocialPlatform } from "@/types/social";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,6 +29,9 @@ const AiChat = () => {
   const [input, setInput] = useState("");
   const [currentMessage, setCurrentMessage] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState("chat");
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(['linkedin']);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +55,6 @@ const AiChat = () => {
       setInput("");
       trackEvent('message_received', { response_length: response.message.length });
       
-      // Automatically switch to test workflow after receiving response
       setActiveTab("test");
     } catch (error) {
       await handleError(error as Error);
@@ -66,6 +72,23 @@ const AiChat = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Card className="p-6">
         <h2 className="text-2xl font-bold mb-6">Assistant Stratégique IA</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <PersonaSelector
+            selectedPersonaId={selectedPersonaId}
+            onPersonaSelect={setSelectedPersonaId}
+          />
+          
+          <LocationSelector
+            selectedLocations={selectedLocations}
+            onLocationChange={setSelectedLocations}
+          />
+          
+          <MultiChannelSelector
+            selectedPlatforms={selectedPlatforms}
+            onPlatformsChange={setSelectedPlatforms}
+          />
+        </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-4 w-full">
@@ -129,7 +152,6 @@ const AiChat = () => {
               <p className="text-sm text-muted-foreground">
                 Visualisez l'historique de vos campagnes et leurs performances
               </p>
-              {/* We'll implement the campaign history view in the next iteration */}
             </Card>
           </TabsContent>
         </Tabs>

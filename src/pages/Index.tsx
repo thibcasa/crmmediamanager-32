@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Building2, BarChart3, Loader2 } from 'lucide-react';
+import { Building2, BarChart3, Loader2 } from 'lucide-react';
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
@@ -39,29 +39,14 @@ const Index = () => {
     <div className="space-y-8 p-8">
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">
-          Assistant IA Immobilier
+          Dashboard CRM Immobilier
         </h1>
         <p className="text-xl text-muted-foreground">
-          Créez et gérez vos campagnes de prospection immobilière avec l'aide de l'IA
+          Gérez vos campagnes et suivez vos performances
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card 
-          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
-          onClick={() => setActiveTab("chat")}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Brain className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-medium">Chat IA</h3>
-              <p className="text-sm text-muted-foreground">Créez vos campagnes</p>
-            </div>
-          </div>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card 
           className="p-4 cursor-pointer hover:bg-accent/50 transition-colors" 
           onClick={() => setActiveTab("campaigns")}
@@ -109,11 +94,7 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="chat" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            Chat IA
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="campaigns" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Campagnes
@@ -127,16 +108,6 @@ const Index = () => {
             Pipeline
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="chat" className="space-y-4">
-          <Card className="p-6">
-            <h2 className="text-2xl font-semibold mb-4">Assistant IA</h2>
-            <p className="text-muted-foreground mb-6">
-              Utilisez le chat IA pour créer et gérer vos campagnes de prospection immobilière.
-              L'assistant vous guidera dans la création de campagnes optimisées.
-            </p>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-4">
           <CRMDashboard />
