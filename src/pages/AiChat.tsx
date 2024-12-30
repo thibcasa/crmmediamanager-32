@@ -1,83 +1,63 @@
 import { useState } from "react";
-import { useMonitoring } from "@/monitoring/hooks/useMonitoring";
-import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
-import { useChat } from "@/hooks/use-chat";
-import { Card } from "@/components/ui/card";
-import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
-import { RealEstateContentGenerator } from "@/components/content/RealEstateContentGenerator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GlobalDashboard } from "@/components/dashboard/GlobalDashboard";
+import { ChatMessages } from "@/components/ai-chat/ChatMessages";
+import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
+import { ModuleOrchestrator } from "@/components/ai-chat/modules/ModuleOrchestrator";
+import { Message } from "@/components/ai-chat/types/chat";
 
 const AiChat = () => {
-  const { trackError, trackEvent } = useMonitoring({
-    componentName: 'AiChat',
-    enableAutoCorrect: true
-  });
-
-  const { messages, sendMessage, isLoading } = useChat();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const { executeWorkflow, isProcessing } = useAIOrchestrator();
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    const userMessage: Message = {
+      role: "user",
+      content: input
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+
     try {
-      trackEvent('message_sent', { content_length: input.length });
-      await sendMessage(input);
-      setInput("");
-      trackEvent('message_received');
+      const result = await executeWorkflow(input);
+      const aiMessage: Message = {
+        role: "assistant",
+        content: {
+          type: "structured",
+          text: result.response,
+          platform: "linkedin",
+          targetAudience: "property_owners",
+          metadata: {
+            type: "campaign_response",
+            platform: "linkedin",
+            targetAudience: "property_owners",
+            metrics: result.metrics
+          }
+        }
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      await handleError(error as Error);
+      console.error("Error in workflow execution:", error);
     }
   };
 
-  const handlePromptClick = (prompt: string) => {
-    setInput(prompt);
-  };
-
-  const handleError = async (error: Error) => {
-    await trackError(error, {
-      context: 'ai_chat_page',
-      severity: 'high'
-    });
-  };
-
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Tabs defaultValue="dashboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="dashboard">Tableau de Bord</TabsTrigger>
-          <TabsTrigger value="chat">Assistant IA</TabsTrigger>
-          <TabsTrigger value="content">Générateur de Contenu</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard">
-          <GlobalDashboard />
-        </TabsContent>
-
-        <TabsContent value="chat">
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-6">Assistant Stratégique IA</h2>
-            
-            <ExamplePrompts onPromptClick={handlePromptClick} />
-            
-            <div className="flex-1 flex flex-col min-h-[600px] bg-white rounded-lg shadow">
-              <ChatMessages messages={messages} isLoading={isLoading} />
-              <ChatInput 
-                input={input}
-                isLoading={isLoading}
-                onInputChange={setInput}
-                onSubmit={handleSendMessage}
-              />
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="content">
-          <RealEstateContentGenerator />
-        </TabsContent>
-      </Tabs>
+    <div className="flex flex-col h-full">
+      <ModuleOrchestrator />
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <ChatMessages messages={messages} isLoading={isProcessing} />
+        <ChatInput
+          input={input}
+          isLoading={isProcessing}
+          onInputChange={setInput}
+          onSubmit={handleSubmit}
+        />
+      </div>
     </div>
   );
 };
