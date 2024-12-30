@@ -30,7 +30,7 @@ export const useChat = () => {
       setMessages(prev => [...prev, userMessage]);
 
       // Appel à l'Edge Function de génération de contenu
-      const { data, error } = await supabase.functions.invoke('content-generator', {
+      const { data, error } = await supabase.functions.invoke('ai-content-generator', {
         body: { prompt: content }
       });
 
@@ -39,7 +39,13 @@ export const useChat = () => {
       // Ajouter la réponse de l'assistant
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.content
+        content: data.content.text,
+        metadata: {
+          type: data.content.type,
+          platform: data.content.platform,
+          targetAudience: data.content.targetAudience,
+          metrics: data.content.metrics
+        }
       };
       setMessages(prev => [...prev, assistantMessage]);
 
