@@ -2,8 +2,8 @@ import { useState } from "react";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
-import { ModuleInteractionPanel } from "@/components/modules/ModuleInteractionPanel";
-import { Message, StructuredContent } from "@/components/ai-chat/types/chat";
+import { ModuleContainer } from "@/components/ai-chat/modules/ModuleContainer";
+import { Message } from "@/components/ai-chat/types/chat";
 
 const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -56,17 +56,20 @@ const AiChat = () => {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-4">
-      <ModuleInteractionPanel />
-      
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <ChatMessages messages={messages} isLoading={isProcessing} />
-        <ChatInput
-          input={input}
-          isLoading={isProcessing}
-          onInputChange={setInput}
-          onSubmit={handleSubmit}
-        />
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden flex">
+        <div className="w-2/3 flex flex-col">
+          <ChatMessages messages={messages} isLoading={isProcessing} />
+          <ChatInput
+            input={input}
+            isLoading={isProcessing}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+          />
+        </div>
+        <div className="w-1/3 border-l border-gray-200">
+          <ModuleContainer />
+        </div>
       </div>
     </div>
   );
