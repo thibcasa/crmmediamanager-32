@@ -1,5 +1,5 @@
-import { Message, StructuredMessage } from '../types/chat';
-import { StructuredContent } from './StructuredContent';
+import { Message, StructuredContent } from '../types/chat';
+import { StructuredContentDisplay } from './StructuredContent';
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
 
@@ -11,7 +11,7 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: ChatMessageProps) => {
-  const renderMessageContent = (content: string | StructuredMessage) => {
+  const renderMessageContent = (content: string | StructuredContent) => {
     if (!content) return null;
     
     if (typeof content === 'string') {
@@ -26,7 +26,7 @@ export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: Chat
       }
     }
     
-    return <StructuredContent content={content} />;
+    return <StructuredContentDisplay content={content} />;
   };
 
   return (
