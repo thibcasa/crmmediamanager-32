@@ -8,6 +8,10 @@ interface ModuleStateUpdatePayload {
   state: Partial<ModuleState>;
 }
 
+interface AutomationLogRecord {
+  metadata: ModuleStateUpdatePayload;
+}
+
 // Type guard to check if the payload has the correct structure
 const isModuleStateUpdate = (metadata: unknown): metadata is ModuleStateUpdatePayload => {
   if (!metadata || typeof metadata !== 'object') return false;
@@ -42,13 +46,13 @@ export const useModuleStates = () => {
         table: 'automation_logs',
         filter: `action_type=eq.module_state_update` 
       }, (payload) => {
-        const metadata = payload.new?.metadata;
-        if (metadata && isModuleStateUpdate(metadata)) {
+        const record = payload.new as AutomationLogRecord | null;
+        if (record?.metadata && isModuleStateUpdate(record.metadata)) {
           setModuleStates(prev => ({
             ...prev,
-            [metadata.type]: {
-              ...prev[metadata.type],
-              ...metadata.state
+            [record.metadata.type]: {
+              ...prev[record.metadata.type],
+              ...record.metadata.state
             }
           }));
         }
