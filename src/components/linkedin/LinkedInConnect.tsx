@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { LinkedIn } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 
@@ -70,7 +70,7 @@ export const LinkedInConnect = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <LinkedIn className="h-5 w-5 text-[#0A66C2]" />
+        <Linkedin className="h-5 w-5 text-[#0A66C2]" />
         <h3 className="text-lg font-medium">LinkedIn</h3>
       </div>
 
