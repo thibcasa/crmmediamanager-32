@@ -2,11 +2,11 @@ import { Card } from "@/components/ui/card";
 import { StructuredContent } from '../types/chat';
 import { MessageMetrics } from './MessageMetrics';
 
-interface StructuredContentProps {
+interface StructuredContentDisplayProps {
   content: StructuredContent;
 }
 
-export const StructuredContentDisplay = ({ content }: StructuredContentProps) => {
+export const StructuredContentDisplay = ({ content }: StructuredContentDisplayProps) => {
   return (
     <Card className="p-6 space-y-4">
       <div className="prose max-w-none">

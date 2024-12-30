@@ -7,7 +7,7 @@ interface ChatMessageProps {
   message: Message;
   index: number;
   copiedMessageIndex: number | null;
-  onCopy: (content: string | object, index: number) => void;
+  onCopy: (content: string | StructuredContent, index: number) => void;
 }
 
 export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: ChatMessageProps) => {
