@@ -35,13 +35,11 @@ export abstract class BaseModule implements AIModule {
     }
   }
 
-  async predict(data: any): Promise<{ engagement: number; conversion: number; roi: number }> {
-    return {
-      engagement: 0.75,
-      conversion: 0.55,
-      roi: 2.0
-    };
-  }
+  abstract predict(data: any): Promise<{
+    engagement: number;
+    conversion: number;
+    roi: number;
+  }>;
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {
     return {

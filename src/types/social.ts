@@ -30,18 +30,61 @@ export interface SocialCampaign {
   platform: SocialPlatform;
   name: string;
   status?: string;
-  schedule: Record<string, any>;
-  targeting_criteria: Record<string, any>;
+  schedule: {
+    frequency?: string;
+    times?: string[];
+    days?: string[];
+    customSchedule?: Record<string, any>;
+  };
+  targeting_criteria: {
+    location?: string;
+    interests?: string[];
+    age_range?: string;
+    job_titles?: string[];
+    keywords?: string[];
+  };
   message_template?: string;
   created_at?: string;
   updated_at?: string;
-  ai_feedback: Record<string, any>;
-  posts: any[];
-  post_triggers: any[];
-  target_metrics: Record<string, any>;
+  ai_feedback: {
+    suggestions?: string[];
+    performance_score?: number;
+    next_actions?: string[];
+  };
+  posts: Array<{
+    id: string;
+    content: string;
+    status: string;
+    scheduled_at?: string;
+    performance?: Record<string, number>;
+  }>;
+  post_triggers: Array<{
+    type: string;
+    condition: Record<string, any>;
+    action: string;
+  }>;
+  target_metrics: {
+    engagement_rate?: number;
+    conversion_rate?: number;
+    cost_per_lead?: number;
+    roi?: number;
+  };
   persona_id?: string;
   target_locations?: string[];
-  content_strategy: Record<string, any>;
-  optimization_cycles: any[];
-  current_prediction: Record<string, any>;
+  content_strategy: {
+    post_types: string[];
+    posting_frequency: string;
+    best_times: string[];
+    content_themes: string[];
+  };
+  optimization_cycles: Array<{
+    date: string;
+    changes: Record<string, any>;
+    results: Record<string, number>;
+  }>;
+  current_prediction: {
+    success_probability?: number;
+    estimated_roi?: number;
+    potential_reach?: number;
+  };
 }
