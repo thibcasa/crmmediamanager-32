@@ -1,30 +1,24 @@
-export interface MetricsData {
-  engagement?: number;
-  clicks?: number;
-  conversions?: number;
-  roi?: number;
-}
-
-export interface StructuredMessage {
-  type: string;
-  text: string;
-  platform: string;
-  targetAudience: string;
-  metadata?: {
-    type: string;
-    platform: string;
-    targetAudience: string;
-    metrics?: MetricsData;
-  };
-}
-
 export interface Message {
   role: 'user' | 'assistant';
-  content: string | StructuredMessage;
-  metadata?: {
-    type: string;
-    platform: string;
-    targetAudience: string;
-    metrics?: MetricsData;
+  content: string | StructuredContent;
+}
+
+export interface StructuredContent {
+  type: 'structured';
+  text: string;
+  platform: 'linkedin';
+  targetAudience: 'property_owners';
+  metadata: {
+    type: 'campaign_response';
+    platform: 'linkedin';
+    targetAudience: 'property_owners';
+    location: 'alpes_maritimes';
+    propertyType: 'luxury';
+    metrics: {
+      engagement: number;
+      clicks: number;
+      conversions: number;
+      roi: number;
+    };
   };
 }

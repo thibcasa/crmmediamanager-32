@@ -1,29 +1,31 @@
-import { StructuredMessage } from '../types/chat';
+import { Card } from "@/components/ui/card";
+import { StructuredContent } from '../types/chat';
 import { MessageMetrics } from './MessageMetrics';
 
 interface StructuredContentProps {
-  content: StructuredMessage;
+  content: StructuredContent;
 }
 
 export const StructuredContent = ({ content }: StructuredContentProps) => {
   return (
-    <div className="space-y-4">
-      {content.text && (
-        <p className="text-sage-700">{content.text}</p>
-      )}
-      {content.platform && (
-        <p className="text-sm text-sage-600">
-          Plateforme: {content.platform}
-        </p>
-      )}
-      {content.targetAudience && (
-        <p className="text-sm text-sage-600">
-          Audience cible: {content.targetAudience}
-        </p>
-      )}
-      {content.metadata?.metrics && (
-        <MessageMetrics metrics={content.metadata.metrics} />
-      )}
-    </div>
+    <Card className="p-6 space-y-4">
+      <div className="prose max-w-none">
+        <p className="text-lg whitespace-pre-wrap">{content.text}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+          LinkedIn
+        </span>
+        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+          Alpes-Maritimes
+        </span>
+        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">
+          Immobilier de luxe
+        </span>
+      </div>
+
+      <MessageMetrics metrics={content.metadata.metrics} />
+    </Card>
   );
 };
