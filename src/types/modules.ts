@@ -11,16 +11,6 @@ export interface ModuleState {
   validationScore: number;
 }
 
-export interface ModuleResult {
-  success: boolean;
-  data: any;
-  predictions: {
-    engagement: number;
-    conversion: number;
-    roi: number;
-  };
-}
-
 export interface ModuleConfig {
   type: ModuleType;
   name: string;

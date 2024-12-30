@@ -1,8 +1,13 @@
 import { useModuleStates } from '@/hooks/useModuleStates';
 import { ModuleBase } from './ModuleBase';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ModuleType } from '@/types/modules';
 
-const MODULE_CONFIGS = [
+const MODULE_CONFIGS: Array<{
+  type: ModuleType;
+  title: string;
+  description: string;
+}> = [
   {
     type: 'subject',
     title: 'Sujet',
