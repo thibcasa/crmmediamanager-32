@@ -1,5 +1,5 @@
 import { ModuleType, ModuleResult } from '@/types/modules';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from "@/lib/supabaseClient";
 
 export class ModuleValidationService {
   static async validateModule(type: ModuleType, result: ModuleResult): Promise<{
