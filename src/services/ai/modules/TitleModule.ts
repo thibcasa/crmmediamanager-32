@@ -23,18 +23,22 @@ export class TitleModule implements AIModule {
       console.error('Error in TitleModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(titles: string[]): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(titles: string[]): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.85,
       conversion: 0.65,
       roi: 2.5
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {

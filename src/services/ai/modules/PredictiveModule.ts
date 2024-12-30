@@ -22,18 +22,22 @@ export class PredictiveModule implements AIModule {
       console.error('Error in PredictiveModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(predictions: any): Promise<Record<string, number>> {
-    const metrics = {
+  async predict(predictions: any): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.85,
       conversion: 0.65,
       roi: 2.7
     };
-    return metrics;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {

@@ -22,18 +22,22 @@ export class PipelineModule implements AIModule {
       console.error('Error in PipelineModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(pipeline: any): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(pipeline: any): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.70,
       conversion: 0.50,
       roi: 2.2
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {

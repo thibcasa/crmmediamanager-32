@@ -22,18 +22,22 @@ export class WorkflowModule implements AIModule {
       console.error('Error in WorkflowModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(workflow: any): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(workflow: any): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.80,
       conversion: 0.60,
       roi: 2.8
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {
