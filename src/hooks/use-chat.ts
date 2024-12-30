@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "./use-toast";
-import { Message, StructuredMessage } from "@/components/ai-chat/types/chat";
+import { Message, StructuredContent } from "@/components/ai-chat/types/chat";
 
 export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ export const useChat = () => {
       const { data, error } = await supabase.functions.invoke('ai-content-generator', {
         body: { 
           prompt: content,
-          userId: session.user.id // Pass user ID to edge function
+          userId: session.user.id
         }
       });
 
@@ -43,14 +43,18 @@ export const useChat = () => {
       const assistantMessage: Message = {
         role: 'assistant',
         content: {
-          type: data.content.type,
+          type: 'campaign_response',
           text: data.content.text,
-          platform: data.content.platform,
-          targetAudience: data.content.targetAudience,
+          platform: 'linkedin',
+          targetAudience: 'property_owners',
+          location: 'alpes_maritimes',
+          propertyType: 'luxury',
           metadata: {
-            type: data.content.type,
-            platform: data.content.platform,
-            targetAudience: data.content.targetAudience,
+            type: 'campaign_response',
+            platform: 'linkedin',
+            targetAudience: 'property_owners',
+            location: 'alpes_maritimes',
+            propertyType: 'luxury',
             metrics: data.content.metrics
           }
         }

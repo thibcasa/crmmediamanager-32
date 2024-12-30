@@ -3,7 +3,7 @@ import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
 import { ModuleInteractionPanel } from "@/components/modules/ModuleInteractionPanel";
-import { Message } from "@/components/ai-chat/types/chat";
+import { Message, StructuredContent } from "@/components/ai-chat/types/chat";
 
 const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -27,14 +27,18 @@ const AiChat = () => {
       const aiMessage: Message = {
         role: "assistant",
         content: {
-          type: "structured",
+          type: "campaign_response",
           text: `Campagne créée avec le persona "${result.selectedPersona.name}". Prochaines étapes : ${result.nextSteps.map(step => step.details).join(", ")}`,
           platform: "linkedin",
           targetAudience: "property_owners",
+          location: "alpes_maritimes",
+          propertyType: "luxury",
           metadata: {
             type: "campaign_response",
             platform: "linkedin",
             targetAudience: "property_owners",
+            location: "alpes_maritimes",
+            propertyType: "luxury",
             metrics: {
               engagement: 0,
               clicks: 0,

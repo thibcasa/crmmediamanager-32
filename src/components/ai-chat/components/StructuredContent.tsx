@@ -6,7 +6,7 @@ interface StructuredContentProps {
   content: StructuredContent;
 }
 
-export const StructuredContent = ({ content }: StructuredContentProps) => {
+export const StructuredContentDisplay = ({ content }: StructuredContentProps) => {
   return (
     <Card className="p-6 space-y-4">
       <div className="prose max-w-none">
