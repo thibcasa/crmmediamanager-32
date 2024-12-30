@@ -22,21 +22,24 @@ export const useChat = () => {
         return;
       }
 
-      // Ajouter le message de l'utilisateur
+      // Add user message
       const userMessage: Message = {
         role: 'user',
         content: content
       };
       setMessages(prev => [...prev, userMessage]);
 
-      // Appel à l'Edge Function de génération de contenu
+      // Call Edge Function with user context
       const { data, error } = await supabase.functions.invoke('ai-content-generator', {
-        body: { prompt: content }
+        body: { 
+          prompt: content,
+          userId: session.user.id // Pass user ID to edge function
+        }
       });
 
       if (error) throw error;
 
-      // Ajouter la réponse de l'assistant
+      // Add assistant response
       const assistantMessage: Message = {
         role: 'assistant',
         content: {
@@ -54,7 +57,7 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Sauvegarder la conversation dans Supabase
+      // Log the interaction
       await supabase.from('automation_logs').insert({
         user_id: session.user.id,
         action_type: 'chat_message',

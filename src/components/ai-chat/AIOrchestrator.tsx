@@ -5,6 +5,7 @@ import { ModuleState, ModuleType } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 export const useAIOrchestrator = () => {
   const { executeWorkflow: executeBaseWorkflow, isProcessing } = useWorkflowExecution();
@@ -34,6 +35,16 @@ export const useAIOrchestrator = () => {
 
   const executeWorkflow = async (objective: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Veuillez vous connecter pour continuer",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setCurrentObjective(objective);
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
@@ -46,6 +57,17 @@ export const useAIOrchestrator = () => {
       
       console.log('Résultat de l\'orchestration:', result);
       
+      // Log successful execution
+      await supabase.from('automation_logs').insert({
+        user_id: session.user.id,
+        action_type: 'workflow_execution',
+        description: `Workflow exécuté avec succès pour l'objectif: ${objective}`,
+        metadata: {
+          objective,
+          result
+        }
+      });
+
       toast({
         title: "Workflow exécuté avec succès",
         description: `Campagne créée avec le persona "${result.selectedPersona.name}"`,
