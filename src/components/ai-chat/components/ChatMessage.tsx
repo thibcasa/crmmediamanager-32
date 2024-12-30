@@ -26,7 +26,8 @@ export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: Chat
       }
     }
     
-    return <StructuredContent content={content} />;
+    // Si c'est un objet structuré, on utilise le composant StructuredContent
+    return <StructuredContent content={content as StructuredMessage} />;
   };
 
   return (
