@@ -140,4 +140,19 @@ export class SocialCampaignService {
 
     if (updateError) throw updateError;
   }
+
+  static async getCampaign(id: string): Promise<SocialCampaign> {
+    const { data, error } = await supabase
+      .from('social_campaigns')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching campaign:', error);
+      throw error;
+    }
+
+    return data;
+  }
 }
