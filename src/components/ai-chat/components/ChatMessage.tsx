@@ -1,4 +1,4 @@
-import { Message } from '../types/chat';
+import { Message, StructuredMessage } from '../types/chat';
 import { StructuredContent } from './StructuredContent';
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
@@ -26,7 +26,6 @@ export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: Chat
       }
     }
     
-    // Si c'est un objet structuré, on utilise le composant StructuredContent
     return <StructuredContent content={content as StructuredMessage} />;
   };
 
