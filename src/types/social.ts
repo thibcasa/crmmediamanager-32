@@ -7,9 +7,18 @@ export interface SocialCampaign {
   platform: SocialPlatform;
   name: string;
   status?: string;
-  schedule?: Record<string, any>;
-  targeting_criteria?: Record<string, any>;
+  schedule?: any;
+  targeting_criteria?: any;
   message_template?: string;
   created_at?: string;
   updated_at?: string;
+  ai_feedback?: any;
+  posts?: any[];
+  post_triggers?: any[];
+  target_metrics?: Record<string, any>;
+  persona_id?: string;
+  target_locations?: string[];
+  content_strategy?: any;
+  optimization_cycles?: any[];
+  current_prediction?: Record<string, any>;
 }
