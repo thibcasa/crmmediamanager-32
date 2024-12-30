@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
 import { RealEstateContentGenerator } from "@/components/content/RealEstateContentGenerator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GlobalDashboard } from "@/components/dashboard/GlobalDashboard";
 
 const AiChat = () => {
   const { trackError, trackEvent } = useMonitoring({
@@ -44,11 +45,16 @@ const AiChat = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="dashboard">Tableau de Bord</TabsTrigger>
           <TabsTrigger value="chat">Assistant IA</TabsTrigger>
           <TabsTrigger value="content">Générateur de Contenu</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard">
+          <GlobalDashboard />
+        </TabsContent>
 
         <TabsContent value="chat">
           <Card className="p-6">
