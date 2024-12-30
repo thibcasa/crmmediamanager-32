@@ -1,6 +1,7 @@
-import { Card } from "@/components/ui/card";
 import { StructuredContent } from '../types/chat';
-import { MessageMetrics } from './MessageMetrics';
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Target, Users, MapPin, Home, BarChart } from "lucide-react";
 
 interface StructuredContentDisplayProps {
   content: StructuredContent;
@@ -8,31 +9,59 @@ interface StructuredContentDisplayProps {
 
 export const StructuredContentDisplay = ({ content }: StructuredContentDisplayProps) => {
   return (
-    <Card className="p-6 space-y-4">
-      <div className="prose max-w-none">
-        <p className="text-base text-gray-700">{content.text}</p>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4 mt-4">
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Plateforme</h4>
-          <p className="text-sm">{content.platform}</p>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Audience Cible</h4>
-          <p className="text-sm">{content.targetAudience}</p>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Localisation</h4>
-          <p className="text-sm">{content.location}</p>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium text-gray-500">Type de Bien</h4>
-          <p className="text-sm">{content.propertyType}</p>
+    <Card className="p-4 space-y-4">
+      <div className="space-y-2">
+        <p className="text-lg font-medium">{content.text}</p>
+        
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Target className="h-4 w-4" />
+            {content.platform}
+          </Badge>
+          
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            {content.targetAudience}
+          </Badge>
+          
+          <Badge variant="outline" className="flex items-center gap-1">
+            <MapPin className="h-4 w-4" />
+            {content.location}
+          </Badge>
+          
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Home className="h-4 w-4" />
+            {content.propertyType}
+          </Badge>
         </div>
       </div>
 
-      <MessageMetrics metrics={content.metadata.metrics} />
+      {content.metadata?.metrics && (
+        <div className="border-t pt-4">
+          <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+            <BarChart className="h-4 w-4" />
+            Métriques prévues
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Engagement</p>
+              <p className="text-lg font-medium">{content.metadata.metrics.engagement}%</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Clics</p>
+              <p className="text-lg font-medium">{content.metadata.metrics.clicks}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Conversions</p>
+              <p className="text-lg font-medium">{content.metadata.metrics.conversions}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">ROI</p>
+              <p className="text-lg font-medium">{content.metadata.metrics.roi}x</p>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
