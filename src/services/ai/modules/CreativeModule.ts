@@ -23,18 +23,22 @@ export class CreativeModule implements AIModule {
       console.error('Error in CreativeModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(imageUrl: string): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(imageUrl: string): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.90,
       conversion: 0.70,
       roi: 3.0
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {

@@ -3,6 +3,7 @@ import { OptimizationPanel } from "./OptimizationPanel";
 import { CampaignAnalytics } from "./CampaignAnalytics";
 import { useQuery } from "@tanstack/react-query";
 import { SocialCampaignService } from "@/services/SocialCampaignService";
+import { SocialCampaign } from "@/types/social";
 
 interface CampaignDashboardProps {
   campaignId: string;
@@ -13,7 +14,16 @@ export const CampaignDashboard = ({ campaignId }: CampaignDashboardProps) => {
 
   const { data: campaign } = useQuery({
     queryKey: ['campaign', campaignId],
-    queryFn: () => SocialCampaignService.getCampaign(campaignId),
+    queryFn: async () => {
+      const data = await SocialCampaignService.getCampaign(campaignId);
+      // Ensure schedule has the correct type
+      return {
+        ...data,
+        schedule: typeof data.schedule === 'string' 
+          ? { frequency: 'daily' } 
+          : data.schedule || { frequency: 'daily' }
+      } as SocialCampaign;
+    },
   });
 
   if (!campaign) {

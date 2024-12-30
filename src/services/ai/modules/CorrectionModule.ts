@@ -22,18 +22,22 @@ export class CorrectionModule implements AIModule {
       console.error('Error in CorrectionModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(corrections: any): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(corrections: any): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.95,
       conversion: 0.75,
       roi: 3.2
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {
