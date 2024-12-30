@@ -23,18 +23,22 @@ export class ContentModule implements AIModule {
       console.error('Error in ContentModule:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
       };
     }
   }
 
-  async predict(content: string): Promise<Record<string, number>> {
-    const predictions = {
+  async predict(content: string): Promise<{ engagement: number; conversion: number; roi: number }> {
+    return {
       engagement: 0.75,
       conversion: 0.55,
       roi: 2.0
     };
-    return predictions;
   }
 
   async optimize(result: ModuleResult): Promise<ModuleResult> {

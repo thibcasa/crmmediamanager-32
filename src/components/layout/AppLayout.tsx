@@ -14,8 +14,8 @@ import {
   Target,
   Pencil,
   Image,
+  GitBranch, // Changed from Pipeline to GitBranch as it better represents a pipeline
   Workflow,
-  Pipeline,
   LineChart,
   Wrench,
   FileText,
@@ -46,7 +46,7 @@ const menuItems = [
       { icon: Pencil, label: "Module Rédaction", path: "/modules/content" },
       { icon: Image, label: "Module Créatif", path: "/modules/creative" },
       { icon: Workflow, label: "Module Workflow", path: "/modules/workflow" },
-      { icon: Pipeline, label: "Module Pipeline", path: "/modules/pipeline" },
+      { icon: GitBranch, label: "Module Pipeline", path: "/modules/pipeline" },
       { icon: LineChart, label: "Analyse Prédictive", path: "/modules/predictive" },
       { icon: Wrench, label: "Module Correction", path: "/modules/correction" },
     ]
