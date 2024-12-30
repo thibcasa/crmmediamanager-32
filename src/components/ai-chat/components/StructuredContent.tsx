@@ -21,8 +21,8 @@ export const StructuredContent = ({ content }: StructuredContentProps) => {
           Audience cible: {content.targetAudience}
         </p>
       )}
-      {content.metrics && (
-        <MessageMetrics metrics={content.metrics} />
+      {content.metadata?.metrics && (
+        <MessageMetrics metrics={content.metadata.metrics} />
       )}
     </div>
   );

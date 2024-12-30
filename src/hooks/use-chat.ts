@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "./use-toast";
-import { Message } from "@/components/ai-chat/types/chat";
+import { Message, StructuredMessage } from "@/components/ai-chat/types/chat";
 
 export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,12 +39,17 @@ export const useChat = () => {
       // Ajouter la réponse de l'assistant
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.content.text,
-        metadata: {
+        content: {
           type: data.content.type,
+          text: data.content.text,
           platform: data.content.platform,
           targetAudience: data.content.targetAudience,
-          metrics: data.content.metrics
+          metadata: {
+            type: data.content.type,
+            platform: data.content.platform,
+            targetAudience: data.content.targetAudience,
+            metrics: data.content.metrics
+          }
         }
       };
       setMessages(prev => [...prev, assistantMessage]);

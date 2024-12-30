@@ -11,7 +11,7 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: ChatMessageProps) => {
-  const renderMessageContent = (content: string | object) => {
+  const renderMessageContent = (content: string | StructuredMessage) => {
     if (!content) return null;
     
     if (typeof content === 'string') {
@@ -26,7 +26,7 @@ export const ChatMessage = ({ message, index, copiedMessageIndex, onCopy }: Chat
       }
     }
     
-    return <StructuredContent content={content as StructuredMessage} />;
+    return <StructuredContent content={content} />;
   };
 
   return (

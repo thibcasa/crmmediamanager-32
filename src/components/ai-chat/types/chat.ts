@@ -10,10 +10,21 @@ export interface StructuredMessage {
   text: string;
   platform: string;
   targetAudience: string;
-  metrics?: MetricsData;
+  metadata?: {
+    type: string;
+    platform: string;
+    targetAudience: string;
+    metrics?: MetricsData;
+  };
 }
 
 export interface Message {
   role: 'user' | 'assistant';
   content: string | StructuredMessage;
+  metadata?: {
+    type: string;
+    platform: string;
+    targetAudience: string;
+    metrics?: MetricsData;
+  };
 }
