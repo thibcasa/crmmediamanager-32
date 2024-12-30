@@ -1,4 +1,4 @@
-export type ModuleType = 'subject' | 'title' | 'content' | 'creative' | 'workflow' | 'pipeline' | 'predictive' | 'correction';
+export { ModuleType } from '@/types/modules';
 
 export interface ModuleResult {
   success: boolean;

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
-import { ModuleType } from './types';
+import { ModuleType } from '@/types/modules';
 import { SubjectModule } from './SubjectModule';
 import { TitleModule } from './TitleModule';
 import { ContentModule } from './ContentModule';

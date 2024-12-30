@@ -1,4 +1,4 @@
-export type ModuleType = 'subject' | 'title' | 'content' | 'creative' | 'workflow' | 'pipeline' | 'analysis' | 'correction';
+export type ModuleType = 'subject' | 'title' | 'content' | 'creative' | 'workflow' | 'pipeline' | 'predictive' | 'correction' | 'analysis';
 
 export interface ModuleState {
   status: 'idle' | 'processing' | 'validated' | 'error';
