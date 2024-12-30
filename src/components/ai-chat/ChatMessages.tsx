@@ -11,7 +11,12 @@ interface Message {
     text: string;
     platform: string;
     targetAudience: string;
-    metrics?: any;
+    metrics?: {
+      engagement?: number;
+      clicks?: number;
+      conversions?: number;
+      roi?: number;
+    };
   };
 }
 
@@ -71,7 +76,18 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
     
     // Handle structured content
     if (typeof content === 'object') {
-      const structuredContent = content as any;
+      const structuredContent = content as {
+        text: string;
+        platform: string;
+        targetAudience: string;
+        metrics?: {
+          engagement?: number;
+          clicks?: number;
+          conversions?: number;
+          roi?: number;
+        };
+      };
+
       return (
         <div className="space-y-4">
           {structuredContent.text && (
@@ -90,9 +106,40 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
           {structuredContent.metrics && (
             <div className="mt-2 p-2 bg-sage-50 rounded-md">
               <p className="text-sm font-medium text-sage-700">Métriques:</p>
-              <pre className="text-xs text-sage-600 mt-1">
-                {JSON.stringify(structuredContent.metrics, null, 2)}
-              </pre>
+              <div className="space-y-2 mt-2">
+                {structuredContent.metrics.engagement !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-sage-600">Engagement:</span>
+                    <span className="text-sm font-medium text-sage-700">
+                      {(structuredContent.metrics.engagement * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+                {structuredContent.metrics.clicks !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-sage-600">Clics:</span>
+                    <span className="text-sm font-medium text-sage-700">
+                      {structuredContent.metrics.clicks}
+                    </span>
+                  </div>
+                )}
+                {structuredContent.metrics.conversions !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-sage-600">Conversions:</span>
+                    <span className="text-sm font-medium text-sage-700">
+                      {structuredContent.metrics.conversions}
+                    </span>
+                  </div>
+                )}
+                {structuredContent.metrics.roi !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-sage-600">ROI:</span>
+                    <span className="text-sm font-medium text-sage-700">
+                      {structuredContent.metrics.roi.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
