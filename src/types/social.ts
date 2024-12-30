@@ -24,6 +24,16 @@ export interface AIModule {
   optimize: (result: ModuleResult) => Promise<ModuleResult>;
 }
 
+export interface BaseModuleResponse {
+  success: boolean;
+  data: any;
+  predictions: {
+    engagement: number;
+    conversion: number;
+    roi: number;
+  };
+}
+
 export interface SocialCampaign {
   id: string;
   user_id?: string;
@@ -42,11 +52,12 @@ export interface SocialCampaign {
     age_range?: string;
     job_titles?: string[];
     keywords?: string[];
+    persona?: string;
   };
   message_template?: string;
   created_at?: string;
   updated_at?: string;
-  ai_feedback: {
+  ai_feedback?: {
     suggestions?: string[];
     performance_score?: number;
     next_actions?: string[];
@@ -86,5 +97,27 @@ export interface SocialCampaign {
     success_probability?: number;
     estimated_roi?: number;
     potential_reach?: number;
+  };
+}
+
+export interface ModuleInteraction {
+  from: string;
+  to: string;
+  data: any;
+  timestamp: string;
+  status: 'pending' | 'completed' | 'error';
+}
+
+export interface ModuleState {
+  id: string;
+  campaignId: string;
+  type: string;
+  status: 'idle' | 'processing' | 'validated' | 'error';
+  data: any;
+  lastUpdate: string;
+  predictions: {
+    engagement: number;
+    conversion: number;
+    roi: number;
   };
 }
