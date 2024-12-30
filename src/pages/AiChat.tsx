@@ -2,14 +2,13 @@ import { useState } from "react";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
-import { ModuleOrchestrator } from "@/components/ai-chat/modules/ModuleOrchestrator";
+import { ModuleInteractionPanel } from "@/components/modules/ModuleInteractionPanel";
 import { Message } from "@/components/ai-chat/types/chat";
-import { Card } from "@/components/ui/card";
 
 const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const { executeWorkflow, isProcessing, moduleStates, getModuleIcon } = useAIOrchestrator();
+  const { executeWorkflow, isProcessing } = useAIOrchestrator();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,23 +52,8 @@ const AiChat = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Card className="p-4 mb-4 bg-white">
-        <h2 className="text-xl font-semibold mb-4">État des Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Object.entries(moduleStates).map(([type, state]) => (
-            <Card key={type} className="p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {getModuleIcon(state.status)}
-                <span className="capitalize">{type}</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Score: {(state.validationScore * 100).toFixed(0)}%
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Card>
+    <div className="flex flex-col h-full space-y-4">
+      <ModuleInteractionPanel />
       
       <div className="flex-1 overflow-hidden flex flex-col">
         <ChatMessages messages={messages} isLoading={isProcessing} />
