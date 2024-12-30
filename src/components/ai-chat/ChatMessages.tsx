@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 
 interface Message {
   role: 'user' | 'assistant';
-  content: string;
+  content: string | {
+    type: string;
+    text: string;
+    platform: string;
+    targetAudience: string;
+    metrics?: any;
+  };
 }
 
 interface ChatMessagesProps {
@@ -18,9 +24,10 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
   const { toast } = useToast();
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
 
-  const handleCopy = async (content: string, index: number) => {
+  const handleCopy = async (content: string | object, index: number) => {
     try {
-      await navigator.clipboard.writeText(content);
+      const textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+      await navigator.clipboard.writeText(textContent);
       setCopiedMessageIndex(index);
       toast({
         title: "Copié !",
@@ -47,18 +54,52 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
     );
   }
 
-  const renderMessageContent = (content: string) => {
+  const renderMessageContent = (content: string | object) => {
     if (!content) return null;
     
-    try {
-      const lines = content.split('\n');
-      return lines.map((line, i) => (
-        <p key={i} className="mb-4 last:mb-0 text-sage-700">{line}</p>
-      ));
-    } catch (error) {
-      console.error("Error rendering message:", error);
-      return <p className="text-sage-700">{content}</p>;
+    if (typeof content === 'string') {
+      try {
+        const lines = content.split('\n');
+        return lines.map((line, i) => (
+          <p key={i} className="mb-4 last:mb-0 text-sage-700">{line}</p>
+        ));
+      } catch (error) {
+        console.error("Error rendering message:", error);
+        return <p className="text-sage-700">{content}</p>;
+      }
     }
+    
+    // Handle structured content
+    if (typeof content === 'object') {
+      const structuredContent = content as any;
+      return (
+        <div className="space-y-4">
+          {structuredContent.text && (
+            <p className="text-sage-700">{structuredContent.text}</p>
+          )}
+          {structuredContent.platform && (
+            <p className="text-sm text-sage-600">
+              Plateforme: {structuredContent.platform}
+            </p>
+          )}
+          {structuredContent.targetAudience && (
+            <p className="text-sm text-sage-600">
+              Audience cible: {structuredContent.targetAudience}
+            </p>
+          )}
+          {structuredContent.metrics && (
+            <div className="mt-2 p-2 bg-sage-50 rounded-md">
+              <p className="text-sm font-medium text-sage-700">Métriques:</p>
+              <pre className="text-xs text-sage-600 mt-1">
+                {JSON.stringify(structuredContent.metrics, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
