@@ -6,26 +6,26 @@ export interface SocialCampaign {
   platform: SocialPlatform;
   name: string;
   status?: string;
-  schedule?: Record<string, any>;
-  targeting_criteria?: Record<string, any>;
+  schedule: Record<string, any>;
+  targeting_criteria: Record<string, any>;
   message_template?: string;
   created_at?: string;
   updated_at?: string;
-  ai_feedback?: Record<string, any>;
+  ai_feedback: Record<string, any>;
   posts: any[];
-  post_triggers?: any[];
-  target_metrics?: Record<string, any>;
+  post_triggers: any[];
+  target_metrics: Record<string, any>;
   persona_id?: string;
   target_locations?: string[];
-  content_strategy?: Record<string, any>;
-  optimization_cycles?: any[];
-  current_prediction?: Record<string, any>;
+  content_strategy: Record<string, any>;
+  optimization_cycles: any[];
+  current_prediction: Record<string, any>;
 }
 
 export interface ModuleResult {
   success: boolean;
   data: any;
-  predictions?: {
+  predictions: {
     engagement: number;
     conversion: number;
     roi: number;
@@ -38,6 +38,10 @@ export interface ModuleResult {
 
 export interface AIModule {
   execute: (input: any) => Promise<ModuleResult>;
-  predict: (data: any) => Promise<Record<string, number>>;
+  predict: (data: any) => Promise<{
+    engagement: number;
+    conversion: number;
+    roi: number;
+  }>;
   optimize: (result: ModuleResult) => Promise<ModuleResult>;
 }

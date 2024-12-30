@@ -1,7 +1,10 @@
-import { BaseModule, ModuleResult } from './types';
+import { BaseModule } from './BaseModule';
+import { ModuleResult } from '@/types/social';
 import { supabase } from '@/lib/supabaseClient';
 
-export class SubjectModule implements BaseModule {
+export class SubjectModule extends BaseModule {
+  moduleName = 'subject';
+
   async execute(input: { keywords: string[], audience: string }): Promise<ModuleResult> {
     console.log('Executing subject module with input:', input);
 
@@ -16,18 +19,14 @@ export class SubjectModule implements BaseModule {
       });
 
       const predictions = await this.predict(aiResponse.subjects);
-      const optimizedSubjects = await this.optimize(aiResponse.subjects, predictions);
 
       return {
         success: true,
-        data: optimizedSubjects,
+        data: aiResponse.subjects,
         predictions: {
-          engagement: predictions.averageEngagement,
-          performance: predictions.overallScore
-        },
-        metrics: {
-          relevanceScore: predictions.relevanceScore,
-          trendScore: predictions.trendScore
+          engagement: predictions.engagement,
+          conversion: predictions.conversion,
+          roi: predictions.roi
         }
       };
     } catch (error) {
@@ -36,19 +35,32 @@ export class SubjectModule implements BaseModule {
     }
   }
 
-  async predict(subjects: string[]): Promise<any> {
+  async predict(subjects: string[]): Promise<{ engagement: number; conversion: number; roi: number }> {
     const { data } = await supabase.functions.invoke('predictive-analysis', {
       body: {
         type: 'subject_analysis',
         subjects
       }
     });
-    return data;
+    
+    return {
+      engagement: data.engagement || 0.75,
+      conversion: data.conversion || 0.55,
+      roi: data.roi || 2.0
+    };
   }
 
-  async optimize(subjects: string[], predictions: any): Promise<string[]> {
-    return subjects.filter(subject => 
-      predictions.subjectScores[subject]?.relevanceScore > 0.7
-    );
+  async optimize(result: ModuleResult): Promise<ModuleResult> {
+    return {
+      ...result,
+      optimizations: {
+        suggestions: [
+          'Ajouter des mots-clés plus spécifiques',
+          'Inclure des chiffres dans les sujets',
+          'Utiliser des questions ouvertes'
+        ],
+        priority: 'high'
+      }
+    };
   }
 }
