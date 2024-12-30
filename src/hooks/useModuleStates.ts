@@ -3,6 +3,22 @@ import { ModuleState, ModuleType } from '@/types/modules';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from './use-toast';
 
+interface ModuleStateUpdatePayload {
+  type: ModuleType;
+  state: Partial<ModuleState>;
+}
+
+// Type guard to check if the payload has the correct structure
+const isModuleStateUpdate = (metadata: unknown): metadata is ModuleStateUpdatePayload => {
+  if (!metadata || typeof metadata !== 'object') return false;
+  const payload = metadata as Record<string, unknown>;
+  return (
+    'type' in payload &&
+    'state' in payload &&
+    typeof payload.type === 'string'
+  );
+};
+
 export const useModuleStates = () => {
   const { toast } = useToast();
   const [moduleStates, setModuleStates] = useState<Record<ModuleType, ModuleState>>({
@@ -26,8 +42,8 @@ export const useModuleStates = () => {
         table: 'automation_logs',
         filter: `action_type=eq.module_state_update` 
       }, (payload) => {
-        const { metadata } = payload.new;
-        if (metadata?.type && metadata?.state) {
+        const metadata = payload.new?.metadata;
+        if (metadata && isModuleStateUpdate(metadata)) {
           setModuleStates(prev => ({
             ...prev,
             [metadata.type]: {
