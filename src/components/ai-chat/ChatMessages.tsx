@@ -47,6 +47,20 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
     );
   }
 
+  const renderMessageContent = (content: string) => {
+    if (!content) return null;
+    
+    try {
+      const lines = content.split('\n');
+      return lines.map((line, i) => (
+        <p key={i} className="mb-4 last:mb-0 text-sage-700">{line}</p>
+      ));
+    } catch (error) {
+      console.error("Error rendering message:", error);
+      return <p className="text-sage-700">{content}</p>;
+    }
+  };
+
   return (
     <ScrollArea className="flex-1 px-6 py-8">
       <div className="space-y-8">
@@ -70,9 +84,7 @@ export const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
                 {message.role === 'assistant' ? 'Assistant Stratégique' : 'Vous'}
               </p>
               <div className="text-base leading-relaxed prose prose-sage max-w-none">
-                {message.content.split('\n').map((line, i) => (
-                  <p key={i} className="mb-4 last:mb-0 text-sage-700">{line}</p>
-                ))}
+                {renderMessageContent(message.content)}
               </div>
               
               {message.role === 'assistant' && (

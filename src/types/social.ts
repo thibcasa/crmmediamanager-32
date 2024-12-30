@@ -15,10 +15,10 @@ export interface SocialCampaign {
   ai_feedback?: any;
   posts?: any[];
   post_triggers?: any[];
-  target_metrics?: Record<string, any>;
+  target_metrics?: any;
   persona_id?: string;
   target_locations?: string[];
   content_strategy?: any;
   optimization_cycles?: any[];
-  current_prediction?: Record<string, any>;
+  current_prediction?: any;
 }
