@@ -7,16 +7,16 @@ export class ModuleInterconnectionService {
     toModule: ModuleType,
     result: ModuleResult
   ): Promise<void> {
-    console.log(`Propagating results from ${fromModule} to ${toModule}:`, result);
+    console.log(`Propagation des résultats de ${fromModule} vers ${toModule}:`, result);
 
     try {
-      // Log the interconnection
+      // Log de l'interconnexion
       await this.logInterconnection(fromModule, toModule, result);
 
-      // Notify dependent modules
+      // Notification des modules dépendants
       await this.notifyDependentModules(fromModule, toModule, result);
     } catch (error) {
-      console.error('Error in module interconnection:', error);
+      console.error('Erreur dans l\'interconnexion des modules:', error);
       throw error;
     }
   }
@@ -28,7 +28,8 @@ export class ModuleInterconnectionService {
       content: ['creative'],
       creative: ['workflow'],
       workflow: ['pipeline'],
-      pipeline: ['analysis'],
+      pipeline: ['predictive'],
+      predictive: ['analysis'],
       analysis: ['correction'],
       correction: []
     };
@@ -47,7 +48,7 @@ export class ModuleInterconnectionService {
       await supabase.from('automation_logs').insert({
         user_id: (await supabase.auth.getUser()).data.user?.id,
         action_type: 'module_notification',
-        description: `Notifying ${dependentModule} of updates from ${fromModule}`,
+        description: `Notification de ${dependentModule} des mises à jour de ${fromModule}`,
         metadata: {
           from_module: fromModule,
           to_module: toModule,
@@ -70,7 +71,7 @@ export class ModuleInterconnectionService {
       await supabase.from('automation_logs').insert({
         user_id: user?.id,
         action_type: 'module_interconnection',
-        description: `Data propagation from ${fromModule} to ${toModule}`,
+        description: `Propagation des données de ${fromModule} vers ${toModule}`,
         metadata: {
           from_module: fromModule,
           to_module: toModule,
@@ -79,7 +80,7 @@ export class ModuleInterconnectionService {
         }
       });
     } catch (error) {
-      console.error('Error logging interconnection:', error);
+      console.error('Erreur lors de la journalisation de l\'interconnexion:', error);
     }
   }
 }

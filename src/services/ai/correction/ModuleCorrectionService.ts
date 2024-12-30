@@ -3,24 +3,24 @@ import { supabase } from '@/lib/supabaseClient';
 
 export class ModuleCorrectionService {
   static async correctModule(type: ModuleType, result: ModuleResult): Promise<ModuleResult> {
-    console.log(`Starting correction for ${type} module:`, result);
+    console.log(`Démarrage de la correction pour le module ${type}:`, result);
 
     try {
-      // Analyze current performance
+      // Analyse des performances actuelles
       const issues = await this.analyzeIssues(type, result);
       
-      // Generate corrections
+      // Génération des corrections
       const corrections = await this.generateCorrections(type, issues);
       
-      // Apply corrections
+      // Application des corrections
       const correctedResult = await this.applyCorrections(result, corrections);
 
-      // Log correction
+      // Log de la correction
       await this.logCorrection(type, issues, corrections);
 
       return correctedResult;
     } catch (error) {
-      console.error(`Error correcting ${type} module:`, error);
+      console.error(`Erreur lors de la correction du module ${type}:`, error);
       throw error;
     }
   }
@@ -32,7 +32,7 @@ export class ModuleCorrectionService {
       issues.push({
         type: 'engagement',
         severity: 'high',
-        description: 'Low engagement prediction'
+        description: 'Engagement prédit trop faible'
       });
     }
 
@@ -40,7 +40,7 @@ export class ModuleCorrectionService {
       issues.push({
         type: 'conversion',
         severity: 'high',
-        description: 'Low conversion prediction'
+        description: 'Conversion prédite trop faible'
       });
     }
 
@@ -48,7 +48,7 @@ export class ModuleCorrectionService {
       issues.push({
         type: 'roi',
         severity: 'medium',
-        description: 'ROI below target'
+        description: 'ROI en dessous de l\'objectif'
       });
     }
 
@@ -63,33 +63,33 @@ export class ModuleCorrectionService {
         case 'engagement':
           corrections.push({
             type: 'content_optimization',
-            action: 'Enhance content engagement',
+            action: 'Améliorer l\'engagement du contenu',
             suggestions: [
-              'Add more visual elements',
-              'Include call-to-actions',
-              'Optimize for target audience'
+              'Ajouter plus d\'éléments visuels',
+              'Inclure des call-to-actions',
+              'Optimiser pour l\'audience cible'
             ]
           });
           break;
         case 'conversion':
           corrections.push({
             type: 'conversion_optimization',
-            action: 'Improve conversion potential',
+            action: 'Améliorer le potentiel de conversion',
             suggestions: [
-              'Strengthen value proposition',
-              'Add social proof',
-              'Optimize call-to-action placement'
+              'Renforcer la proposition de valeur',
+              'Ajouter des preuves sociales',
+              'Optimiser le placement des call-to-action'
             ]
           });
           break;
         case 'roi':
           corrections.push({
             type: 'roi_optimization',
-            action: 'Enhance ROI metrics',
+            action: 'Améliorer les métriques de ROI',
             suggestions: [
-              'Optimize targeting parameters',
-              'Adjust budget allocation',
-              'Focus on high-value segments'
+              'Optimiser les paramètres de ciblage',
+              'Ajuster l\'allocation du budget',
+              'Se concentrer sur les segments à haute valeur'
             ]
           });
           break;
@@ -100,10 +100,10 @@ export class ModuleCorrectionService {
   }
 
   private static async applyCorrections(result: ModuleResult, corrections: any[]): Promise<ModuleResult> {
-    // Apply corrections and return updated result
+    // Application des corrections et retour du résultat mis à jour
     const correctedResult = { ...result };
 
-    // Simulate improvement in predictions based on corrections
+    // Simulation d'amélioration des prédictions basée sur les corrections
     if (corrections.length > 0) {
       correctedResult.predictions = {
         engagement: Math.min(1, result.predictions.engagement * 1.2),
@@ -122,7 +122,7 @@ export class ModuleCorrectionService {
       await supabase.from('automation_logs').insert({
         user_id: user?.id,
         action_type: `module_correction_${type}`,
-        description: `Automatic correction of ${type} module`,
+        description: `Correction automatique du module ${type}`,
         metadata: {
           issues,
           corrections,
@@ -130,7 +130,7 @@ export class ModuleCorrectionService {
         }
       });
     } catch (error) {
-      console.error('Error logging correction:', error);
+      console.error('Erreur lors de la journalisation de la correction:', error);
     }
   }
 }

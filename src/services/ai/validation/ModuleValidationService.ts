@@ -7,6 +7,8 @@ export class ModuleValidationService {
     score: number;
     feedback: string[];
   }> {
+    console.log(`Validation du module ${type} avec le résultat:`, result);
+
     const thresholds = {
       subject: 0.7,
       title: 0.75,
@@ -14,17 +16,16 @@ export class ModuleValidationService {
       creative: 0.75,
       workflow: 0.8,
       pipeline: 0.85,
+      predictive: 0.8,
       analysis: 0.8,
       correction: 0.9
     };
-
-    console.log(`Validating ${type} module with result:`, result);
 
     const score = this.calculateScore(result);
     const isValid = score >= thresholds[type];
     const feedback = this.generateFeedback(type, result, score);
 
-    // Log validation result
+    // Log du résultat de validation
     await this.logValidation(type, isValid, score, feedback);
 
     return {
@@ -38,7 +39,7 @@ export class ModuleValidationService {
     if (!result.predictions) return 0;
 
     const { engagement, conversion, roi } = result.predictions;
-    // Weighted average of predictions
+    // Moyenne pondérée des prédictions
     return (engagement * 0.4 + conversion * 0.3 + roi * 0.3);
   }
 
@@ -46,19 +47,19 @@ export class ModuleValidationService {
     const feedback: string[] = [];
 
     if (score < 0.5) {
-      feedback.push(`${type} performance is critically low`);
+      feedback.push(`Les performances du module ${type} sont critiquement basses`);
     } else if (score < 0.7) {
-      feedback.push(`${type} needs significant improvements`);
+      feedback.push(`Le module ${type} nécessite des améliorations significatives`);
     }
 
     if (result.predictions.engagement < 0.6) {
-      feedback.push('Engagement predictions are below target');
+      feedback.push('Les prédictions d\'engagement sont en dessous de l\'objectif');
     }
     if (result.predictions.conversion < 0.5) {
-      feedback.push('Conversion rate needs improvement');
+      feedback.push('Le taux de conversion doit être amélioré');
     }
     if (result.predictions.roi < 2.0) {
-      feedback.push('ROI is below expected threshold');
+      feedback.push('Le ROI est en dessous du seuil attendu');
     }
 
     return feedback;
@@ -76,7 +77,7 @@ export class ModuleValidationService {
       await supabase.from('automation_logs').insert({
         user_id: user?.id,
         action_type: `module_validation_${type}`,
-        description: `Validation of ${type} module`,
+        description: `Validation du module ${type}`,
         status: isValid ? 'success' : 'failed',
         metadata: {
           score,
@@ -85,7 +86,7 @@ export class ModuleValidationService {
         }
       });
     } catch (error) {
-      console.error('Error logging validation:', error);
+      console.error('Erreur lors de la journalisation de la validation:', error);
     }
   }
 }
