@@ -13,7 +13,10 @@ export class SocialCampaignService {
 
     const { data: campaignData, error: dbError } = await supabase
       .from('social_campaigns')
-      .insert([campaign])
+      .insert([{
+        ...campaign,
+        user_id: user.id // Explicitly set the user_id
+      }])
       .select()
       .single();
 
@@ -57,7 +60,7 @@ export class SocialCampaignService {
       .from('social_campaigns')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('user_id', userData.user.id)
+      .eq('user_id', userData.user.id) // Ensure we only update user's own campaigns
       .select()
       .single();
 
@@ -71,10 +74,14 @@ export class SocialCampaignService {
       throw new Error('Campaign ID is required for duplication');
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { data: originalCampaign, error: fetchError } = await supabase
       .from('social_campaigns')
       .select('*')
       .eq('id', campaignId)
+      .eq('user_id', user.id) // Only duplicate user's own campaigns
       .single();
 
     if (fetchError) throw fetchError;
@@ -85,6 +92,7 @@ export class SocialCampaignService {
       .from('social_campaigns')
       .insert([{
         ...campaignData,
+        user_id: user.id, // Set user_id for the new campaign
         name: `${campaignData.name} (copie)`,
         status: 'draft'
       }])
@@ -100,10 +108,14 @@ export class SocialCampaignService {
       throw new Error('Campaign ID is required for deletion');
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { error } = await supabase
       .from('social_campaigns')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id); // Only delete user's own campaigns
 
     if (error) throw error;
   }
@@ -113,10 +125,14 @@ export class SocialCampaignService {
       throw new Error('Campaign ID is required for optimization');
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { data: campaign, error: fetchError } = await supabase
       .from('social_campaigns')
       .select('*')
       .eq('id', id)
+      .eq('user_id', user.id) // Only optimize user's own campaigns
       .single();
 
     if (fetchError) throw fetchError;
@@ -136,16 +152,21 @@ export class SocialCampaignService {
         content_strategy: response.data.optimizedStrategy,
         targeting_criteria: response.data.optimizedTargeting
       })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id); // Ensure we only update user's own campaign
 
     if (updateError) throw updateError;
   }
 
   static async getCampaign(id: string): Promise<SocialCampaign> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     const { data, error } = await supabase
       .from('social_campaigns')
       .select('*')
       .eq('id', id)
+      .eq('user_id', user.id) // Only get user's own campaign
       .single();
 
     if (error) {
