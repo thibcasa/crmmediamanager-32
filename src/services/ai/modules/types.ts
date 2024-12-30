@@ -1,4 +1,4 @@
-export { ModuleType } from '@/types/modules';
+export type { ModuleType } from '@/types/modules';
 
 export interface ModuleResult {
   success: boolean;
@@ -7,9 +7,5 @@ export interface ModuleResult {
     engagement: number;
     conversion: number;
     roi: number;
-  };
-  optimizations?: {
-    suggestions: string[];
-    priority: 'high' | 'medium' | 'low';
   };
 }

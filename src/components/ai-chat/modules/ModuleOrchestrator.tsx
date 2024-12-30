@@ -48,11 +48,18 @@ const MODULE_CONFIGS: ModuleConfig[] = [
     dependsOn: ['workflow']
   },
   {
-    type: 'analysis',
-    name: 'Analyse Prédictive',
-    description: 'Prédiction des performances',
+    type: 'predictive',
+    name: 'Prédictif',
+    description: 'Analyse prédictive des performances',
     requiredScore: 0.8,
     dependsOn: ['pipeline']
+  },
+  {
+    type: 'analysis',
+    name: 'Analyse',
+    description: 'Analyse des résultats',
+    requiredScore: 0.8,
+    dependsOn: ['predictive']
   },
   {
     type: 'correction',
@@ -72,6 +79,7 @@ export const ModuleOrchestrator = () => {
     creative: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
     workflow: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
     pipeline: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    predictive: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
     analysis: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
     correction: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 }
   });
