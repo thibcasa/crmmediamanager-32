@@ -3,6 +3,13 @@ export interface Message {
   content: string | StructuredContent;
 }
 
+export interface MetricsData {
+  engagement: number;
+  clicks: number;
+  conversions: number;
+  roi: number;
+}
+
 export interface StructuredContent {
   type: 'campaign_response';
   text: string;
@@ -16,11 +23,6 @@ export interface StructuredContent {
     targetAudience: string;
     location: string;
     propertyType: string;
-    metrics: {
-      engagement: number;
-      clicks: number;
-      conversions: number;
-      roi: number;
-    };
+    metrics: MetricsData;
   };
 }
