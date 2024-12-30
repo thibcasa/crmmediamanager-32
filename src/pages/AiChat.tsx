@@ -5,6 +5,8 @@ import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 import { Card } from "@/components/ui/card";
 import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
+import { RealEstateContentGenerator } from "@/components/content/RealEstateContentGenerator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AiChat = () => {
   const { trackError, trackEvent } = useMonitoring({
@@ -42,21 +44,34 @@ const AiChat = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-6">Assistant Stratégique IA</h2>
-        
-        <ExamplePrompts onPromptClick={handlePromptClick} />
-        
-        <div className="flex-1 flex flex-col min-h-[600px] bg-white rounded-lg shadow">
-          <ChatMessages messages={messages} isLoading={isLoading} />
-          <ChatInput 
-            input={input}
-            isLoading={isLoading}
-            onInputChange={setInput}
-            onSubmit={handleSendMessage}
-          />
-        </div>
-      </Card>
+      <Tabs defaultValue="chat" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="chat">Assistant IA</TabsTrigger>
+          <TabsTrigger value="content">Générateur de Contenu</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chat">
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-6">Assistant Stratégique IA</h2>
+            
+            <ExamplePrompts onPromptClick={handlePromptClick} />
+            
+            <div className="flex-1 flex flex-col min-h-[600px] bg-white rounded-lg shadow">
+              <ChatMessages messages={messages} isLoading={isLoading} />
+              <ChatInput 
+                input={input}
+                isLoading={isLoading}
+                onInputChange={setInput}
+                onSubmit={handleSendMessage}
+              />
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="content">
+          <RealEstateContentGenerator />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
