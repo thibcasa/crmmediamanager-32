@@ -28,14 +28,19 @@ const AiChat = () => {
         role: "assistant",
         content: {
           type: "structured",
-          text: result.response,
+          text: `Campagne créée avec le persona "${result.selectedPersona.name}". Prochaines étapes : ${result.nextSteps.map(step => step.details).join(", ")}`,
           platform: "linkedin",
           targetAudience: "property_owners",
           metadata: {
             type: "campaign_response",
             platform: "linkedin",
             targetAudience: "property_owners",
-            metrics: result.metrics
+            metrics: {
+              engagement: 0,
+              clicks: 0,
+              conversions: 0,
+              roi: 0
+            }
           }
         }
       };
