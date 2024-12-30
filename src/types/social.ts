@@ -1,10 +1,7 @@
-export type SocialPlatform = 'linkedin' | 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'whatsapp';
-export type LinkedInConnectionStatus = 'active' | 'expired' | 'revoked';
-
 export interface SocialCampaign {
   id: string;
   user_id?: string;
-  platform: SocialPlatform;
+  platform: string;
   name: string;
   status?: string;
   schedule?: any;
