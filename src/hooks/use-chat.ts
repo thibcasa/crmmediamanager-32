@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "./use-toast";
+import { Message } from "@/components/ai-chat/types/chat";
 
 export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
 
   const sendMessage = async (content: string) => {
@@ -20,22 +22,39 @@ export const useChat = () => {
         return;
       }
 
-      // Appel à l'API de génération de contenu
+      // Ajouter le message de l'utilisateur
+      const userMessage: Message = {
+        role: 'user',
+        content: content
+      };
+      setMessages(prev => [...prev, userMessage]);
+
+      // Appel à l'Edge Function de génération de contenu
       const { data, error } = await supabase.functions.invoke('content-generator', {
-        body: {
-          type: 'social',
-          prompt: content,
-          platform: 'linkedin',
-          targetAudience: "propriétaires immobiliers Alpes-Maritimes",
-          tone: "professionnel et confiant"
-        }
+        body: { prompt: content }
       });
 
       if (error) throw error;
 
-      return {
-        message: data.content
+      // Ajouter la réponse de l'assistant
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: data.content
       };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Sauvegarder la conversation dans Supabase
+      await supabase.from('automation_logs').insert({
+        user_id: session.user.id,
+        action_type: 'chat_message',
+        description: 'Message envoyé et réponse générée',
+        metadata: {
+          user_message: content,
+          ai_response: data.content
+        }
+      });
+
+      return data;
     } catch (error) {
       console.error('Error in chat:', error);
       toast({
@@ -51,6 +70,7 @@ export const useChat = () => {
 
   return {
     sendMessage,
-    isLoading
+    isLoading,
+    messages
   };
 };

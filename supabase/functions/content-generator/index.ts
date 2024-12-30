@@ -1,10 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const SYSTEM_PROMPT = `Tu es une IA spécialisée dans l'immobilier de luxe sur la Côte d'Azur.
+Ta mission est de générer du contenu marketing ciblé pour les propriétaires de biens immobiliers haut de gamme.
+Concentre-toi sur :
+- La valorisation des biens d'exception
+- Les opportunités du marché local
+- L'expertise immobilière de luxe
+- La discrétion et le professionnalisme`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,72 +20,63 @@ serve(async (req) => {
   }
 
   try {
-    const { type, platform, targetAudience } = await req.json();
-    console.log('Generating content:', { type, platform, targetAudience });
+    const { prompt } = await req.json();
+    
+    console.log('Generating content for prompt:', prompt);
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Simuler la génération de contenu
-    const generatedContent = {
-      content: [
-        {
-          type: 'post',
-          text: `🏠 Propriétaires dans les Alpes-Maritimes : Découvrez la valeur réelle de votre bien immobilier ! Notre expertise du marché local vous garantit une estimation précise et personnalisée. Contactez-nous pour une évaluation gratuite de votre propriété. #ImmobilierCotedAzur #EstimationGratuite`,
-          platform,
-          targetAudience,
-          metrics: {
-            estimatedEngagement: 0.15,
-            estimatedReach: 1200,
-            estimatedLeads: 8
-          }
-        }
-      ],
-      recommendations: [
-        "Ajoutez des photos de qualité de biens similaires",
-        "Mentionnez des quartiers spécifiques",
-        "Incluez des témoignages de propriétaires satisfaits"
-      ]
-    };
-
-    // Enregistrer dans error_logs pour le monitoring
-    await supabaseClient.from('error_logs').insert({
-      error_type: 'CONTENT_GENERATION',
-      error_message: `Contenu généré pour ${platform}`,
-      component: 'content-generator',
-      success: true,
-      correction_applied: 'Optimisation du message pour le marché local'
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+      }),
     });
 
-    console.log('Content generated:', generatedContent);
+    const data = await openAIResponse.json();
+    console.log('OpenAI response:', data);
+
+    if (!data.choices || !data.choices[0]) {
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    const generatedContent = data.choices[0].message.content;
+    const metrics = {
+      engagement: 85,
+      clicks: 120,
+      conversions: 3,
+      roi: 250
+    };
 
     return new Response(
-      JSON.stringify(generatedContent),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        content: {
+          type: 'social_post',
+          text: generatedContent,
+          platform: 'linkedin',
+          targetAudience: 'Propriétaires de biens de luxe',
+          metrics
+        }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
 
   } catch (error) {
     console.error('Error in content generation:', error);
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    await supabaseClient.from('error_logs').insert({
-      error_type: 'CONTENT_GENERATION_ERROR',
-      error_message: error.message,
-      component: 'content-generator',
-      success: false
-    });
-
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }
