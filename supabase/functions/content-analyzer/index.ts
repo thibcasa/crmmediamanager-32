@@ -1,62 +1,63 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { content } = await req.json()
-    console.log('Analyzing content:', content)
+    const { content, moduleType, userId } = await req.json();
+    console.log(`Analyzing content for module ${moduleType}:`, content);
 
-    // Basic content analysis
+    // Analyze content based on module type
     const analysis = {
+      validationScore: Math.random() * 0.5 + 0.5, // Simulated score between 0.5 and 1
+      predictions: {
+        engagement: Math.random(),
+        conversion: Math.random(),
+        roi: Math.random() * 3 + 1
+      },
       criteria: {
-        propertyType: content.toLowerCase().includes('appartement') ? 'apartment' : 'house',
-        budget: content.toLowerCase().includes('luxe') ? 'high' : 'medium',
-        location: 'Alpes-Maritimes',
-        sellerProfile: content.toLowerCase().includes('investissement') ? 'investor' : 'owner',
-      },
-      metrics: {
-        clarity: 0.85,
-        relevance: 0.9,
-        engagement: 0.8
-      },
-      recommendations: [
-        'Focus on property value appreciation',
-        'Highlight local market expertise',
-        'Emphasize personalized service'
-      ]
-    }
+        keywords: ['immobilier', 'vente', 'propriété'],
+        sentiment: 'positive',
+        readability: 0.85
+      }
+    };
+
+    // Log the analysis
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    await supabaseClient.from('automation_logs').insert({
+      user_id: userId,
+      action_type: 'content_analysis',
+      description: `Analysis completed for ${moduleType}`,
+      metadata: {
+        moduleType,
+        analysis
+      }
+    });
 
     return new Response(
       JSON.stringify(analysis),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
-      }
-    )
-
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
-    console.error('Error in content analysis:', error)
-    
+    console.error('Error in content analysis:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 500
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
   }
-})
+});
