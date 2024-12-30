@@ -6,6 +6,8 @@ export abstract class BaseModule implements AIModule {
 
   async execute(input: any): Promise<ModuleResult> {
     try {
+      console.log(`Executing ${this.moduleName} module with input:`, input);
+      
       const { data, error } = await supabase.functions.invoke(`ai-${this.moduleName}`, {
         body: { input }
       });

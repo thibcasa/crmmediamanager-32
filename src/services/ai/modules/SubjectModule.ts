@@ -23,15 +23,19 @@ export class SubjectModule extends BaseModule {
       return {
         success: true,
         data: aiResponse.subjects,
-        predictions: {
-          engagement: predictions.engagement,
-          conversion: predictions.conversion,
-          roi: predictions.roi
-        }
+        predictions
       };
     } catch (error) {
       console.error('Error in subject module:', error);
-      throw error;
+      return {
+        success: false,
+        data: null,
+        predictions: {
+          engagement: 0,
+          conversion: 0,
+          roi: 0
+        }
+      };
     }
   }
 
@@ -44,9 +48,9 @@ export class SubjectModule extends BaseModule {
     });
     
     return {
-      engagement: data.engagement || 0.75,
-      conversion: data.conversion || 0.55,
-      roi: data.roi || 2.0
+      engagement: data?.engagement || 0.75,
+      conversion: data?.conversion || 0.55,
+      roi: data?.roi || 2.0
     };
   }
 
