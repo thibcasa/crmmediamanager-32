@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ModuleType, ModuleState, ModuleConfig } from '@/types/modules';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Brain, CheckCircle, AlertCircle, Loader2, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const MODULE_CONFIGS: ModuleConfig[] = [
@@ -104,10 +105,16 @@ export const ModuleOrchestrator = () => {
     );
   };
 
+  const getMetricColor = (value: number) => {
+    if (value >= 0.8) return 'text-green-500';
+    if (value >= 0.6) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
   return (
     <div className="space-y-4 p-4">
       <h2 className="text-2xl font-bold mb-4">Modules</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {MODULE_CONFIGS.map((config) => {
           const state = moduleStates[config.type];
           const ready = isModuleReady(config);
@@ -123,14 +130,49 @@ export const ModuleOrchestrator = () => {
                   {state.validationScore.toFixed(2)}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-500 mb-2">{config.description}</p>
-              {state.predictions && (
-                <div className="text-xs text-gray-600">
-                  <div>Engagement: {(state.predictions.engagement * 100).toFixed(1)}%</div>
-                  <div>Conversion: {(state.predictions.conversion * 100).toFixed(1)}%</div>
-                  <div>ROI: {state.predictions.roi.toFixed(1)}x</div>
+              
+              <p className="text-sm text-gray-500 mb-4">{config.description}</p>
+              
+              <div className="space-y-3">
+                {/* Validation Progress */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span>Validation</span>
+                    <span>{(state.validationScore * 100).toFixed(0)}%</span>
+                  </div>
+                  <Progress value={state.validationScore * 100} />
                 </div>
-              )}
+
+                {/* Metrics */}
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">Engagement</div>
+                    <div className={`text-sm font-medium ${getMetricColor(state.predictions.engagement)}`}>
+                      {(state.predictions.engagement * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">Conversion</div>
+                    <div className={`text-sm font-medium ${getMetricColor(state.predictions.conversion)}`}>
+                      {(state.predictions.conversion * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">ROI</div>
+                    <div className={`text-sm font-medium ${getMetricColor(state.predictions.roi)}`}>
+                      {state.predictions.roi.toFixed(1)}x
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Indicator */}
+                {state.status === 'processing' && (
+                  <div className="flex items-center justify-center gap-2 text-xs text-blue-500 mt-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span>Processing...</span>
+                  </div>
+                )}
+              </div>
             </Card>
           );
         })}
