@@ -53,7 +53,7 @@ const MODULE_CONFIGS: Array<{
     title: 'Correction',
     description: 'Optimisation automatique'
   }
-];
+] as const;
 
 export const ModuleContainer = () => {
   const { moduleStates, updateModuleState } = useModuleStates();
