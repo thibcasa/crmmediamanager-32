@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,59 +7,59 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { campaignId } = await req.json()
-    console.log('Analyzing campaign performance for:', campaignId)
+    const { campaignId, action } = await req.json()
 
     // Mock data for demonstration
-    const predictions = {
+    const mockData = {
       conversion: {
-        rate: 15.5,
-        confidence: 0.85
+        rate: 0.15
       },
       roi: {
-        predicted: 2.8,
-        bestCase: 3.5,
-        worstCase: 2.1
+        predicted: 2.5
       },
       marketTrends: {
-        demandIndex: 0.75,
-        seasonalityImpact: 0.2
+        demandIndex: 75
       },
-      trends: [
-        { date: '2024-01', value: 85 },
-        { date: '2024-02', value: 90 },
-        { date: '2024-03', value: 88 },
-        { date: '2024-04', value: 92 },
-        { date: '2024-05', value: 95 },
-        { date: '2024-06', value: 93 }
+      recommendations: [
+        "Optimisez vos horaires de publication pour maximiser l'engagement",
+        "Ajoutez plus de contenu visuel pour augmenter l'interaction",
+        "Ciblez plus précisément votre audience dans les Alpes-Maritimes"
+      ],
+      insights: [
+        {
+          category: "Engagement",
+          description: "Le taux d'engagement est plus élevé le soir",
+          impact: 8,
+          confidence: 0.85
+        },
+        {
+          category: "Contenu",
+          description: "Les posts avec des images de propriétés performent mieux",
+          impact: 7,
+          confidence: 0.92
+        }
       ]
     }
 
     return new Response(
-      JSON.stringify(predictions),
+      JSON.stringify(mockData),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
     )
-
   } catch (error) {
-    console.error('Error in predictive analysis:', error)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        status: 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      },
     )
   }
 })
