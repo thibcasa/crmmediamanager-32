@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Copy, Check, Edit2, Save } from "lucide-react";
 import { TitleResults } from "@/components/title/TitleResults";
 import { supabase } from "@/lib/supabaseClient";
+import { Progress } from "@/components/ui/progress";
 
 export default function TitleModule() {
   const [subject, setSubject] = useState("");
@@ -16,12 +18,19 @@ export default function TitleModule() {
   const [propertyType, setPropertyType] = useState("luxury");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
+  const [editingTitle, setEditingTitle] = useState<string | null>(null);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
   const handleGenerateTitles = async () => {
     try {
       setIsGenerating(true);
+      setProgress(25);
       console.log('Generating titles with input:', { subject, tone, targetAudience, propertyType });
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase.functions.invoke('content-workflow-generator', {
         body: {
@@ -36,7 +45,24 @@ export default function TitleModule() {
 
       if (error) throw error;
 
+      setProgress(75);
+      
+      // Store generated titles in history
+      await Promise.all(data.titles.map(async (title: string) => {
+        await supabase.from('generated_titles').insert({
+          user_id: user.id,
+          subject,
+          generated_title: title,
+          metadata: {
+            tone,
+            targetAudience,
+            propertyType
+          }
+        });
+      }));
+
       setGeneratedTitles(data.titles);
+      setProgress(100);
       
       toast({
         title: "Titres générés",
@@ -51,6 +77,62 @@ export default function TitleModule() {
       });
     } finally {
       setIsGenerating(false);
+      setTimeout(() => setProgress(0), 1000);
+    }
+  };
+
+  const handleTitleEdit = (title: string) => {
+    setEditingTitle(title);
+    setEditedTitle(title);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      // Update the title in history
+      await supabase
+        .from('generated_titles')
+        .update({ generated_title: editedTitle })
+        .match({ 
+          user_id: user.id,
+          generated_title: editingTitle 
+        });
+
+      // Update local state
+      setGeneratedTitles(titles => 
+        titles.map(t => t === editingTitle ? editedTitle : t)
+      );
+      
+      setEditingTitle(null);
+      toast({
+        title: "Titre modifié",
+        description: "Le titre a été modifié avec succès"
+      });
+    } catch (error) {
+      console.error('Error updating title:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le titre",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copié !",
+        description: "Le titre a été copié dans le presse-papier"
+      });
+    } catch (err) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de copier le titre",
+        variant: "destructive"
+      });
     }
   };
 
@@ -134,17 +216,59 @@ export default function TitleModule() {
                 </>
               )}
             </Button>
+
+            {progress > 0 && (
+              <Progress value={progress} className="w-full" />
+            )}
           </div>
 
           {generatedTitles.length > 0 && (
-            <TitleResults 
-              titles={generatedTitles}
-              onTitleSelect={async (title) => {
-                // Handle title selection
-                console.log('Selected title:', title);
-                // Here we would trigger the next step in the workflow
-              }}
-            />
+            <div className="space-y-4 mt-6">
+              <h3 className="text-lg font-medium">Titres générés</h3>
+              {generatedTitles.map((title, index) => (
+                <div 
+                  key={index}
+                  className="p-4 rounded-lg border border-border"
+                >
+                  {editingTitle === title ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSaveEdit}
+                      >
+                        <Save className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="flex-1">{title}</p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(title)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleTitleEdit(title)}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
