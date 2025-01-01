@@ -2,118 +2,70 @@ import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Brain, CheckCircle, AlertCircle, Loader2, TrendingUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 
-interface WorkflowStep {
+interface Campaign {
   id: string;
-  name: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  metrics?: {
-    engagement: number;
-    conversion: number;
-    roi: number;
-  };
-  suggestions?: string[];
+  optimization_cycles?: {
+    id: string;
+    status: string;
+    metrics?: {
+      engagement: number;
+      conversion: number;
+      roi: number;
+    };
+    suggestions?: string[];
+  }[];
 }
 
 export const WorkflowOrchestrator = () => {
   const { toast } = useToast();
-  const [steps, setSteps] = useState<WorkflowStep[]>([]);
-  const [currentStep, setCurrentStep] = useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadWorkflowSteps();
-    subscribeToUpdates();
-  }, []);
+    const loadCampaign = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('social_campaigns')
+          .select('*')
+          .eq('status', 'active')
+          .maybeSingle();
 
-  const loadWorkflowSteps = async () => {
-    try {
-      const { data: campaigns } = await supabase
-        .from('social_campaigns')
-        .select('*')
-        .eq('status', 'active')
-        .single();
+        if (error) throw error;
 
-      if (campaigns?.optimization_cycles) {
-        setSteps(campaigns.optimization_cycles);
+        if (!data) {
+          toast({
+            title: "Aucune campagne active",
+            description: "Créez une nouvelle campagne pour commencer",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        setCampaign(data as Campaign);
+      } catch (error) {
+        console.error('Error loading campaign:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la campagne",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading workflow steps:', error);
-    }
-  };
-
-  const subscribeToUpdates = () => {
-    const channel = supabase
-      .channel('workflow-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'social_campaigns'
-        },
-        (payload) => {
-          if (payload.new?.optimization_cycles) {
-            setSteps(payload.new.optimization_cycles);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
     };
-  };
 
-  const analyzePerformance = async (stepId: string) => {
-    setIsAnalyzing(true);
-    setCurrentStep(stepId);
+    loadCampaign();
+  }, [toast]);
 
-    try {
-      const { data, error } = await supabase.functions.invoke('workflow-analyzer', {
-        body: { stepId }
-      });
-
-      if (error) throw error;
-
-      // Update steps with analysis results
-      setSteps(prev => prev.map(step => {
-        if (step.id === stepId) {
-          return {
-            ...step,
-            status: 'completed',
-            metrics: data.metrics,
-            suggestions: data.suggestions
-          };
-        }
-        return step;
-      }));
-
-      toast({
-        title: "Analyse terminée",
-        description: "Les recommandations ont été générées avec succès.",
-      });
-    } catch (error) {
-      console.error('Error analyzing performance:', error);
-      toast({
-        title: "Erreur",
-        description: "L'analyse a échoué. Veuillez réessayer.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const getStepIcon = (status: WorkflowStep['status']) => {
+  const getModuleIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'validated':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'failed':
+      case 'error':
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       case 'processing':
         return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
@@ -122,69 +74,85 @@ export const WorkflowOrchestrator = () => {
     }
   };
 
+  const getMetricColor = (value: number) => {
+    if (value >= 0.8) return 'text-green-500';
+    if (value >= 0.6) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-gray-500">
+          Aucune campagne active trouvée
+        </p>
+      </Card>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {steps.map((step) => (
-        <Card key={step.id} className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              {getStepIcon(step.status)}
-              <h3 className="font-medium">{step.name}</h3>
-            </div>
-            <Badge variant={step.status === 'completed' ? 'default' : 'secondary'}>
-              {step.status}
-            </Badge>
-          </div>
-
-          {step.metrics && (
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-gray-500">Engagement</p>
-                <p className="text-lg font-semibold">{step.metrics.engagement}%</p>
+    <div className="space-y-4 p-4">
+      <h2 className="text-2xl font-bold mb-4">Workflow d'Optimisation</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {campaign.optimization_cycles?.map((cycle, index) => (
+          <Card key={index} className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {getModuleIcon(cycle.status)}
+                <h3 className="font-medium">Cycle {index + 1}</h3>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Conversion</p>
-                <p className="text-lg font-semibold">{step.metrics.conversion}%</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">ROI</p>
-                <p className="text-lg font-semibold">{step.metrics.roi}x</p>
-              </div>
+              <Badge variant={cycle.status === 'validated' ? 'default' : 'secondary'}>
+                {cycle.status}
+              </Badge>
             </div>
-          )}
 
-          {step.suggestions && (
-            <div className="space-y-2 mt-4">
-              <p className="font-medium">Recommandations :</p>
-              <ul className="list-disc pl-5 space-y-1">
-                {step.suggestions.map((suggestion, index) => (
-                  <li key={index} className="text-sm text-gray-600">{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+            {cycle.metrics && (
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Engagement</div>
+                  <div className={`text-sm font-medium ${getMetricColor(cycle.metrics.engagement)}`}>
+                    {(cycle.metrics.engagement * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">Conversion</div>
+                  <div className={`text-sm font-medium ${getMetricColor(cycle.metrics.conversion)}`}>
+                    {(cycle.metrics.conversion * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xs text-gray-500">ROI</div>
+                  <div className={`text-sm font-medium ${getMetricColor(cycle.metrics.roi)}`}>
+                    {cycle.metrics.roi.toFixed(1)}x
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <div className="mt-4">
-            <Button
-              onClick={() => analyzePerformance(step.id)}
-              disabled={isAnalyzing && currentStep === step.id}
-              className="w-full"
-            >
-              {isAnalyzing && currentStep === step.id ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyse en cours...
-                </>
-              ) : (
-                <>
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  Analyser les performances
-                </>
-              )}
-            </Button>
-          </div>
-        </Card>
-      ))}
+            {cycle.suggestions && cycle.suggestions.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h4 className="text-sm font-medium">Suggestions</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {cycle.suggestions.map((suggestion, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
