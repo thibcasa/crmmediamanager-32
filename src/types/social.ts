@@ -8,6 +8,7 @@ export interface ModuleResult {
     conversion: number;
     roi: number;
   };
+  validationScore?: number;
   optimizations?: {
     suggestions: string[];
     priority: 'high' | 'medium' | 'low';
