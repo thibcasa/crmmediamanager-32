@@ -3,11 +3,15 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { ContentGeneratorForm } from './form/ContentGeneratorForm';
 import { GeneratedContent } from './display/GeneratedContent';
+import { SeoAnalysis } from './display/SeoAnalysis';
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/lib/supabaseClient";
 
 export const RealEstateContentGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const [seoAnalysis, setSeoAnalysis] = useState<any>(null);
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
   const handleGenerateContent = async (formData: {
@@ -19,6 +23,12 @@ export const RealEstateContentGenerator = () => {
     language: string;
   }) => {
     setIsGenerating(true);
+    setProgress(0);
+    
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 1000);
+
     try {
       const { data, error } = await supabase.functions.invoke('content-generator', {
         body: { 
@@ -30,6 +40,8 @@ export const RealEstateContentGenerator = () => {
       if (error) throw error;
 
       setGeneratedContent(data.content);
+      setSeoAnalysis(data.seoAnalysis);
+      setProgress(100);
       
       toast({
         title: "Contenu généré",
@@ -43,13 +55,13 @@ export const RealEstateContentGenerator = () => {
         variant: "destructive",
       });
     } finally {
+      clearInterval(progressInterval);
       setIsGenerating(false);
     }
   };
 
   const handleRegenerate = () => {
     // Re-trigger content generation with the same parameters
-    // This would be implemented if needed
     toast({
       title: "Régénération",
       description: "Cette fonctionnalité sera bientôt disponible",
@@ -64,11 +76,20 @@ export const RealEstateContentGenerator = () => {
           onSubmit={handleGenerateContent}
           isGenerating={isGenerating}
         />
+        {isGenerating && (
+          <div className="mt-4">
+            <Progress value={progress} className="w-full" />
+            <p className="text-sm text-gray-500 mt-2">Génération en cours... {progress}%</p>
+          </div>
+        )}
         {generatedContent && (
-          <GeneratedContent 
-            content={generatedContent}
-            onRegenerate={handleRegenerate}
-          />
+          <>
+            <GeneratedContent 
+              content={generatedContent}
+              onRegenerate={handleRegenerate}
+            />
+            {seoAnalysis && <SeoAnalysis analysis={seoAnalysis} />}
+          </>
         )}
       </Card>
     </div>
