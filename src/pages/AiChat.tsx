@@ -4,8 +4,10 @@ import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
 import { useChat } from "@/hooks/use-chat";
 import { Card } from "@/components/ui/card";
+import { useSessionCheck } from "@/hooks/useSessionCheck";
 
 const AiChat = () => {
+  useSessionCheck(); // Add session check
   const [input, setInput] = useState("");
   const { messages, sendMessage, isLoading } = useChat();
 

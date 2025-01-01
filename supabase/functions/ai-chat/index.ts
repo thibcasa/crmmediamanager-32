@@ -26,6 +26,8 @@ serve(async (req) => {
       }
     )
 
+    console.log('Processing message:', message);
+
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -62,6 +64,10 @@ serve(async (req) => {
       }),
     })
 
+    if (!openAIResponse.ok) {
+      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
+    }
+
     const aiContent = await openAIResponse.json()
     const generatedContent = aiContent.choices[0].message.content
 
@@ -75,6 +81,8 @@ serve(async (req) => {
         ai_response: generatedContent
       }
     })
+
+    console.log('Generated response:', generatedContent);
 
     return new Response(
       JSON.stringify({ content: generatedContent }),

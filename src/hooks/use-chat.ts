@@ -29,6 +29,8 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, userMessage]);
 
+      console.log('Sending message to AI chat function:', content);
+
       // Call Edge Function
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { 
@@ -37,7 +39,14 @@ export const useChat = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      if (!data?.content) {
+        throw new Error('No response content received');
+      }
 
       // Add assistant response
       const assistantMessage: Message = {
