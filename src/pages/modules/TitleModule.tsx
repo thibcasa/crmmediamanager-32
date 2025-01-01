@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2, Wand2 } from "lucide-react";
+import { TitleResults } from "@/components/title/TitleResults";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function TitleModule() {
   const [subject, setSubject] = useState("");
   const [tone, setTone] = useState("professional");
   const [targetAudience, setTargetAudience] = useState("property_owners");
-  const [propertyType, setPropertytyType] = useState("luxury");
+  const [propertyType, setPropertyType] = useState("luxury");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
   const { toast } = useToast();
@@ -22,9 +23,6 @@ export default function TitleModule() {
       setIsGenerating(true);
       console.log('Generating titles with input:', { subject, tone, targetAudience, propertyType });
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
       const { data, error } = await supabase.functions.invoke('content-workflow-generator', {
         body: {
           action: 'generate_titles',
@@ -32,7 +30,7 @@ export default function TitleModule() {
           tone,
           targetAudience,
           propertyType,
-          count: 3
+          count: 5
         }
       });
 
@@ -40,20 +38,6 @@ export default function TitleModule() {
 
       setGeneratedTitles(data.titles);
       
-      // Log the successful generation
-      await supabase.from('automation_logs').insert({
-        user_id: user.id,
-        action_type: 'title_generation',
-        description: 'Generated real estate titles',
-        metadata: {
-          subject,
-          tone,
-          targetAudience,
-          propertyType,
-          generated_titles: data.titles
-        }
-      });
-
       toast({
         title: "Titres générés",
         description: "Vos titres ont été générés avec succès",
@@ -72,8 +56,6 @@ export default function TitleModule() {
 
   return (
     <div className="space-y-6 p-4">
-      <h1 className="text-2xl font-bold">Module Titre</h1>
-      
       <Card className="p-6">
         <CardHeader>
           <CardTitle>Générateur de Titres</CardTitle>
@@ -122,7 +104,7 @@ export default function TitleModule() {
 
             <div>
               <Label className="block text-sm font-medium mb-2">Type de bien</Label>
-              <Select value={propertyType} onValueChange={setPropertytyType}>
+              <Select value={propertyType} onValueChange={setPropertyType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir un type de bien" />
                 </SelectTrigger>
@@ -155,16 +137,14 @@ export default function TitleModule() {
           </div>
 
           {generatedTitles.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <h3 className="text-lg font-medium">Titres générés</h3>
-              <div className="space-y-2">
-                {generatedTitles.map((title, index) => (
-                  <Card key={index} className="p-4">
-                    <p>{title}</p>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            <TitleResults 
+              titles={generatedTitles}
+              onTitleSelect={async (title) => {
+                // Handle title selection
+                console.log('Selected title:', title);
+                // Here we would trigger the next step in the workflow
+              }}
+            />
           )}
         </CardContent>
       </Card>
