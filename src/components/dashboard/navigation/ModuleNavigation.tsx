@@ -1,9 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Edit2, Image, MessageSquare, PieChart, Settings, Share2, Workflow } from "lucide-react";
+import { Brain, Edit2, Image, MessageSquare, PieChart, Settings, Share2, Workflow, Users, Mail, Share } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const modules = [
+  { id: 'leads', name: 'Gestion des Leads', icon: Users, route: '/leads' },
+  { id: 'email', name: 'Email Marketing', icon: Mail, route: '/email' },
+  { id: 'social', name: 'Réseaux Sociaux', icon: Share, route: '/social' },
   { id: 'subject', name: 'Module Sujet', icon: MessageSquare, route: '/modules/subject' },
   { id: 'title', name: 'Module Titre', icon: Edit2, route: '/modules/title' },
   { id: 'content', name: 'Module Rédaction', icon: Edit2, route: '/modules/content' },
@@ -11,7 +14,7 @@ const modules = [
   { id: 'workflow', name: 'Module Workflow', icon: Workflow, route: '/modules/workflow' },
   { id: 'pipeline', name: 'Module Pipeline', icon: Share2, route: '/modules/pipeline' },
   { id: 'analysis', name: 'Module Analyse', icon: PieChart, route: '/modules/analysis' },
-  { id: 'correction', name: 'Module Correction', icon: Settings, route: '/modules/correction' },
+  { id: 'settings', name: 'Configuration API', icon: Settings, route: '/settings/api' },
 ];
 
 export const ModuleNavigation = () => {

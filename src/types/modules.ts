@@ -27,12 +27,22 @@ export interface ModuleResult {
 export interface ModuleState {
   status: 'idle' | 'processing' | 'validated' | 'error';
   data: any | null;
+  success?: boolean;
   predictions: {
     engagement: number;
     conversion: number;
     roi: number;
   };
   validationScore: number;
+}
+
+export interface ModuleConfig {
+  id: string;
+  name: string;
+  description: string;
+  type: ModuleType;
+  icon: string;
+  enabled: boolean;
 }
 
 export interface AIModule {
