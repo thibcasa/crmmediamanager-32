@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-interface PredictionResponse {
+export interface PredictionResponse {
   conversion: {
     rate: number;
     confidence: number;
@@ -26,6 +26,13 @@ interface PredictionResponse {
       value: number;
     }>;
   };
+  recommendations?: string[];
+  insights?: Array<{
+    category: string;
+    description: string;
+    impact: number;
+    confidence: number;
+  }>;
 }
 
 export class PredictiveAnalysisService {
