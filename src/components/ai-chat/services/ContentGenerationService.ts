@@ -27,8 +27,10 @@ export class ContentGenerationService {
         location: config.location
       });
 
-      // Analyze SEO metrics
-      const seoAnalysis = this.analyzeSEO(content, config.keywords || []);
+      // Analyze SEO metrics if keywords are provided
+      const seoAnalysis = config.keywords ? 
+        this.analyzeSEO(content, config.keywords) : 
+        this.getDefaultSeoAnalysis(content);
       
       // Store in history
       await this.saveToHistory(prompt, content, config, seoAnalysis);
@@ -66,6 +68,19 @@ export class ContentGenerationService {
       readabilityScore,
       wordCount,
       structure
+    };
+  }
+
+  private static getDefaultSeoAnalysis(content: string): SeoAnalysis {
+    return {
+      keywordDensity: {},
+      readabilityScore: 0,
+      wordCount: content.split(/\s+/).length,
+      structure: {
+        h1Count: (content.match(/<h1>/g) || []).length,
+        h2Count: (content.match(/<h2>/g) || []).length,
+        paragraphCount: (content.match(/<p>/g) || []).length,
+      }
     };
   }
 

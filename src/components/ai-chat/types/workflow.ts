@@ -5,6 +5,7 @@ export interface WorkflowConfig {
   messageType: string;
   frequency: string;
   name?: string;
+  keywords?: string[];
   stages?: Array<{
     name: string;
     criteria: Record<string, any>;
