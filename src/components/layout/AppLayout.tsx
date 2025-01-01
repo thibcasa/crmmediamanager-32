@@ -14,13 +14,10 @@ import {
   Target,
   Pencil,
   Image,
-  GitBranch, // Changed from Pipeline to GitBranch as it better represents a pipeline
+  GitBranch,
   Workflow,
   LineChart,
-  Wrench,
-  FileText,
-  Users,
-  AlertCircle
+  Wrench
 } from "lucide-react";
 
 const menuItems = [
@@ -28,14 +25,6 @@ const menuItems = [
     label: "Pages Principales",
     items: [
       { icon: LayoutDashboard, label: "Tableau de Bord", path: "/dashboard" },
-    ]
-  },
-  {
-    label: "Campagnes",
-    items: [
-      { icon: ListFilter, label: "Liste des Campagnes", path: "/campaigns" },
-      { icon: PlusCircle, label: "Nouvelle Campagne", path: "/campaigns/new" },
-      { icon: History, label: "Historique", path: "/campaigns/history" },
     ]
   },
   {
@@ -52,18 +41,17 @@ const menuItems = [
     ]
   },
   {
-    label: "Rapports & Analyses",
+    label: "Campagnes",
     items: [
-      { icon: BarChart, label: "Rapports", path: "/reports" },
-      { icon: FileText, label: "Performance", path: "/performance" },
+      { icon: ListFilter, label: "Liste des Campagnes", path: "/campaigns" },
+      { icon: PlusCircle, label: "Nouvelle Campagne", path: "/campaigns/new" },
+      { icon: History, label: "Historique", path: "/campaigns/history" },
     ]
   },
   {
-    label: "Administration",
+    label: "Rapports & Analyses",
     items: [
-      { icon: Settings, label: "Configuration", path: "/settings" },
-      { icon: Users, label: "Utilisateurs", path: "/users" },
-      { icon: AlertCircle, label: "Logs & Monitoring", path: "/monitoring" },
+      { icon: BarChart, label: "Rapports", path: "/reports" },
     ]
   },
   {
