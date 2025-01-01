@@ -13,58 +13,96 @@ serve(async (req) => {
   }
 
   try {
-    const { action, objective, domain, target_audience, count = 3 } = await req.json()
+    const { action, subject, tone, targetAudience, propertyType, count = 3 } = await req.json()
     
-    if (action !== 'generate_subjects') {
+    if (action !== 'generate_titles' && action !== 'generate_subjects') {
       throw new Error('Invalid action')
     }
 
-    console.log('Generating subjects for:', { objective, domain, target_audience })
+    if (action === 'generate_titles') {
+      console.log('Generating titles for:', { subject, tone, targetAudience, propertyType })
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
-            Ta mission est de générer des sujets de contenu marketing ciblés pour les propriétaires
-            de biens immobiliers haut de gamme dans les Alpes-Maritimes.
-            Concentre-toi sur la valorisation des biens d'exception, les opportunités
-            du marché local et l'expertise immobilière de luxe.`
-          },
-          {
-            role: "user",
-            content: `Génère ${count} sujets de contenu pour :
-            - Objectif: ${objective}
-            - Domaine: ${domain}
-            - Cible: ${target_audience}
-            
-            Format de réponse souhaité en JSON:
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
             {
-              "subjects": ["sujet 1", "sujet 2", "sujet 3"]
-            }`
-          }
-        ],
-        temperature: 0.7,
-      }),
-    })
+              role: "system",
+              content: `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
+              Ta mission est de générer des titres accrocheurs pour du contenu marketing
+              ciblant les propriétaires de biens immobiliers haut de gamme dans les Alpes-Maritimes.
+              Les titres doivent être optimisés SEO et adaptés au ton et à l'audience cible.`
+            },
+            {
+              role: "user",
+              content: `Génère ${count} titres accrocheurs pour :
+              - Sujet: ${subject}
+              - Ton: ${tone}
+              - Public cible: ${targetAudience}
+              - Type de bien: ${propertyType}
+              
+              Format de réponse souhaité en JSON:
+              {
+                "titles": ["titre 1", "titre 2", "titre 3"]
+              }`
+            }
+          ],
+          temperature: 0.7,
+        }),
+      })
 
-    const data = await response.json()
-    const subjects = JSON.parse(data.choices[0].message.content).subjects
+      const data = await response.json()
+      const titles = JSON.parse(data.choices[0].message.content).titles
 
-    return new Response(
-      JSON.stringify({ subjects }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      return new Response(
+        JSON.stringify({ titles }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
+    // Subject generation logic
+    if (action === 'generate_subjects') {
+      console.log('Generating subjects for:', { subject })
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
+              Ta mission est de générer des sujets de contenu marketing ciblés pour les propriétaires
+              de biens immobiliers haut de gamme dans les Alpes-Maritimes.`
+            },
+            {
+              role: "user",
+              content: `Génère 3 sujets de contenu pour le sujet suivant : ${subject}`
+            }
+          ],
+          temperature: 0.7,
+        }),
+      })
+
+      const data = await response.json()
+      const subjects = JSON.parse(data.choices[0].message.content).subjects
+
+      return new Response(
+        JSON.stringify({ subjects }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
   } catch (error) {
-    console.error('Error in subject generation:', error)
+    console.error('Error in content generation:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
