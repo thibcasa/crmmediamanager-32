@@ -111,6 +111,44 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          created_at: string | null
+          goal_type: string
+          id: string
+          objective: string
+          platform: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_type: string
+          id?: string
+          objective: string
+          platform: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_type?: string
+          id?: string
+          objective?: string
+          platform?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_templates: {
         Row: {
           content: string
@@ -502,6 +540,44 @@ export type Database = {
           },
         ]
       }
+      metrics: {
+        Row: {
+          campaign_id: string | null
+          cost_per_lead: number | null
+          created_at: string | null
+          ctr: number | null
+          id: string
+          impressions: number | null
+          leads_generated: number | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          cost_per_lead?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          leads_generated?: number | null
+        }
+        Update: {
+          campaign_id?: string | null
+          cost_per_lead?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          leads_generated?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       multichannel_campaigns: {
         Row: {
           channels: Json | null
@@ -865,6 +941,65 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      workflow_logs: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          id: string
+          input: Json | null
+          module_name: string
+          output: Json | null
+          status: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          input?: Json | null
+          module_name: string
+          output?: Json | null
+          status?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string
+          input?: Json | null
+          module_name?: string
+          output?: Json | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workflow_stages: {
         Row: {
