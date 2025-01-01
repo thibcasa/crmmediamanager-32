@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,17 @@ serve(async (req) => {
 
   try {
     const { message, userId } = await req.json()
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false
+        }
+      }
+    )
 
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -54,7 +66,7 @@ serve(async (req) => {
     const generatedContent = aiContent.choices[0].message.content
 
     // Log interaction in automation_logs
-    await supabase.from('automation_logs').insert({
+    await supabaseClient.from('automation_logs').insert({
       user_id: userId,
       action_type: 'ai_chat_interaction',
       description: 'Chat interaction with AI assistant',
