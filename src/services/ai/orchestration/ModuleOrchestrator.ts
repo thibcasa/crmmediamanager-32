@@ -1,17 +1,11 @@
 import { ModuleType, ModuleResult } from '@/types/modules';
 import { supabase } from '@/lib/supabaseClient';
-import { ModuleValidationService } from '../validation/ModuleValidationService';
-import { ModuleCorrectionService } from '../correction/ModuleCorrectionService';
-import { ModuleInterconnectionService } from './ModuleInterconnectionService';
-import { SubjectModule } from '../modules/SubjectModule';
-import { TitleModule } from '../modules/TitleModule';
-import { ContentModule } from '../modules/ContentModule';
-import { CreativeModule } from '../modules/CreativeModule';
-import { WorkflowModule } from '../modules/WorkflowModule';
-import { PipelineModule } from '../modules/PipelineModule';
-import { PredictiveModule } from '../modules/PredictiveModule';
-import { AnalysisModule } from '../modules/AnalysisModule';
-import { CorrectionModule } from '../modules/CorrectionModule';
+
+interface CampaignObjective {
+  objective: string;
+  goalType: string;
+  platform: string;
+}
 
 export class ModuleOrchestrator {
   private static readonly MODULE_FLOW: ModuleType[] = [
@@ -26,39 +20,31 @@ export class ModuleOrchestrator {
     'correction'
   ];
 
-  static async executeModuleChain(initialInput: string) {
-    console.log('Starting module chain execution with input:', initialInput);
-    let currentInput = initialInput;
+  static async executeModuleChain(objective: CampaignObjective) {
+    console.log('Starting module chain execution with objective:', objective);
     const results: Record<ModuleType, ModuleResult> = {} as Record<ModuleType, ModuleResult>;
 
     try {
+      // Log the start of orchestration
+      await this.logOrchestrationStart(objective);
+
+      // Execute modules in sequence
       for (const moduleType of this.MODULE_FLOW) {
         console.log(`Executing module: ${moduleType}`);
         
+        // Get input for current module based on previous results
+        const moduleInput = await this.prepareModuleInput(moduleType, results, objective);
+        
         // Execute current module
-        const result = await this.executeModule(moduleType, currentInput);
+        const result = await this.executeModule(moduleType, moduleInput);
         results[moduleType] = result;
 
-        // Validate result
-        const validation = await ModuleValidationService.validateModule(moduleType, result);
-        
-        if (!validation.isValid) {
-          console.log(`Module ${moduleType} validation failed, attempting correction`);
-          const correctedResult = await ModuleCorrectionService.correctModule(moduleType, result);
-          results[moduleType] = correctedResult;
-          
-          // Validate correction
-          const revalidation = await ModuleValidationService.validateModule(moduleType, correctedResult);
-          if (!revalidation.isValid) {
-            throw new Error(`Module ${moduleType} failed validation after correction`);
-          }
-        }
+        // Log module execution
+        await this.logModuleExecution(moduleType, moduleInput, result);
 
         // Prepare input for next module
-        currentInput = await this.prepareNextModuleInput(moduleType, result);
-        
-        // Log execution
-        await this.logModuleExecution(moduleType, currentInput, result);
+        const nextModuleInput = await this.prepareNextModuleInput(moduleType, result);
+        console.log(`Prepared input for next module after ${moduleType}:`, nextModuleInput);
       }
 
       return results;
@@ -69,32 +55,45 @@ export class ModuleOrchestrator {
   }
 
   private static async executeModule(type: ModuleType, input: any): Promise<ModuleResult> {
-    const moduleService = await this.getModuleService(type);
-    return moduleService.execute(input);
+    try {
+      const { data, error } = await supabase.functions.invoke('module-execution', {
+        body: {
+          moduleType: type,
+          input: input
+        }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error(`Error executing module ${type}:`, error);
+      throw error;
+    }
   }
 
-  private static async getModuleService(type: ModuleType) {
-    switch (type) {
+  private static async prepareModuleInput(
+    currentModule: ModuleType,
+    results: Record<ModuleType, ModuleResult>,
+    objective: CampaignObjective
+  ): Promise<any> {
+    switch (currentModule) {
       case 'subject':
-        return new SubjectModule();
+        return { objective: objective.objective, platform: objective.platform };
       case 'title':
-        return new TitleModule();
+        return { subject: results.subject?.data?.selectedSubject };
       case 'content':
-        return new ContentModule();
+        return { title: results.title?.data?.optimizedTitle };
       case 'creative':
-        return new CreativeModule();
+        return { content: results.content?.data?.finalContent };
       case 'workflow':
-        return new WorkflowModule();
-      case 'pipeline':
-        return new PipelineModule();
-      case 'predictive':
-        return new PredictiveModule();
-      case 'analysis':
-        return new AnalysisModule();
-      case 'correction':
-        return new CorrectionModule();
+        return {
+          subject: results.subject?.data,
+          title: results.title?.data,
+          content: results.content?.data,
+          creative: results.creative?.data
+        };
       default:
-        throw new Error(`Unknown module type: ${type}`);
+        return results[currentModule]?.data || {};
     }
   }
 
@@ -111,15 +110,28 @@ export class ModuleOrchestrator {
         return { workflow: result.data.creativeAssets };
       case 'workflow':
         return { pipeline: result.data.workflowConfig };
-      case 'pipeline':
-        return { predictive: result.data.pipelineMetrics };
-      case 'predictive':
-        return { analysis: result.data.predictions };
-      case 'analysis':
-        return { correction: result.data.analysisResults };
       default:
         return result.data;
     }
+  }
+
+  private static async logOrchestrationStart(objective: CampaignObjective) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.warn('No user found for logging orchestration start');
+      return;
+    }
+
+    await supabase.from('automation_logs').insert({
+      user_id: user.id,
+      action_type: 'orchestration_start',
+      description: `Started orchestration for objective: ${objective.objective}`,
+      metadata: {
+        objective,
+        timestamp: new Date().toISOString()
+      }
+    });
   }
 
   private static async logModuleExecution(type: ModuleType, input: any, output: any) {
