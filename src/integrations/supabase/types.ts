@@ -144,6 +144,45 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_workflows: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          metrics: Json | null
+          name: string
+          status: string | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          name: string
+          status?: string | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metrics?: Json | null
+          name?: string
+          status?: string | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           component: string | null
@@ -547,6 +586,48 @@ export type Database = {
         }
         Relationships: []
       }
+      performance_metrics: {
+        Row: {
+          id: string
+          metric_type: string
+          stage_id: string | null
+          timestamp: string | null
+          value: number
+          workflow_id: string | null
+        }
+        Insert: {
+          id?: string
+          metric_type: string
+          stage_id?: string | null
+          timestamp?: string | null
+          value: number
+          workflow_id?: string | null
+        }
+        Update: {
+          id?: string
+          metric_type?: string
+          stage_id?: string | null
+          timestamp?: string | null
+          value?: number
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_metrics_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_metrics_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "crm_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personas: {
         Row: {
           age_range: Json
@@ -784,6 +865,50 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      workflow_stages: {
+        Row: {
+          automation_rules: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          order_index: number
+          required_score: number | null
+          updated_at: string | null
+          workflow_id: string | null
+        }
+        Insert: {
+          automation_rules?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          order_index: number
+          required_score?: number | null
+          updated_at?: string | null
+          workflow_id?: string | null
+        }
+        Update: {
+          automation_rules?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          order_index?: number
+          required_score?: number | null
+          updated_at?: string | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_stages_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "crm_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
