@@ -31,7 +31,10 @@ export const AiChat = () => {
     try {
       const result = await executeWorkflow(input);
       
-      // Create AI response message with workflow results
+      if (!result) {
+        throw new Error("No result returned from workflow execution");
+      }
+
       const aiMessage: Message = {
         role: "assistant",
         content: {
@@ -74,26 +77,36 @@ export const AiChat = () => {
   };
 
   const renderModuleContent = (moduleType: ModuleType | "chat") => {
-    switch (moduleType) {
-      case "creative":
-        return <CreativesModule />;
-      case "content":
-        return <ContentModule />;
-      case "chat":
-        return (
-          <>
-            <ChatMessages messages={messages} isLoading={isProcessing} />
-            <ChatInput
-              input={input}
-              isLoading={isProcessing}
-              onInputChange={setInput}
-              onSubmit={handleSubmit}
-            />
-          </>
-        );
-      default:
-        return <ModuleContainer moduleType={moduleType as ModuleType} />;
+    if (moduleType === "chat") {
+      return (
+        <>
+          <ChatMessages messages={messages} isLoading={isProcessing} />
+          <ChatInput
+            input={input}
+            isLoading={isProcessing}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+          />
+        </>
+      );
     }
+
+    return (
+      <div className="flex h-full">
+        <div className="flex-1 flex flex-col">
+          {moduleType === "creative" ? (
+            <CreativesModule />
+          ) : moduleType === "content" ? (
+            <ContentModule />
+          ) : (
+            <ModuleContainer moduleType={moduleType} />
+          )}
+        </div>
+        <div className="w-1/3 border-l border-gray-200">
+          <ModuleContainer moduleType={moduleType} />
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -113,16 +126,7 @@ export const AiChat = () => {
         </TabsList>
 
         <TabsContent value={activeTab} className="flex-1 overflow-hidden">
-          <div className="flex h-full">
-            <div className="flex-1 flex flex-col">
-              {renderModuleContent(activeTab)}
-            </div>
-            {activeTab !== "chat" && (
-              <div className="w-1/3 border-l border-gray-200">
-                <ModuleContainer moduleType={activeTab as ModuleType} />
-              </div>
-            )}
-          </div>
+          {renderModuleContent(activeTab)}
         </TabsContent>
       </Tabs>
     </div>
