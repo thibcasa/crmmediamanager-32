@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
@@ -12,49 +13,15 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, platform, contentType } = await req.json()
-    console.log('Generating content for:', { subject, platform, contentType })
-
-    // 1. Generate SEO titles
-    const seoTitlesResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `Tu es un expert en SEO et en Clickbait dans les résultats de recherche des moteurs comme Google.
-            Utilise tes connaissances dans ces domaines pour proposer 3 titres pour ce sujet.`
-          },
-          {
-            role: "user",
-            content: subject
-          }
-        ],
-        temperature: 0.7
-      }),
-    })
-
-    const seoTitlesData = await seoTitlesResponse.json()
-    const seoTitles = seoTitlesData.choices[0].message.content.split('\n')
-
-    // 2. Generate optimized content
-    const contentPrompt = `Tu es un expert Social Media et tu maitrises toutes les compétences nécessaires pour mener
-    une stratégie réseaux sociaux rentable. Tu maitrises également toutes les bonnes pratiques
-    en community management.
+    const { action, objective, domain, target_audience, count = 3 } = await req.json()
     
-    Tu es un expert du réseau social ${platform} et tu connais toutes les bonnes
-    pratiques à suivre pour générer de l'engagement et de la viralité.
-    
-    Pour la forme de contenu "${contentType}", je souhaite que tu me proposes le meilleur format de publication à exploiter
-    en fonction du sujet "${subject}". Tu rédigeras le contenu parfait en prenant bien soin
-    d'intégrer une incitation à l'action et les hashtags les plus pertinents.`
+    if (action !== 'generate_subjects') {
+      throw new Error('Invalid action')
+    }
 
-    const contentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Generating subjects for:', { objective, domain, target_audience })
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
@@ -65,77 +32,39 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: contentPrompt
+            content: `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
+            Ta mission est de générer des sujets de contenu marketing ciblés pour les propriétaires
+            de biens immobiliers haut de gamme dans les Alpes-Maritimes.
+            Concentre-toi sur la valorisation des biens d'exception, les opportunités
+            du marché local et l'expertise immobilière de luxe.`
           },
           {
             role: "user",
-            content: `Génère le contenu pour le titre: ${seoTitles[0]}`
+            content: `Génère ${count} sujets de contenu pour :
+            - Objectif: ${objective}
+            - Domaine: ${domain}
+            - Cible: ${target_audience}
+            
+            Format de réponse souhaité en JSON:
+            {
+              "subjects": ["sujet 1", "sujet 2", "sujet 3"]
+            }`
           }
         ],
-        temperature: 0.7
+        temperature: 0.7,
       }),
     })
 
-    const contentData = await contentResponse.json()
-    const generatedContent = contentData.choices[0].message.content
-
-    // 3. Generate image prompt
-    const imagePromptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Tu es un expert en génération d'images par IA. Crée une description détaillée pour générer une image professionnelle et attrayante."
-          },
-          {
-            role: "user",
-            content: `Crée une description détaillée pour une image qui illustrera ce contenu: ${seoTitles[0]}`
-          }
-        ],
-        temperature: 0.7
-      }),
-    })
-
-    const imagePromptData = await imagePromptResponse.json()
-    const imagePrompt = imagePromptData.choices[0].message.content
-
-    // 4. Generate the image with DALL-E
-    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: `Professional real estate photo: ${imagePrompt}`,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-        style: "natural"
-      }),
-    })
-
-    const imageData = await imageResponse.json()
+    const data = await response.json()
+    const subjects = JSON.parse(data.choices[0].message.content).subjects
 
     return new Response(
-      JSON.stringify({
-        seoTitles,
-        content: generatedContent,
-        imageUrl: imageData.data[0].url,
-        imagePrompt
-      }),
+      JSON.stringify({ subjects }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error in content workflow generation:', error)
+    console.error('Error in subject generation:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
