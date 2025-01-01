@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -16,7 +15,7 @@ serve(async (req) => {
     const { campaignId } = await req.json()
     console.log('Analyzing campaign performance for:', campaignId)
 
-    // Mock data for demonstration - replace with actual ML/analysis logic
+    // Mock data for demonstration
     const predictions = {
       conversion: {
         rate: 15.5,

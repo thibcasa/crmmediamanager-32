@@ -2,17 +2,38 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, BarChart, Bar 
+  Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { PredictiveAnalysisService } from "@/services/ai/PredictiveAnalysisService";
 
+interface PredictionData {
+  conversion: {
+    rate: number;
+    confidence: number;
+  };
+  roi: {
+    predicted: number;
+    bestCase: number;
+    worstCase: number;
+  };
+  marketTrends: {
+    demandIndex: number;
+    seasonalityImpact: number;
+  };
+  trends: Array<{
+    date: string;
+    value: number;
+  }>;
+}
+
 export const PredictiveDashboard = () => {
-  const { data: predictions, isLoading, error } = useQuery({
+  const { data: predictions, isLoading, error } = useQuery<PredictionData>({
     queryKey: ['predictive-metrics'],
     queryFn: async () => {
       return PredictiveAnalysisService.analyzeCampaignPerformance('global');
     },
-    retry: 1
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 
   if (isLoading) {
@@ -43,7 +64,7 @@ export const PredictiveDashboard = () => {
     );
   }
 
-  if (!predictions?.conversion || !predictions?.roi || !predictions?.marketTrends || !predictions?.trends) {
+  if (!predictions || !predictions.conversion || !predictions.roi || !predictions.marketTrends || !predictions.trends) {
     return (
       <Card className="p-4">
         <p className="text-muted-foreground">Aucune donnée prédictive disponible.</p>
