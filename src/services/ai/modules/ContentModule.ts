@@ -17,7 +17,12 @@ export class ContentModule implements AIModule {
       return {
         success: true,
         data: data.content,
-        predictions: await this.predict(data.content)
+        predictions: await this.predict(data.content),
+        validationScore: 0.8,
+        optimizations: {
+          suggestions: ['Ajouter des call-to-action', 'Optimiser pour le SEO'],
+          priority: 'medium'
+        }
       };
     } catch (error) {
       console.error('Error in ContentModule:', error);
@@ -28,6 +33,11 @@ export class ContentModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
+        },
+        validationScore: 0,
+        optimizations: {
+          suggestions: ['Erreur lors de la génération du contenu'],
+          priority: 'high'
         }
       };
     }

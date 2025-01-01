@@ -16,12 +16,15 @@ export const CampaignDashboard = ({ campaignId }: CampaignDashboardProps) => {
     queryKey: ['campaign', campaignId],
     queryFn: async () => {
       const data = await SocialCampaignService.getCampaign(campaignId);
-      // Ensure schedule has the correct type
       return {
         ...data,
-        schedule: typeof data.schedule === 'string' 
-          ? { frequency: 'daily' } 
-          : data.schedule || { frequency: 'daily' }
+        content_strategy: data.content_strategy ? {
+          post_types: (data.content_strategy as any).post_types || [],
+          posting_frequency: (data.content_strategy as any).posting_frequency || 'daily'
+        } : {
+          post_types: [],
+          posting_frequency: 'daily'
+        }
       } as SocialCampaign;
     },
   });

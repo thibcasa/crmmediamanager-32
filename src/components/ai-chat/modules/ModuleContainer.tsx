@@ -49,7 +49,12 @@ export const ModuleContainer = ({ moduleType }: ModuleContainerProps) => {
           {currentState.data && (
             <ModuleResults 
               moduleType={moduleType} 
-              result={currentState}
+              result={{
+                success: currentState.success || false,
+                data: currentState.data,
+                predictions: currentState.predictions,
+                validationScore: currentState.validationScore
+              }}
             />
           )}
         </TabsContent>

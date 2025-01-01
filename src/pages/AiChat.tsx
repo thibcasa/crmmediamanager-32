@@ -10,7 +10,7 @@ import { CreativesModule } from "@/components/ai-chat/modules/CreativesModule";
 import { ContentModule } from "@/components/ai-chat/modules/ContentModule";
 import { toast } from "@/components/ui/use-toast";
 
-const AiChat = () => {
+export const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [activeTab, setActiveTab] = useState<ModuleType | "chat">("chat");

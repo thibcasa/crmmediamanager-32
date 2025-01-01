@@ -22,7 +22,7 @@ export interface ModuleConfig {
 export interface ModuleState {
   status: 'idle' | 'processing' | 'validated' | 'error';
   data: any | null;
-  success?: boolean;
+  success: boolean;
   predictions: {
     engagement: number;
     conversion: number;
