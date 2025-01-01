@@ -7,14 +7,45 @@ import {
 import { PredictiveAnalysisService } from "@/services/ai/PredictiveAnalysisService";
 
 export const PredictiveDashboard = () => {
-  const { data: predictions } = useQuery({
+  const { data: predictions, isLoading, error } = useQuery({
     queryKey: ['predictive-metrics'],
     queryFn: async () => {
       return PredictiveAnalysisService.analyzeCampaignPerformance('global');
     }
   });
 
-  if (!predictions) return null;
+  if (isLoading) {
+    return (
+      <div className="grid gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-4">
+              <div className="h-20 animate-pulse bg-gray-200 rounded" />
+            </Card>
+          ))}
+        </div>
+        <Card className="p-6">
+          <div className="h-[300px] animate-pulse bg-gray-200 rounded" />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-4">
+        <p className="text-red-500">Une erreur est survenue lors du chargement des prédictions.</p>
+      </Card>
+    );
+  }
+
+  if (!predictions?.conversion || !predictions?.roi || !predictions?.marketTrends || !predictions?.trends) {
+    return (
+      <Card className="p-4">
+        <p className="text-muted-foreground">Aucune donnée prédictive disponible.</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid gap-6">
