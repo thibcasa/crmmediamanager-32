@@ -1,4 +1,4 @@
-export type ModuleType = 'subject' | 'title' | 'content' | 'creative' | 'workflow' | 'pipeline' | 'predictive' | 'correction' | 'analysis';
+export type ModuleType = 'subject' | 'title' | 'content' | 'creative' | 'workflow' | 'pipeline' | 'predictive' | 'analysis' | 'correction';
 
 export interface ModuleState {
   status: 'idle' | 'processing' | 'validated' | 'error';
@@ -19,6 +19,7 @@ export interface ModuleResult {
     conversion: number;
     roi: number;
   };
+  validationScore: number;
 }
 
 export interface ModuleConfig {
