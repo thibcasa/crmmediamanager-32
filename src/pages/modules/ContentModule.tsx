@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Wand2, Copy, Download, BarChart2 } from "lucide-react";
+import { Wand2, Copy, Download, BarChart2, ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useNavigate } from 'react-router-dom';
 
 export default function ContentModule() {
   const [subject, setSubject] = useState('');
+  const [title, setTitle] = useState('');
   const [tone, setTone] = useState('professional');
   const [audience, setAudience] = useState('property_owners');
   const [keywords, setKeywords] = useState('');
@@ -16,6 +18,30 @@ export default function ContentModule() {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Load data from previous steps
+  useEffect(() => {
+    const loadPreviousSteps = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get latest subject
+      const { data: subjectData } = await supabase
+        .from('generated_titles')
+        .select('subject, generated_title')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (subjectData?.[0]) {
+        setSubject(subjectData[0].subject);
+        setTitle(subjectData[0].generated_title);
+      }
+    };
+
+    loadPreviousSteps();
+  }, []);
 
   const handleGenerate = async () => {
     if (!subject.trim()) {
@@ -32,6 +58,7 @@ export default function ContentModule() {
       const { data, error } = await supabase.functions.invoke('content-workflow-generator', {
         body: {
           subject,
+          title,
           tone,
           audience,
           keywords: keywords.split(',').map(k => k.trim()),
@@ -89,23 +116,35 @@ export default function ContentModule() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Module Rédaction</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Module Rédaction</h1>
+        <Button variant="outline" onClick={() => navigate('/modules/title')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Retour aux Titres
+        </Button>
+      </div>
       
+      <Card>
+        <CardHeader>
+          <CardTitle>Données des étapes précédentes</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Sujet sélectionné</label>
+            <p className="text-muted-foreground">{subject}</p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Titre généré</label>
+            <p className="text-muted-foreground">{title}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Générateur de Contenu</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Sujet</label>
-            <Textarea
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Ex: Investir dans une villa de luxe sur la Côte d'Azur..."
-              className="min-h-[100px]"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Tonalité</label>
