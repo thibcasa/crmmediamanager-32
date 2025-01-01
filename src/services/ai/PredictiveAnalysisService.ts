@@ -1,22 +1,31 @@
 import { supabase } from '@/lib/supabaseClient';
 
 interface PredictionResponse {
-  conversion?: {
-    rate?: number;
-  };
-  roi?: {
-    predicted?: number;
-  };
-  marketTrends?: {
-    demandIndex?: number;
-  };
-  recommendations?: string[];
-  insights?: Array<{
-    category: string;
-    description: string;
-    impact: number;
+  conversion: {
+    rate: number;
     confidence: number;
+  };
+  roi: {
+    predicted: number;
+    bestCase: number;
+    worstCase: number;
+  };
+  marketTrends: {
+    demandIndex: number;
+    seasonalityImpact: number;
+  };
+  trends: Array<{
+    date: string;
+    value: number;
   }>;
+  engagement?: {
+    rate: number;
+    confidence: number;
+    trends: Array<{
+      date: string;
+      value: number;
+    }>;
+  };
 }
 
 export class PredictiveAnalysisService {

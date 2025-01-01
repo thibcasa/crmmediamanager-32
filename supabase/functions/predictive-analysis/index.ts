@@ -13,36 +13,35 @@ serve(async (req) => {
   try {
     const { campaignId, action } = await req.json()
 
-    // Mock data for demonstration
+    // Mock data that matches our PredictionResponse interface
     const mockData = {
       conversion: {
-        rate: 0.15
+        rate: 15,
+        confidence: 0.85
       },
       roi: {
-        predicted: 2.5
+        predicted: 2.5,
+        bestCase: 3.2,
+        worstCase: 1.8
       },
       marketTrends: {
-        demandIndex: 75
+        demandIndex: 0.75,
+        seasonalityImpact: 0.12
       },
-      recommendations: [
-        "Optimisez vos horaires de publication pour maximiser l'engagement",
-        "Ajoutez plus de contenu visuel pour augmenter l'interaction",
-        "Ciblez plus précisément votre audience dans les Alpes-Maritimes"
+      trends: [
+        { date: '2024-01', value: 120 },
+        { date: '2024-02', value: 150 },
+        { date: '2024-03', value: 180 }
       ],
-      insights: [
-        {
-          category: "Engagement",
-          description: "Le taux d'engagement est plus élevé le soir",
-          impact: 8,
-          confidence: 0.85
-        },
-        {
-          category: "Contenu",
-          description: "Les posts avec des images de propriétés performent mieux",
-          impact: 7,
-          confidence: 0.92
-        }
-      ]
+      engagement: {
+        rate: 22,
+        confidence: 0.9,
+        trends: [
+          { date: '2024-01', value: 85 },
+          { date: '2024-02', value: 92 },
+          { date: '2024-03', value: 98 }
+        ]
+      }
     }
 
     return new Response(
