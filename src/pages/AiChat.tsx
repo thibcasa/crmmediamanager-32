@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleType } from "@/types/modules";
 import { CreativesModule } from "@/components/ai-chat/modules/CreativesModule";
 import { ContentModule } from "@/components/ai-chat/modules/ContentModule";
+import { toast } from "@/components/ui/use-toast";
 
 const AiChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -29,11 +30,13 @@ const AiChat = () => {
 
     try {
       const result = await executeWorkflow(input);
+      
+      // Create AI response message with workflow results
       const aiMessage: Message = {
         role: "assistant",
         content: {
           type: "campaign_response",
-          text: `Campagne créée avec le persona "${result.selectedPersona.name}". Prochaines étapes : ${result.nextSteps.map(step => step.details).join(", ")}`,
+          text: `Workflow executed successfully. Check the modules tab to see the results.`,
           platform: "linkedin",
           targetAudience: "property_owners",
           location: "alpes_maritimes",
@@ -45,18 +48,28 @@ const AiChat = () => {
             location: "alpes_maritimes",
             propertyType: "luxury",
             metrics: {
-              engagement: 0,
+              engagement: result.content?.predictions?.engagement || 0,
               clicks: 0,
               conversions: 0,
-              roi: 0
+              roi: result.content?.predictions?.roi || 0
             }
           }
         }
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      toast({
+        title: "Workflow completed",
+        description: "All modules have been executed successfully",
+      });
     } catch (error) {
       console.error("Error in workflow execution:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while executing the workflow",
+        variant: "destructive"
+      });
     }
   };
 
