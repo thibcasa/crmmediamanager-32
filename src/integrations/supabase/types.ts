@@ -180,6 +180,42 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_titles: {
+        Row: {
+          created_at: string
+          engagement_score: number | null
+          generated_title: string
+          id: string
+          metadata: Json | null
+          seo_score: number | null
+          status: string | null
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          engagement_score?: number | null
+          generated_title: string
+          id?: string
+          metadata?: Json | null
+          seo_score?: number | null
+          status?: string | null
+          subject: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          engagement_score?: number | null
+          generated_title?: string
+          id?: string
+          metadata?: Json | null
+          seo_score?: number | null
+          status?: string | null
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_visuals: {
         Row: {
           created_at: string | null
