@@ -8,20 +8,28 @@ import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { ModuleOrchestrator } from '@/services/ai/orchestration/ModuleOrchestrator';
 
+const initialModuleState: ModuleState = {
+  status: 'idle',
+  data: null,
+  success: false,
+  predictions: { engagement: 0, conversion: 0, roi: 0 },
+  validationScore: 0
+};
+
 export const useAIOrchestrator = () => {
   const { executeWorkflow: executeBaseWorkflow, isProcessing } = useWorkflowExecution();
   const { toast } = useToast();
   const [currentObjective, setCurrentObjective] = useState<string | null>(null);
   const [moduleStates, setModuleStates] = useState<Record<ModuleType, ModuleState>>({
-    subject: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    title: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    content: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    creative: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    workflow: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    pipeline: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    predictive: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    analysis: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    correction: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 }
+    subject: { ...initialModuleState },
+    title: { ...initialModuleState },
+    content: { ...initialModuleState },
+    creative: { ...initialModuleState },
+    workflow: { ...initialModuleState },
+    pipeline: { ...initialModuleState },
+    predictive: { ...initialModuleState },
+    analysis: { ...initialModuleState },
+    correction: { ...initialModuleState }
   });
 
   const updateModuleState = (moduleType: ModuleType, newState: Partial<ModuleState>) => {
