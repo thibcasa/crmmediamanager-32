@@ -1,31 +1,29 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { action, subject, tone, targetAudience, propertyType, count = 5 } = await req.json();
+    const { subject, tone, audience, keywords, contentType } = await req.json()
 
-    if (action !== 'generate_titles') {
-      throw new Error('Invalid action');
-    }
-
-    const prompt = `Generate ${count} compelling real estate titles in French for the following:
-    Subject: ${subject}
-    Tone: ${tone}
-    Target Audience: ${targetAudience}
-    Property Type: ${propertyType}
+    const prompt = `En tant qu'expert en immobilier de luxe sur la Côte d'Azur, générez du contenu ${contentType} 
+    sur le sujet suivant : "${subject}".
     
-    The titles should be SEO-optimized and engaging. Focus on luxury real estate in the French Riviera.
-    Each title should be on a new line.`;
+    Utilisez un ton ${tone} et ciblez spécifiquement ${audience}.
+    Intégrez naturellement les mots-clés suivants : ${keywords.join(', ')}.
+    
+    Le contenu doit être structuré avec des titres (H1, H2) et des paragraphes.
+    Concentrez-vous sur le marché immobilier de luxe des Alpes-Maritimes.
+    
+    Format de sortie : texte formaté avec balises HTML basiques (h1, h2, p).`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -38,34 +36,33 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a professional real estate copywriter specializing in luxury properties on the French Riviera."
+            content: "Vous êtes un expert en marketing immobilier de luxe sur la Côte d'Azur."
           },
           {
             role: "user",
             content: prompt
           }
         ],
+        temperature: 0.7
       }),
-    });
+    })
 
-    const data = await response.json();
-    const titles = data.choices[0].message.content.split('\n').filter(Boolean);
-
-    console.log('Generated titles:', titles);
+    const data = await response.json()
+    const content = data.choices[0].message.content
 
     return new Response(
-      JSON.stringify({ titles }),
+      JSON.stringify({ content }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
 
   } catch (error) {
-    console.error('Error in content-workflow-generator:', error);
+    console.error('Error in content generation:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    );
+    )
   }
-});
+})
