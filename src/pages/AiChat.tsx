@@ -1,134 +1,53 @@
 import { useState } from "react";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { ChatMessages } from "@/components/ai-chat/ChatMessages";
-import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
-import { ModuleContainer } from "@/components/ai-chat/modules/ModuleContainer";
-import { Message } from "@/components/ai-chat/types/chat";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ModuleType } from "@/types/modules";
-import { CreativesModule } from "@/components/ai-chat/modules/CreativesModule";
-import { ContentModule } from "@/components/ai-chat/modules/ContentModule";
-import { toast } from "@/components/ui/use-toast";
+import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
+import { useChat } from "@/hooks/use-chat";
+import { Card } from "@/components/ui/card";
 
-export const AiChat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+const AiChat = () => {
   const [input, setInput] = useState("");
-  const [activeTab, setActiveTab] = useState<ModuleType | "chat">("chat");
-  const { executeWorkflow, isProcessing } = useAIOrchestrator();
+  const { messages, sendMessage, isLoading } = useChat();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
-    const userMessage: Message = {
-      role: "user",
-      content: input
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-
+    
     try {
-      const result = await executeWorkflow(input);
-      
-      if (!result) {
-        throw new Error("No result returned from workflow execution");
-      }
-
-      const aiMessage: Message = {
-        role: "assistant",
-        content: {
-          type: "campaign_response",
-          text: `Workflow executed successfully. Check the modules tab to see the results.`,
-          platform: "linkedin",
-          targetAudience: "property_owners",
-          location: "alpes_maritimes",
-          propertyType: "luxury",
-          metadata: {
-            type: "campaign_response",
-            platform: "linkedin",
-            targetAudience: "property_owners",
-            location: "alpes_maritimes",
-            propertyType: "luxury",
-            metrics: {
-              engagement: result.content?.predictions?.engagement || 0,
-              clicks: 0,
-              conversions: 0,
-              roi: result.content?.predictions?.roi || 0
-            }
-          }
-        }
-      };
-
-      setMessages(prev => [...prev, aiMessage]);
-      
-      toast({
-        title: "Workflow completed",
-        description: "All modules have been executed successfully",
-      });
+      await sendMessage(input);
+      setInput("");
     } catch (error) {
-      console.error("Error in workflow execution:", error);
-      toast({
-        title: "Error",
-        description: "An error occurred while executing the workflow",
-        variant: "destructive"
-      });
+      console.error("Error sending message:", error);
     }
   };
 
-  const renderModuleContent = (moduleType: ModuleType | "chat") => {
-    if (moduleType === "chat") {
-      return (
-        <>
-          <ChatMessages messages={messages} isLoading={isProcessing} />
-          <ChatInput
-            input={input}
-            isLoading={isProcessing}
-            onInputChange={setInput}
-            onSubmit={handleSubmit}
-          />
-        </>
-      );
-    }
-
-    return (
-      <div className="flex h-full">
-        <div className="flex-1 flex flex-col">
-          {moduleType === "creative" ? (
-            <CreativesModule />
-          ) : moduleType === "content" ? (
-            <ContentModule />
-          ) : (
-            <ModuleContainer moduleType={moduleType} />
-          )}
-        </div>
-        <div className="w-1/3 border-l border-gray-200">
-          <ModuleContainer moduleType={moduleType} />
-        </div>
-      </div>
-    );
+  const handleExampleClick = (prompt: string) => {
+    setInput(prompt);
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ModuleType | "chat")} className="flex-1">
-        <TabsList className="grid grid-cols-10 w-full">
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="subject">Sujet</TabsTrigger>
-          <TabsTrigger value="title">Titre</TabsTrigger>
-          <TabsTrigger value="content">Contenu</TabsTrigger>
-          <TabsTrigger value="creative">Créatif</TabsTrigger>
-          <TabsTrigger value="workflow">Workflow</TabsTrigger>
-          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
-          <TabsTrigger value="predictive">Prédictif</TabsTrigger>
-          <TabsTrigger value="analysis">Analyse</TabsTrigger>
-          <TabsTrigger value="correction">Correction</TabsTrigger>
-        </TabsList>
+    <div className="flex flex-col h-full max-w-5xl mx-auto p-4 space-y-4">
+      <Card className="p-6">
+        <h1 className="text-2xl font-bold text-sage-800 mb-2">
+          Assistant Marketing Immobilier
+        </h1>
+        <p className="text-sage-600 mb-4">
+          Je suis votre assistant spécialisé dans le marketing immobilier de luxe sur la Côte d'Azur.
+          Je peux vous aider à créer du contenu, analyser vos performances et optimiser vos stratégies.
+        </p>
+      </Card>
 
-        <TabsContent value={activeTab} className="flex-1 overflow-hidden">
-          {renderModuleContent(activeTab)}
-        </TabsContent>
-      </Tabs>
+      <ExamplePrompts onPromptClick={handleExampleClick} />
+      
+      <div className="flex-1 bg-white rounded-lg shadow-sm border border-sage-200 flex flex-col">
+        <ChatMessages messages={messages} isLoading={isLoading} />
+        <ChatInput
+          input={input}
+          isLoading={isLoading}
+          onInputChange={setInput}
+          onSubmit={handleSubmit}
+        />
+      </div>
     </div>
   );
 };

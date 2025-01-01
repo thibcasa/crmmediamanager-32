@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "./use-toast";
-import { Message, StructuredContent } from "@/components/ai-chat/types/chat";
+import { Message } from "@/components/ai-chat/types/chat";
 
 export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,10 +29,10 @@ export const useChat = () => {
       };
       setMessages(prev => [...prev, userMessage]);
 
-      // Call Edge Function with user context
-      const { data, error } = await supabase.functions.invoke('ai-content-generator', {
+      // Call Edge Function
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { 
-          prompt: content,
+          message: content,
           userId: session.user.id
         }
       });
@@ -42,35 +42,9 @@ export const useChat = () => {
       // Add assistant response
       const assistantMessage: Message = {
         role: 'assistant',
-        content: {
-          type: 'campaign_response',
-          text: data.content.text,
-          platform: 'linkedin',
-          targetAudience: 'property_owners',
-          location: 'alpes_maritimes',
-          propertyType: 'luxury',
-          metadata: {
-            type: 'campaign_response',
-            platform: 'linkedin',
-            targetAudience: 'property_owners',
-            location: 'alpes_maritimes',
-            propertyType: 'luxury',
-            metrics: data.content.metrics
-          }
-        }
+        content: data.content
       };
       setMessages(prev => [...prev, assistantMessage]);
-
-      // Log the interaction
-      await supabase.from('automation_logs').insert({
-        user_id: session.user.id,
-        action_type: 'chat_message',
-        description: 'Message envoyé et réponse générée',
-        metadata: {
-          user_message: content,
-          ai_response: data.content
-        }
-      });
 
       return data;
     } catch (error) {
