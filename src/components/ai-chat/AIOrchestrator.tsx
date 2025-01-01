@@ -1,7 +1,7 @@
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { ModuleState, ModuleType } from '@/types/modules';
+import { ModuleState, ModuleType, CampaignObjective } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -58,7 +58,7 @@ export const useAIOrchestrator = () => {
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
       // Convert string objective to CampaignObjective object
-      const campaignObjective = {
+      const campaignObjective: CampaignObjective = {
         objective: objective,
         goalType: 'lead_generation', // Default goal type
         platform: 'facebook', // Default platform

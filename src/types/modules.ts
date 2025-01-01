@@ -55,3 +55,9 @@ export interface AIModule {
   }>;
   optimize(result: ModuleResult): Promise<ModuleResult>;
 }
+
+export interface CampaignObjective {
+  objective: string;
+  goalType: 'lead_generation' | 'brand_awareness' | 'sales';
+  platform: 'facebook' | 'linkedin' | 'instagram';
+}
