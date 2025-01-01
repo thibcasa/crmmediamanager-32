@@ -1,85 +1,67 @@
-import { useModuleStates } from '@/hooks/useModuleStates';
-import { ModuleBase } from './ModuleBase';
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from 'react';
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ModuleChat } from './ModuleChat';
+import { ModuleResults } from './ModuleResults';
 import { ModuleType } from '@/types/modules';
+import { useAIOrchestrator } from '../AIOrchestrator';
 
-const MODULE_CONFIGS: Array<{
-  type: ModuleType;
-  title: string;
-  description: string;
-}> = [
-  {
-    type: 'subject',
-    title: 'Sujet',
-    description: 'Identification des sujets pertinents'
-  },
-  {
-    type: 'title',
-    title: 'Titre',
-    description: 'Génération de titres optimisés SEO'
-  },
-  {
-    type: 'content',
-    title: 'Rédaction',
-    description: 'Création de contenu optimisé'
-  },
-  {
-    type: 'creative',
-    title: 'Créatif',
-    description: 'Génération de visuels'
-  },
-  {
-    type: 'workflow',
-    title: 'Workflow',
-    description: 'Configuration des automatisations'
-  },
-  {
-    type: 'pipeline',
-    title: 'Pipeline',
-    description: 'Suivi des conversions'
-  },
-  {
-    type: 'predictive',
-    title: 'Prédictif',
-    description: 'Analyse prédictive des performances'
-  },
-  {
-    type: 'analysis',
-    title: 'Analyse',
-    description: 'Analyse des résultats'
-  },
-  {
-    type: 'correction',
-    title: 'Correction',
-    description: 'Optimisation automatique'
-  }
-] as const;
+interface ModuleContainerProps {
+  moduleType: ModuleType;
+}
 
-export const ModuleContainer = () => {
-  const { moduleStates, updateModuleState } = useModuleStates();
+export const ModuleContainer = ({ moduleType }: ModuleContainerProps) => {
+  const [messages, setMessages] = useState<Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>>([]);
+  
+  const { moduleStates, executeWorkflow } = useAIOrchestrator();
+  const currentState = moduleStates[moduleType];
+
+  const handleMessage = async (message: string) => {
+    setMessages(prev => [...prev, { role: 'user', content: message }]);
+    
+    try {
+      const response = await executeWorkflow(message);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response[moduleType].data.response || 'Traitement effectué avec succès' 
+      }]);
+    } catch (error) {
+      console.error('Error in module chat:', error);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "Une erreur est survenue lors du traitement de votre demande" 
+      }]);
+    }
+  };
 
   return (
-    <ScrollArea className="h-[calc(100vh-200px)] px-4">
-      <div className="space-y-4 py-4">
-        <h2 className="text-2xl font-bold mb-6">Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {MODULE_CONFIGS.map((config) => (
-            <ModuleBase
-              key={config.type}
-              type={config.type}
-              title={config.title}
-              description={config.description}
-              state={moduleStates[config.type]}
-              onValidate={() => {
-                updateModuleState(config.type, {
-                  status: 'validated',
-                  validationScore: 1
-                });
-              }}
+    <Card className="p-4">
+      <Tabs defaultValue="results">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="results">Résultats</TabsTrigger>
+          <TabsTrigger value="chat">Chat IA</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="results">
+          {currentState.data && (
+            <ModuleResults 
+              moduleType={moduleType} 
+              result={currentState}
             />
-          ))}
-        </div>
-      </div>
-    </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="chat">
+          <ModuleChat
+            moduleType={moduleType}
+            onMessage={handleMessage}
+            messages={messages}
+          />
+        </TabsContent>
+      </Tabs>
+    </Card>
   );
 };
