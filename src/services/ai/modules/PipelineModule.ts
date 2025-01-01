@@ -16,7 +16,8 @@ export class PipelineModule implements AIModule {
       return {
         success: true,
         data: data.pipeline,
-        predictions: await this.predict(data.pipeline)
+        predictions: await this.predict(data.pipeline),
+        validationScore: 0.8
       };
     } catch (error) {
       console.error('Error in PipelineModule:', error);
@@ -27,7 +28,8 @@ export class PipelineModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }

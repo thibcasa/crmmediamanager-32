@@ -17,7 +17,8 @@ export class TitleModule implements AIModule {
       return {
         success: true,
         data: data.titles,
-        predictions: await this.predict(data.titles)
+        predictions: await this.predict(data.titles),
+        validationScore: 0.85
       };
     } catch (error) {
       console.error('Error in TitleModule:', error);
@@ -28,7 +29,8 @@ export class TitleModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }

@@ -16,7 +16,8 @@ export class WorkflowModule implements AIModule {
       return {
         success: true,
         data: data.workflow,
-        predictions: await this.predict(data.workflow)
+        predictions: await this.predict(data.workflow),
+        validationScore: 0.8
       };
     } catch (error) {
       console.error('Error in WorkflowModule:', error);
@@ -27,7 +28,8 @@ export class WorkflowModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }

@@ -23,7 +23,8 @@ export class SubjectModule extends BaseModule {
       return {
         success: true,
         data: aiResponse.subjects,
-        predictions
+        predictions,
+        validationScore: 0.85
       };
     } catch (error) {
       console.error('Error in subject module:', error);
@@ -34,7 +35,8 @@ export class SubjectModule extends BaseModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }

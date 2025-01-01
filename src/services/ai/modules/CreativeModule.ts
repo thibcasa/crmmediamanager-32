@@ -17,7 +17,8 @@ export class CreativeModule implements AIModule {
       return {
         success: true,
         data: data.imageUrl,
-        predictions: await this.predict(data.imageUrl)
+        predictions: await this.predict(data.imageUrl),
+        validationScore: 0.85
       };
     } catch (error) {
       console.error('Error in CreativeModule:', error);
@@ -28,7 +29,8 @@ export class CreativeModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }

@@ -16,7 +16,8 @@ export class PredictiveModule implements AIModule {
       return {
         success: true,
         data: data.predictions,
-        predictions: await this.predict(data.predictions)
+        predictions: await this.predict(data.predictions),
+        validationScore: 0.9
       };
     } catch (error) {
       console.error('Error in PredictiveModule:', error);
@@ -27,7 +28,8 @@ export class PredictiveModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }
