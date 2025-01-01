@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard,
-  ListFilter,
-  PlusCircle,
-  History,
-  BarChart,
-  Settings,
-  HelpCircle,
+  Users,
   MessageSquare,
   Brain,
   Target,
@@ -17,18 +12,24 @@ import {
   GitBranch,
   Workflow,
   LineChart,
-  Wrench
+  Wrench,
+  Upload,
+  Download,
+  Settings,
+  HelpCircle
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   {
-    label: "Pages Principales",
+    label: "Principal",
     items: [
       { icon: LayoutDashboard, label: "Tableau de Bord", path: "/dashboard" },
+      { icon: Users, label: "Prospects", path: "/prospects" },
     ]
   },
   {
-    label: "Modules",
+    label: "Modules IA",
     items: [
       { icon: Brain, label: "Module Sujet", path: "/modules/subject" },
       { icon: Target, label: "Module Titre", path: "/modules/title" },
@@ -36,34 +37,29 @@ const menuItems = [
       { icon: Image, label: "Module Créatif", path: "/modules/creative" },
       { icon: Workflow, label: "Module Workflow", path: "/modules/workflow" },
       { icon: GitBranch, label: "Module Pipeline", path: "/modules/pipeline" },
-      { icon: LineChart, label: "Analyse Prédictive", path: "/modules/predictive" },
+      { icon: LineChart, label: "Module Prédictif", path: "/modules/predictive" },
       { icon: Wrench, label: "Module Correction", path: "/modules/correction" },
     ]
   },
   {
-    label: "Campagnes",
+    label: "Communication",
     items: [
-      { icon: ListFilter, label: "Liste des Campagnes", path: "/campaigns" },
-      { icon: PlusCircle, label: "Nouvelle Campagne", path: "/campaigns/new" },
-      { icon: History, label: "Historique", path: "/campaigns/history" },
-    ]
-  },
-  {
-    label: "Rapports & Analyses",
-    items: [
-      { icon: BarChart, label: "Rapports", path: "/reports" },
+      { icon: MessageSquare, label: "Chat IA", path: "/ai-chat" },
     ]
   },
   {
     label: "Support",
     items: [
-      { icon: HelpCircle, label: "Documentation", path: "/docs" },
-      { icon: MessageSquare, label: "Assistance", path: "/support" },
+      { icon: Settings, label: "Paramètres", path: "/settings" },
+      { icon: HelpCircle, label: "Aide", path: "/help" },
     ]
   },
 ];
 
 export function AppLayout() {
+  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -81,14 +77,15 @@ export function AppLayout() {
                     {section.label}
                   </h4>
                   {section.items.map((item) => (
-                    <a
+                    <Button
                       key={item.path}
-                      href={item.path}
-                      className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => navigate(item.path)}
                     >
-                      <item.icon className="w-4 h-4" />
+                      <item.icon className="w-4 h-4 mr-2" />
                       {item.label}
-                    </a>
+                    </Button>
                   ))}
                 </div>
               ))}
