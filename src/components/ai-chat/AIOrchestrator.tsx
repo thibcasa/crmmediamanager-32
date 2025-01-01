@@ -57,8 +57,15 @@ export const useAIOrchestrator = () => {
       setCurrentObjective(objective);
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
-      // Execute module chain
-      const results = await ModuleOrchestrator.executeModuleChain(objective);
+      // Convert string objective to CampaignObjective object
+      const campaignObjective = {
+        objective: objective,
+        goalType: 'lead_generation', // Default goal type
+        platform: 'facebook', // Default platform
+      };
+      
+      // Execute module chain with proper object
+      const results = await ModuleOrchestrator.executeModuleChain(campaignObjective);
       
       // Update all module states
       Object.entries(results).forEach(([moduleType, result]) => {
