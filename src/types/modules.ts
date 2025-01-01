@@ -9,19 +9,14 @@ export type ModuleType =
   | 'analysis'
   | 'correction';
 
-export interface ModuleResult {
-  success: boolean;
-  data: any;
-  predictions: {
-    engagement: number;
-    conversion: number;
-    roi: number;
-  };
-  validationScore: number;
-  optimizations?: {
-    suggestions: string[];
-    priority: 'high' | 'medium' | 'low';
-  };
+export interface ModuleConfig {
+  type: ModuleType;
+  name: string;
+  description: string;
+  requiredScore: number;
+  dependsOn?: ModuleType[];
+  icon?: string;
+  enabled?: boolean;
 }
 
 export interface ModuleState {
@@ -36,13 +31,19 @@ export interface ModuleState {
   validationScore: number;
 }
 
-export interface ModuleConfig {
-  id: string;
-  name: string;
-  description: string;
-  type: ModuleType;
-  icon: string;
-  enabled: boolean;
+export interface ModuleResult {
+  success: boolean;
+  data: any;
+  predictions: {
+    engagement: number;
+    conversion: number;
+    roi: number;
+  };
+  validationScore: number;
+  optimizations?: {
+    suggestions: string[];
+    priority: 'high' | 'medium' | 'low';
+  };
 }
 
 export interface AIModule {

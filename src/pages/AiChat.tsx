@@ -119,7 +119,7 @@ const AiChat = () => {
             </div>
             {activeTab !== "chat" && (
               <div className="w-1/3 border-l border-gray-200">
-                <ModuleContainer />
+                <ModuleContainer moduleType={activeTab as ModuleType} />
               </div>
             )}
           </div>

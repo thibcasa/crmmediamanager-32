@@ -1,4 +1,4 @@
-import { AIModule, ModuleResult } from '@/types/social';
+import { AIModule, ModuleResult } from '@/types/modules';
 import { supabase } from '@/lib/supabaseClient';
 
 export abstract class BaseModule implements AIModule {
@@ -19,7 +19,8 @@ export abstract class BaseModule implements AIModule {
       return {
         success: true,
         data: data,
-        predictions
+        predictions,
+        validationScore: 0.8
       };
     } catch (error) {
       console.error(`Error in ${this.moduleName} module:`, error);
@@ -30,7 +31,8 @@ export abstract class BaseModule implements AIModule {
           engagement: 0,
           conversion: 0,
           roi: 0
-        }
+        },
+        validationScore: 0
       };
     }
   }
