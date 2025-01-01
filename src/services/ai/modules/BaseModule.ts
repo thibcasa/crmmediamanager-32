@@ -20,7 +20,11 @@ export abstract class BaseModule implements AIModule {
         success: true,
         data: data,
         predictions,
-        validationScore: 0.8
+        validationScore: 0.8,
+        optimizations: {
+          suggestions: ['Optimisation automatique suggérée'],
+          priority: 'medium'
+        }
       };
     } catch (error) {
       console.error(`Error in ${this.moduleName} module:`, error);
@@ -32,7 +36,11 @@ export abstract class BaseModule implements AIModule {
           conversion: 0,
           roi: 0
         },
-        validationScore: 0
+        validationScore: 0,
+        optimizations: {
+          suggestions: ['Error occurred'],
+          priority: 'high'
+        }
       };
     }
   }

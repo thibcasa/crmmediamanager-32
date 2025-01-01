@@ -8,14 +8,34 @@ export interface SocialCampaign {
   content?: string;
   schedule?: any;
   metrics?: any;
+  created_at?: string;
+  updated_at?: string;
+  ai_feedback?: {
+    performance_score?: number;
+    suggestions?: string[];
+  };
+  target_metrics?: {
+    engagement_rate?: number;
+    conversion_rate?: number;
+    roi?: number;
+  };
+  content_strategy?: {
+    post_types: string[];
+    posting_frequency: string;
+  };
+  targeting_criteria?: {
+    persona?: string;
+    location?: string;
+  };
 }
 
-export type SocialPlatform = 'linkedin' | 'facebook' | 'twitter' | 'instagram';
+export type SocialPlatform = 'linkedin' | 'facebook' | 'twitter' | 'instagram' | 'whatsapp';
 
 export interface ModuleState {
   status: 'idle' | 'processing' | 'validated' | 'error';
   data: any | null;
   success: boolean;
+  type?: string;
   predictions: {
     engagement: number;
     conversion: number;
@@ -28,6 +48,8 @@ export interface ModuleInteraction {
   type: string;
   data: any;
   timestamp: string;
+  from?: string;
+  to?: string;
 }
 
 export interface AIModule {
@@ -49,4 +71,8 @@ export interface ModuleResult {
     roi: number;
   };
   validationScore: number;
+  optimizations?: {
+    suggestions: string[];
+    priority: 'high' | 'medium' | 'low';
+  };
 }
