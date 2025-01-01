@@ -13,15 +13,15 @@ export const useAIOrchestrator = () => {
   const { toast } = useToast();
   const [currentObjective, setCurrentObjective] = useState<string | null>(null);
   const [moduleStates, setModuleStates] = useState<Record<ModuleType, ModuleState>>({
-    subject: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    title: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    content: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    creative: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    workflow: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    pipeline: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    predictive: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    analysis: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
-    correction: { status: 'idle', data: null, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 }
+    subject: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    title: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    content: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    creative: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    workflow: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    pipeline: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    predictive: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    analysis: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 },
+    correction: { status: 'idle', data: null, success: false, predictions: { engagement: 0, conversion: 0, roi: 0 }, validationScore: 0 }
   });
 
   const updateModuleState = (moduleType: ModuleType, newState: Partial<ModuleState>) => {

@@ -92,7 +92,7 @@ export const AiChat = () => {
           </>
         );
       default:
-        return <ModuleContainer />;
+        return <ModuleContainer moduleType={moduleType as ModuleType} />;
     }
   };
 
