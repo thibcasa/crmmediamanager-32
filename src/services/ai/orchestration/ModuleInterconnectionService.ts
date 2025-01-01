@@ -2,39 +2,50 @@ import { ModuleType, ModuleResult } from '@/types/modules';
 import { supabase } from '@/lib/supabaseClient';
 
 export class ModuleInterconnectionService {
+  private static readonly MODULE_DEPENDENCIES: Record<ModuleType, ModuleType[]> = {
+    subject: [],
+    title: ['subject'],
+    content: ['title'],
+    creative: ['content'],
+    workflow: ['creative'],
+    pipeline: ['workflow'],
+    predictive: ['pipeline'],
+    analysis: ['predictive'],
+    correction: ['analysis']
+  };
+
   static async propagateResults(
     fromModule: ModuleType,
     toModule: ModuleType,
     result: ModuleResult
   ): Promise<void> {
-    console.log(`Propagation des résultats de ${fromModule} vers ${toModule}:`, result);
+    console.log(`Propagating results from ${fromModule} to ${toModule}:`, result);
 
     try {
-      // Log de l'interconnexion
+      // Validate dependency
+      if (!this.validateDependency(fromModule, toModule)) {
+        throw new Error(`Invalid module dependency: ${fromModule} -> ${toModule}`);
+      }
+
+      // Log the interconnection
       await this.logInterconnection(fromModule, toModule, result);
 
-      // Notification des modules dépendants
+      // Notify dependent modules
       await this.notifyDependentModules(fromModule, toModule, result);
     } catch (error) {
-      console.error('Erreur dans l\'interconnexion des modules:', error);
+      console.error('Error in module interconnection:', error);
       throw error;
     }
   }
 
-  static async getDependentModules(moduleType: ModuleType): Promise<ModuleType[]> {
-    const dependencies = {
-      subject: ['title'],
-      title: ['content'],
-      content: ['creative'],
-      creative: ['workflow'],
-      workflow: ['pipeline'],
-      pipeline: ['predictive'],
-      predictive: ['analysis'],
-      analysis: ['correction'],
-      correction: []
-    };
+  private static validateDependency(fromModule: ModuleType, toModule: ModuleType): boolean {
+    return this.MODULE_DEPENDENCIES[toModule].includes(fromModule);
+  }
 
-    return dependencies[moduleType] || [];
+  static async getDependentModules(moduleType: ModuleType): Promise<ModuleType[]> {
+    return Object.entries(this.MODULE_DEPENDENCIES)
+      .filter(([_, dependencies]) => dependencies.includes(moduleType))
+      .map(([module]) => module as ModuleType);
   }
 
   private static async notifyDependentModules(
@@ -80,7 +91,8 @@ export class ModuleInterconnectionService {
         }
       });
     } catch (error) {
-      console.error('Erreur lors de la journalisation de l\'interconnexion:', error);
+      console.error('Error logging interconnection:', error);
+      throw error;
     }
   }
 }

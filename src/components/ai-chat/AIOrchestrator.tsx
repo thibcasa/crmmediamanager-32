@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { ModuleOrchestrator } from '@/services/ai/orchestration/ModuleOrchestrator';
 
 export const useAIOrchestrator = () => {
   const { executeWorkflow: executeBaseWorkflow, isProcessing } = useWorkflowExecution();
@@ -48,15 +49,19 @@ export const useAIOrchestrator = () => {
       setCurrentObjective(objective);
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
-      // Update module states during execution
-      const handleModuleUpdate = (moduleType: ModuleType, status: ModuleState['status'], data?: any) => {
-        updateModuleState(moduleType, { status, data });
-      };
+      // Execute module chain
+      const results = await ModuleOrchestrator.executeModuleChain(objective);
       
-      const result = await executeBaseWorkflow(objective);
-      
-      console.log('Résultat de l\'orchestration:', result);
-      
+      // Update all module states
+      Object.entries(results).forEach(([moduleType, result]) => {
+        updateModuleState(moduleType as ModuleType, {
+          status: 'validated',
+          data: result.data,
+          predictions: result.predictions,
+          validationScore: result.validationScore || 0
+        });
+      });
+
       // Log successful execution
       await supabase.from('automation_logs').insert({
         user_id: session.user.id,
@@ -64,16 +69,16 @@ export const useAIOrchestrator = () => {
         description: `Workflow exécuté avec succès pour l'objectif: ${objective}`,
         metadata: {
           objective,
-          result
+          results
         }
       });
 
       toast({
         title: "Workflow exécuté avec succès",
-        description: `Campagne créée avec le persona "${result.selectedPersona.name}"`,
+        description: "Tous les modules ont été exécutés avec succès",
       });
 
-      return result;
+      return results;
     } catch (error) {
       console.error('Erreur dans l\'orchestration:', error);
       toast({
