@@ -11,7 +11,8 @@ export const PredictiveDashboard = () => {
     queryKey: ['predictive-metrics'],
     queryFn: async () => {
       return PredictiveAnalysisService.analyzeCampaignPerformance('global');
-    }
+    },
+    retry: 1
   });
 
   if (isLoading) {
@@ -35,6 +36,9 @@ export const PredictiveDashboard = () => {
     return (
       <Card className="p-4">
         <p className="text-red-500">Une erreur est survenue lors du chargement des prédictions.</p>
+        <p className="text-sm text-muted-foreground mt-2">
+          {error instanceof Error ? error.message : 'Erreur inconnue'}
+        </p>
       </Card>
     );
   }
