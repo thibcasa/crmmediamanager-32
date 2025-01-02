@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { LoadingProgress } from "@/components/ui/loading-progress";
 import { CharacterCounter } from "@/components/chat/CharacterCounter";
 import { useSessionCheck } from "@/hooks/useSessionCheck";
+import { useAIOrchestrator } from "./AIOrchestrator";
 
 const MAX_CHARS = 500;
 
@@ -19,6 +20,7 @@ interface ChatInputProps {
 
 export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInputProps) => {
   const { toast } = useToast();
+  const { executeWorkflow } = useAIOrchestrator();
   useSessionCheck();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +29,7 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
     if (!input.trim()) {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer un message",
+        description: "Veuillez entrer un objectif",
         variant: "destructive",
       });
       return;
@@ -53,7 +55,12 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
         return;
       }
 
+      // Lancer l'orchestration des modules avec l'objectif
+      await executeWorkflow(input);
+      
+      // Appeler le onSubmit original après l'orchestration
       onSubmit(e);
+
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
       toast({
@@ -77,7 +84,7 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
             <Input
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
-              placeholder="Ex: Crée une stratégie LinkedIn pour obtenir des mandats..."
+              placeholder="Ex: Créer une stratégie LinkedIn pour obtenir des mandats immobiliers..."
               disabled={isLoading}
               className={`flex-1 border-sage-200 focus:ring-sage-500 ${
                 isOverLimit ? 'border-red-500' : ''
