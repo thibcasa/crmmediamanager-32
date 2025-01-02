@@ -37,14 +37,19 @@ export class ModuleOrchestrator {
         
         // Execute current module
         const result = await this.executeModule(moduleType, moduleInput);
+        
+        // Store the result
         results[moduleType] = result;
 
         // Log module execution
         await this.logModuleExecution(moduleType, moduleInput, result);
 
-        // Prepare input for next module
-        const nextModuleInput = await this.prepareNextModuleInput(moduleType, result);
-        console.log(`Prepared input for next module after ${moduleType}:`, nextModuleInput);
+        // Prepare and validate input for next module
+        if (moduleType !== 'correction') {
+          const nextModuleType = this.MODULE_FLOW[this.MODULE_FLOW.indexOf(moduleType) + 1];
+          const nextInput = await this.prepareNextModuleInput(moduleType, result, results);
+          console.log(`Prepared input for next module ${nextModuleType}:`, nextInput);
+        }
       }
 
       return results;
@@ -64,6 +69,12 @@ export class ModuleOrchestrator {
       });
 
       if (error) throw error;
+
+      // Validate module output
+      if (!data || !data.success) {
+        throw new Error(`Module ${type} execution failed: ${data?.error || 'Unknown error'}`);
+      }
+
       return data;
     } catch (error) {
       console.error(`Error executing module ${type}:`, error);
@@ -76,43 +87,71 @@ export class ModuleOrchestrator {
     results: Record<ModuleType, ModuleResult>,
     objective: CampaignObjective
   ): Promise<any> {
+    const previousResults = { ...results };
+    
     switch (currentModule) {
       case 'subject':
-        return { objective: objective.objective, platform: objective.platform };
+        return {
+          objective: objective.objective,
+          platform: objective.platform,
+          previousResults: null
+        };
       case 'title':
-        return { subject: results.subject?.data?.selectedSubject };
-      case 'content':
-        return { title: results.title?.data?.optimizedTitle };
-      case 'creative':
-        return { content: results.content?.data?.finalContent };
-      case 'workflow':
         return {
           subject: results.subject?.data,
+          platform: objective.platform,
+          previousResults: results.subject
+        };
+      case 'content':
+        return {
           title: results.title?.data,
+          subject: results.subject?.data,
+          platform: objective.platform,
+          previousResults: {
+            subject: results.subject,
+            title: results.title
+          }
+        };
+      case 'creative':
+        return {
           content: results.content?.data,
-          creative: results.creative?.data
+          platform: objective.platform,
+          previousResults: {
+            subject: results.subject,
+            title: results.title,
+            content: results.content
+          }
         };
       default:
-        return results[currentModule]?.data || {};
+        return {
+          previousResults,
+          platform: objective.platform,
+          objective: objective.objective
+        };
     }
   }
 
-  private static async prepareNextModuleInput(currentModule: ModuleType, result: ModuleResult): Promise<any> {
-    // Transform current module result into input for next module
-    switch (currentModule) {
-      case 'subject':
-        return { title: result.data.selectedSubject };
-      case 'title':
-        return { content: result.data.optimizedTitle };
-      case 'content':
-        return { creative: result.data.finalContent };
-      case 'creative':
-        return { workflow: result.data.creativeAssets };
-      case 'workflow':
-        return { pipeline: result.data.workflowConfig };
-      default:
-        return result.data;
+  private static async prepareNextModuleInput(
+    currentModule: ModuleType,
+    currentResult: ModuleResult,
+    allResults: Record<ModuleType, ModuleResult>
+  ): Promise<any> {
+    // Ensure we have valid data to pass to the next module
+    if (!currentResult?.data) {
+      console.warn(`No valid data from module ${currentModule} to pass to next module`);
+      return null;
     }
+
+    // Return structured data for the next module
+    return {
+      previousModule: currentModule,
+      data: currentResult.data,
+      context: {
+        previousResults: allResults,
+        predictions: currentResult.predictions,
+        validationScore: currentResult.validationScore
+      }
+    };
   }
 
   private static async logOrchestrationStart(objective: CampaignObjective) {
