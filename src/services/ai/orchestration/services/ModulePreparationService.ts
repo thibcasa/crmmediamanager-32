@@ -1,15 +1,12 @@
-import { ModuleType, ModuleResult } from '@/types/modules';
-import { CampaignObjective } from '@/types/modules';
+import { ModuleType, ModuleResult, CampaignObjective } from '@/types/modules';
 import { ModuleInput } from '../types/ModuleTypes';
 
 export class ModulePreparationService {
   static prepareModuleInput(
     currentModule: ModuleType,
-    results: Record<ModuleType, ModuleResult>,
+    results: Partial<Record<ModuleType, ModuleResult>>,
     objective: CampaignObjective
   ): ModuleInput {
-    const previousResults = { ...results };
-    
     switch (currentModule) {
       case 'subject':
         return {
@@ -45,7 +42,7 @@ export class ModulePreparationService {
         };
       default:
         return {
-          previousResults,
+          previousResults: results,
           platform: objective.platform,
           objective: objective.objective
         };

@@ -12,13 +12,17 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, tone, audience, keywords, contentType } = await req.json()
+    const { subject, tone, audience, keywords = [], contentType } = await req.json()
+    console.log('Received request:', { subject, tone, audience, keywords, contentType })
 
-    const prompt = `En tant qu'expert en immobilier de luxe sur la Côte d'Azur, générez du contenu ${contentType} 
+    // Ensure keywords is always an array
+    const keywordsArray = Array.isArray(keywords) ? keywords : []
+
+    const prompt = `En tant qu'expert en immobilier de luxe sur la Côte d'Azur, générez du contenu ${contentType || 'post'} 
     sur le sujet suivant : "${subject}".
     
-    Utilisez un ton ${tone} et ciblez spécifiquement ${audience}.
-    Intégrez naturellement les mots-clés suivants : ${keywords.join(', ')}.
+    ${tone ? `Utilisez un ton ${tone}` : ''} ${audience ? `et ciblez spécifiquement ${audience}` : ''}.
+    ${keywordsArray.length > 0 ? `Intégrez naturellement les mots-clés suivants : ${keywordsArray.join(', ')}.` : ''}
     
     Le contenu doit être structuré avec des titres (H1, H2) et des paragraphes.
     Concentrez-vous sur le marché immobilier de luxe des Alpes-Maritimes.
@@ -32,7 +36,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
