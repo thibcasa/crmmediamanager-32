@@ -17,6 +17,10 @@ export interface ModuleExecutionContext {
 export interface ModuleInput {
   objective?: string;
   platform?: string;
-  previousResults?: Record<ModuleType, ModuleResult>;
+  previousResults?: Partial<Record<ModuleType, ModuleResult>>;
   data?: any;
+  keywords?: string[];
+  subject?: any;
+  title?: any;
+  content?: any;
 }

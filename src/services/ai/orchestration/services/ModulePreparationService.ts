@@ -8,7 +8,7 @@ export class ModulePreparationService {
     objective: CampaignObjective
   ): ModuleInput {
     // Initialize with common properties
-    const baseInput = {
+    const baseInput: ModuleInput = {
       platform: objective.platform,
       objective: objective.objective,
       previousResults: results
@@ -20,7 +20,7 @@ export class ModulePreparationService {
           ...baseInput,
           keywords: [],
           audience: 'property_owners'
-        };
+        } as ModuleInput;
 
       case 'title':
         if (!results.subject) {
@@ -29,8 +29,8 @@ export class ModulePreparationService {
         return {
           ...baseInput,
           subject: results.subject.data,
-          keywords: results.subject.data.keywords || []
-        };
+          keywords: results.subject.data?.keywords || []
+        } as ModuleInput;
 
       case 'content':
         if (!results.title || !results.subject) {
@@ -40,8 +40,8 @@ export class ModulePreparationService {
           ...baseInput,
           title: results.title.data,
           subject: results.subject.data,
-          keywords: results.subject.data.keywords || []
-        };
+          keywords: results.subject.data?.keywords || []
+        } as ModuleInput;
 
       case 'creative':
         if (!results.content) {
@@ -50,7 +50,7 @@ export class ModulePreparationService {
         return {
           ...baseInput,
           content: results.content.data
-        };
+        } as ModuleInput;
 
       default:
         return baseInput;
