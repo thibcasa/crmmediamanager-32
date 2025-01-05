@@ -359,6 +359,62 @@ export type Database = {
         }
         Relationships: []
       }
+      interactions: {
+        Row: {
+          channel: string | null
+          content: string | null
+          created_at: string | null
+          direction: string
+          duration: number | null
+          id: string
+          interaction_date: string | null
+          lead_id: string | null
+          outcome: string | null
+          status: string
+          subject: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          channel?: string | null
+          content?: string | null
+          created_at?: string | null
+          direction: string
+          duration?: number | null
+          id?: string
+          interaction_date?: string | null
+          lead_id?: string | null
+          outcome?: string | null
+          status: string
+          subject: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string | null
+          content?: string | null
+          created_at?: string | null
+          direction?: string
+          duration?: number | null
+          id?: string
+          interaction_date?: string | null
+          lead_id?: string | null
+          outcome?: string | null
+          status?: string
+          subject?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_interactions: {
         Row: {
           channel: string | null
@@ -659,6 +715,41 @@ export type Database = {
         }
         Relationships: []
       }
+      notes: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          lead_id: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          lead_id?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objection_scripts: {
         Row: {
           category: string
@@ -820,8 +911,10 @@ export type Database = {
           advanced_metrics: Json | null
           ai_feedback: Json | null
           content_strategy: Json | null
+          conversion_rate: number | null
           created_at: string | null
           current_prediction: Json | null
+          engagement_rate: number | null
           id: string
           message_template: string | null
           name: string
@@ -830,6 +923,8 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers: Json | null
           posts: Json | null
+          reach: number | null
+          roi: number | null
           schedule: Json | null
           status: string | null
           target_locations: string[] | null
@@ -842,8 +937,10 @@ export type Database = {
           advanced_metrics?: Json | null
           ai_feedback?: Json | null
           content_strategy?: Json | null
+          conversion_rate?: number | null
           created_at?: string | null
           current_prediction?: Json | null
+          engagement_rate?: number | null
           id?: string
           message_template?: string | null
           name: string
@@ -852,6 +949,8 @@ export type Database = {
           platform: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
           posts?: Json | null
+          reach?: number | null
+          roi?: number | null
           schedule?: Json | null
           status?: string | null
           target_locations?: string[] | null
@@ -864,8 +963,10 @@ export type Database = {
           advanced_metrics?: Json | null
           ai_feedback?: Json | null
           content_strategy?: Json | null
+          conversion_rate?: number | null
           created_at?: string | null
           current_prediction?: Json | null
+          engagement_rate?: number | null
           id?: string
           message_template?: string | null
           name?: string
@@ -874,6 +975,8 @@ export type Database = {
           platform?: Database["public"]["Enums"]["social_platform"]
           post_triggers?: Json | null
           posts?: Json | null
+          reach?: number | null
+          roi?: number | null
           schedule?: Json | null
           status?: string | null
           target_locations?: string[] | null
