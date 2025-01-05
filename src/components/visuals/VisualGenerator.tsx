@@ -3,8 +3,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { ContentGenerationService } from "@/components/ai-chat/services/ContentGenerationService";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabaseClient";
+import { Loader2 } from "lucide-react";
 
 interface VisualGeneratorProps {
   subject: string;
@@ -29,13 +30,26 @@ export const VisualGenerator = ({ subject, onImageGenerated }: VisualGeneratorPr
 
     setIsGenerating(true);
     try {
-      const result = await ContentGenerationService.createVisual(description, style);
-      if (result.image) {
-        onImageGenerated(result.image);
+      const { data, error } = await supabase.functions.invoke('openai-image-generation', {
+        body: {
+          prompt: `Professional real estate photo: ${description}. Style: ${style}, high-end property in French Riviera`,
+          n: 1,
+          size: "1024x1024",
+          quality: "standard",
+          style: "natural"
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.images && data.images[0]) {
+        onImageGenerated(data.images[0]);
         toast({
           title: "Succès",
           description: "Le visuel a été généré avec succès !"
         });
+      } else {
+        throw new Error("No image generated");
       }
     } catch (error) {
       console.error('Error generating visual:', error);
@@ -61,12 +75,13 @@ export const VisualGenerator = ({ subject, onImageGenerated }: VisualGeneratorPr
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Ex: Villa de luxe avec piscine à Nice..."
+            disabled={isGenerating}
           />
         </div>
 
         <div>
           <label className="text-sm font-medium">Style</label>
-          <Select value={style} onValueChange={setStyle}>
+          <Select value={style} onValueChange={setStyle} disabled={isGenerating}>
             <SelectTrigger>
               <SelectValue placeholder="Choisir un style" />
             </SelectTrigger>
@@ -74,6 +89,7 @@ export const VisualGenerator = ({ subject, onImageGenerated }: VisualGeneratorPr
               <SelectItem value="realistic">Réaliste</SelectItem>
               <SelectItem value="modern">Moderne</SelectItem>
               <SelectItem value="minimalist">Minimaliste</SelectItem>
+              <SelectItem value="luxury">Luxueux</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -83,7 +99,14 @@ export const VisualGenerator = ({ subject, onImageGenerated }: VisualGeneratorPr
           disabled={isGenerating}
           className="w-full"
         >
-          {isGenerating ? "Génération en cours..." : "Générer le visuel"}
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Génération en cours...
+            </>
+          ) : (
+            "Générer le visuel"
+          )}
         </Button>
       </CardContent>
     </Card>
