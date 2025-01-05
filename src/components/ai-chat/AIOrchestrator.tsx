@@ -1,7 +1,7 @@
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { ModuleState, ModuleType, CampaignObjective } from '@/types/modules';
+import { ModuleState, ModuleType, CampaignObjective, GoalType } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -47,7 +47,11 @@ export const useAIOrchestrator = () => {
     }));
   };
 
-  const parseObjective = (objective: string) => {
+  const parseObjective = (objective: string): { 
+    goalType: GoalType; 
+    mandateGoal?: number;
+    frequency?: 'daily' | 'weekly' | 'monthly';
+  } => {
     const mandateMatch = objective.match(/(\d+)\s*mandats?/i);
     const weeklyMatch = objective.includes('semaine') || objective.includes('hebdomadaire');
     const monthlyMatch = objective.includes('mois') || objective.includes('mensuel');
@@ -74,11 +78,7 @@ export const useAIOrchestrator = () => {
 
     return { 
       goalType: 'custom',
-      customMetrics: {
-        engagement: 0.1,
-        conversion: 0.05,
-        roi: 2
-      }
+      frequency: 'daily'
     };
   };
 

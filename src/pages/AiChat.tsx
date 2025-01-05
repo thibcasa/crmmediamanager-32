@@ -11,6 +11,7 @@ import { Brain, MessageSquare, Target, BarChart } from "lucide-react";
 import { AIPerformanceStats } from "@/components/ai-chat/monitoring/AIPerformanceStats";
 import { AIFeedbackForm } from "@/components/ai-chat/monitoring/AIFeedbackForm";
 import { toast } from "@/components/ui/use-toast";
+import { AIStrategyProvider } from "@/components/ai-chat/strategy/AIStrategyContext";
 
 const AiChat = () => {
   useSessionCheck();
@@ -38,73 +39,75 @@ const AiChat = () => {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-7xl mx-auto p-4 space-y-4">
-      <Card className="p-6 bg-gradient-to-r from-sage-50 to-sage-100">
-        <div className="flex items-center gap-3 mb-4">
-          <Brain className="h-8 w-8 text-sage-600" />
-          <div>
-            <h1 className="text-2xl font-bold text-sage-800">
-              Assistant Marketing Immobilier
-            </h1>
-            <p className="text-sage-600">
-              Je suis votre assistant spécialisé dans le marketing immobilier de luxe sur la Côte d'Azur.
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Tabs defaultValue="chat" className="flex-1">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
-          <TabsTrigger value="chat" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Chat IA
-          </TabsTrigger>
-          <TabsTrigger value="modules" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            Modules
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            Performance IA
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="chat" className="flex-1 flex flex-col space-y-4">
-          <div className="flex-1 bg-white rounded-lg shadow-sm border border-sage-200 flex flex-col">
-            <ChatDisplay messages={messages} />
-            <ChatInput
-              input={input}
-              isLoading={isLoading}
-              onInputChange={setInput}
-              onSubmit={handleSubmit}
-              placeholder="Ex: Créer une campagne LinkedIn pour obtenir 4 mandats par semaine..."
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="modules" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ModuleContainer moduleType="subject" />
-            <ModuleContainer moduleType="title" />
-            <ModuleContainer moduleType="content" />
-            <ModuleContainer moduleType="creative" />
-            <ModuleContainer moduleType="workflow" />
-            <ModuleContainer moduleType="pipeline" />
-            <ModuleContainer moduleType="predictive" />
-            <ModuleContainer moduleType="correction" />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-4">
-          <Card className="p-6">
-            <AIPerformanceStats />
-            <div className="mt-6">
-              <AIFeedbackForm />
+    <AIStrategyProvider>
+      <div className="flex flex-col h-full max-w-7xl mx-auto p-4 space-y-4">
+        <Card className="p-6 bg-gradient-to-r from-sage-50 to-sage-100">
+          <div className="flex items-center gap-3 mb-4">
+            <Brain className="h-8 w-8 text-sage-600" />
+            <div>
+              <h1 className="text-2xl font-bold text-sage-800">
+                Assistant Marketing Immobilier
+              </h1>
+              <p className="text-sage-600">
+                Je suis votre assistant spécialisé dans le marketing immobilier de luxe sur la Côte d'Azur.
+              </p>
             </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+          </div>
+        </Card>
+
+        <Tabs defaultValue="chat" className="flex-1">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Chat IA
+            </TabsTrigger>
+            <TabsTrigger value="modules" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Modules
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-2">
+              <BarChart className="h-4 w-4" />
+              Performance IA
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="chat" className="flex-1 flex flex-col space-y-4">
+            <div className="flex-1 bg-white rounded-lg shadow-sm border border-sage-200 flex flex-col">
+              <ChatDisplay messages={messages} />
+              <ChatInput
+                input={input}
+                isLoading={isLoading}
+                onInputChange={setInput}
+                onSubmit={handleSubmit}
+                placeholder="Ex: Créer une campagne LinkedIn pour obtenir 4 mandats par semaine..."
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="modules" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ModuleContainer moduleType="subject" />
+              <ModuleContainer moduleType="title" />
+              <ModuleContainer moduleType="content" />
+              <ModuleContainer moduleType="creative" />
+              <ModuleContainer moduleType="workflow" />
+              <ModuleContainer moduleType="pipeline" />
+              <ModuleContainer moduleType="predictive" />
+              <ModuleContainer moduleType="correction" />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-4">
+            <Card className="p-6">
+              <AIPerformanceStats />
+              <div className="mt-6">
+                <AIFeedbackForm />
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AIStrategyProvider>
   );
 };
 
