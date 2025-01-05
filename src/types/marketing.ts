@@ -68,3 +68,33 @@ export interface Resources {
   platforms: string[];
   team: string[];
 }
+
+export interface Campaign {
+  id: string;
+  objective: BusinessObjective;
+  platform: string;
+  content: CampaignContent[];
+  schedule: CampaignSchedule;
+  status: 'draft' | 'active' | 'paused' | 'completed';
+  metrics?: {
+    engagement: number;
+    conversion: number;
+    roi: number;
+  };
+}
+
+export interface CampaignContent {
+  type: 'post' | 'story' | 'reel';
+  content: string;
+  media?: string[];
+}
+
+export interface CampaignSchedule {
+  startDate: Date;
+  endDate: Date;
+  frequency: 'daily' | 'weekly' | 'custom';
+  customSchedule?: {
+    days: string[];
+    times: string[];
+  };
+}
