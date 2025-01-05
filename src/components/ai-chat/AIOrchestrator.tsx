@@ -1,12 +1,14 @@
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { ModuleState, ModuleType, CampaignObjective, GoalType } from '@/types/modules';
+import { ModuleState, ModuleType, CampaignObjective } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { Brain, CheckCircle, AlertCircle, Loader2, Target } from "lucide-react";
+import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { ModuleOrchestrator } from '@/services/ai/orchestration/ModuleOrchestrator';
+import { AIStrategyProvider } from './strategy/AIStrategyContext';
+import { useAIStrategyGenerator } from './strategy/AIStrategyGenerator';
+import { AIPerformanceMonitor } from './monitoring/AIPerformanceMonitor';
 
 const initialModuleState: ModuleState = {
   status: 'idle',
@@ -18,6 +20,7 @@ const initialModuleState: ModuleState = {
 
 export const useAIOrchestrator = () => {
   const { executeWorkflow: executeBaseWorkflow, isProcessing } = useWorkflowExecution();
+  const { generateStrategy } = useAIStrategyGenerator();
   const { toast } = useToast();
   const [currentObjective, setCurrentObjective] = useState<string | null>(null);
   const [mandateGoal, setMandateGoal] = useState<number>(0);
@@ -44,12 +47,7 @@ export const useAIOrchestrator = () => {
     }));
   };
 
-  const parseObjective = (objective: string): {
-    goalType: GoalType;
-    mandateGoal?: number;
-    frequency?: 'daily' | 'weekly' | 'monthly';
-    customMetrics?: { [key: string]: number };
-  } => {
+  const parseObjective = (objective: string) => {
     const mandateMatch = objective.match(/(\d+)\s*mandats?/i);
     const weeklyMatch = objective.includes('semaine') || objective.includes('hebdomadaire');
     const monthlyMatch = objective.includes('mois') || objective.includes('mensuel');
@@ -62,22 +60,18 @@ export const useAIOrchestrator = () => {
       };
     }
 
-    // Detect lead generation objectives
     if (objective.toLowerCase().includes('lead')) {
       return { goalType: 'lead_generation' };
     }
 
-    // Detect brand awareness objectives
     if (objective.toLowerCase().includes('notoriété') || objective.toLowerCase().includes('visibilité')) {
       return { goalType: 'brand_awareness' };
     }
 
-    // Detect sales objectives
     if (objective.toLowerCase().includes('vente') || objective.toLowerCase().includes('vendre')) {
       return { goalType: 'sales' };
     }
 
-    // Default to custom goal type for any other objective
     return { 
       goalType: 'custom',
       customMetrics: {
@@ -101,16 +95,12 @@ export const useAIOrchestrator = () => {
       }
 
       setCurrentObjective(objective);
-      console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
-      // Parse objective
       const parsedObjective = parseObjective(objective);
       if (parsedObjective.mandateGoal) {
         setMandateGoal(parsedObjective.mandateGoal);
-        console.log(`Objectif détecté: ${parsedObjective.mandateGoal} mandats par ${parsedObjective.frequency}`);
       }
 
-      // Convert string objective to CampaignObjective object
       const campaignObjective: CampaignObjective = {
         objective: objective,
         goalType: parsedObjective.goalType,
@@ -120,27 +110,10 @@ export const useAIOrchestrator = () => {
         customMetrics: parsedObjective.customMetrics
       };
 
-      console.log('Calling content-workflow-generator with:', campaignObjective);
+      const strategy = await generateStrategy(campaignObjective);
       
-      // Generate content workflow
-      const { data: contentWorkflow, error: workflowError } = await supabase.functions.invoke(
-        'content-workflow-generator',
-        {
-          body: {
-            objective: campaignObjective.objective,
-            goalType: campaignObjective.goalType,
-            mandateGoal: campaignObjective.mandateGoal,
-            frequency: campaignObjective.frequency
-          }
-        }
-      );
-
-      if (workflowError) throw workflowError;
+      const results = await executeBaseWorkflow(strategy);
       
-      // Execute module chain with proper object
-      const results = await ModuleOrchestrator.executeModuleChain(campaignObjective);
-      
-      // Update all module states
       Object.entries(results).forEach(([moduleType, result]) => {
         updateModuleState(moduleType as ModuleType, {
           status: 'validated',
@@ -150,53 +123,9 @@ export const useAIOrchestrator = () => {
         });
       });
 
-      // Create campaign in database
-      const { data: campaign, error: campaignError } = await supabase
-        .from('social_campaigns')
-        .insert({
-          name: `Campagne ${parsedObjective.goalType} - ${objective}`,
-          platform: 'linkedin',
-          status: 'active',
-          targeting_criteria: {
-            location: "Alpes-Maritimes",
-            interests: ["Immobilier", "Investissement immobilier"],
-            property_types: ["Appartement", "Maison", "Villa"]
-          },
-          message_template: results.content.data?.template,
-          target_metrics: {
-            ...parsedObjective.customMetrics,
-            weekly_mandates: parsedObjective.mandateGoal || 0,
-            engagement_rate: 0.05,
-            conversion_rate: 0.02
-          }
-        })
-        .select()
-        .single();
-
-      if (campaignError) throw campaignError;
-
-      // Log successful execution
-      await supabase.from('automation_logs').insert({
-        user_id: session.user.id,
-        action_type: 'workflow_execution',
-        description: `Workflow exécuté avec succès pour l'objectif: ${objective}`,
-        metadata: {
-          objective,
-          results,
-          campaign_id: campaign.id,
-          goal_type: parsedObjective.goalType,
-          custom_metrics: parsedObjective.customMetrics
-        }
-      });
-
-      toast({
-        title: "Workflow exécuté avec succès",
-        description: `Campagne créée avec l'objectif: ${objective}`,
-      });
-
       return results;
     } catch (error) {
-      console.error('Erreur dans l\'orchestration:', error);
+      console.error('Error in orchestration:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'exécution du workflow",
