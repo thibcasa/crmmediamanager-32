@@ -1,7 +1,7 @@
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { ModuleState, ModuleType, CampaignObjective } from '@/types/modules';
+import { ModuleState, ModuleType, CampaignObjective, GoalType } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Brain, CheckCircle, AlertCircle, Loader2, Target } from "lucide-react";
@@ -44,20 +44,48 @@ export const useAIOrchestrator = () => {
     }));
   };
 
-  const parseObjective = (objective: string) => {
+  const parseObjective = (objective: string): {
+    goalType: GoalType;
+    mandateGoal?: number;
+    frequency?: 'daily' | 'weekly' | 'monthly';
+    customMetrics?: { [key: string]: number };
+  } => {
     const mandateMatch = objective.match(/(\d+)\s*mandats?/i);
     const weeklyMatch = objective.includes('semaine') || objective.includes('hebdomadaire');
+    const monthlyMatch = objective.includes('mois') || objective.includes('mensuel');
     
     if (mandateMatch) {
-      const mandateCount = parseInt(mandateMatch[1]);
       return {
-        mandateGoal: mandateCount,
-        frequency: weeklyMatch ? 'weekly' : 'monthly',
-        type: 'mandate_generation'
+        goalType: 'mandate_generation',
+        mandateGoal: parseInt(mandateMatch[1]),
+        frequency: weeklyMatch ? 'weekly' : monthlyMatch ? 'monthly' : 'daily'
       };
     }
-    
-    return null;
+
+    // Detect lead generation objectives
+    if (objective.toLowerCase().includes('lead')) {
+      return { goalType: 'lead_generation' };
+    }
+
+    // Detect brand awareness objectives
+    if (objective.toLowerCase().includes('notoriété') || objective.toLowerCase().includes('visibilité')) {
+      return { goalType: 'brand_awareness' };
+    }
+
+    // Detect sales objectives
+    if (objective.toLowerCase().includes('vente') || objective.toLowerCase().includes('vendre')) {
+      return { goalType: 'sales' };
+    }
+
+    // Default to custom goal type for any other objective
+    return { 
+      goalType: 'custom',
+      customMetrics: {
+        engagement: 0.1,
+        conversion: 0.05,
+        roi: 2
+      }
+    };
   };
 
   const executeWorkflow = async (objective: string) => {
@@ -75,9 +103,9 @@ export const useAIOrchestrator = () => {
       setCurrentObjective(objective);
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
-      // Parse objective for mandate goals
+      // Parse objective
       const parsedObjective = parseObjective(objective);
-      if (parsedObjective) {
+      if (parsedObjective.mandateGoal) {
         setMandateGoal(parsedObjective.mandateGoal);
         console.log(`Objectif détecté: ${parsedObjective.mandateGoal} mandats par ${parsedObjective.frequency}`);
       }
@@ -85,10 +113,11 @@ export const useAIOrchestrator = () => {
       // Convert string objective to CampaignObjective object
       const campaignObjective: CampaignObjective = {
         objective: objective,
-        goalType: parsedObjective ? 'mandate_generation' : 'lead_generation',
-        platform: 'linkedin', // Default platform
-        mandateGoal: parsedObjective?.mandateGoal || 0,
-        frequency: parsedObjective?.frequency || 'weekly'
+        goalType: parsedObjective.goalType,
+        platform: 'linkedin',
+        mandateGoal: parsedObjective.mandateGoal,
+        frequency: parsedObjective.frequency,
+        customMetrics: parsedObjective.customMetrics
       };
       
       // Execute module chain with proper object
@@ -108,7 +137,7 @@ export const useAIOrchestrator = () => {
       const { data: campaign, error: campaignError } = await supabase
         .from('social_campaigns')
         .insert({
-          name: `Campagne Mandats - Objectif ${parsedObjective?.mandateGoal || 'leads'}`,
+          name: `Campagne ${parsedObjective.goalType} - ${objective}`,
           platform: 'linkedin',
           status: 'active',
           targeting_criteria: {
@@ -118,7 +147,8 @@ export const useAIOrchestrator = () => {
           },
           message_template: results.content.data?.template,
           target_metrics: {
-            weekly_mandates: parsedObjective?.mandateGoal || 4,
+            ...parsedObjective.customMetrics,
+            weekly_mandates: parsedObjective.mandateGoal || 0,
             engagement_rate: 0.05,
             conversion_rate: 0.02
           }
@@ -137,15 +167,14 @@ export const useAIOrchestrator = () => {
           objective,
           results,
           campaign_id: campaign.id,
-          mandate_goal: parsedObjective?.mandateGoal
+          goal_type: parsedObjective.goalType,
+          custom_metrics: parsedObjective.customMetrics
         }
       });
 
       toast({
         title: "Workflow exécuté avec succès",
-        description: parsedObjective 
-          ? `Campagne créée avec objectif de ${parsedObjective.mandateGoal} mandats par ${parsedObjective.frequency}`
-          : "Campagne créée avec succès",
+        description: `Campagne créée avec l'objectif: ${objective}`,
       });
 
       return results;
