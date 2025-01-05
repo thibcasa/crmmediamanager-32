@@ -14,25 +14,33 @@ export const StructuredContentDisplay = ({ content }: StructuredContentDisplayPr
         <p className="text-lg font-medium">{content.text}</p>
         
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Target className="h-4 w-4" />
-            {content.platform}
-          </Badge>
+          {content.platform && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Target className="h-4 w-4" />
+              {content.platform}
+            </Badge>
+          )}
           
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            {content.targetAudience}
-          </Badge>
+          {content.targetAudience && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              {content.targetAudience}
+            </Badge>
+          )}
           
-          <Badge variant="outline" className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            {content.location}
-          </Badge>
+          {content.location && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              {content.location}
+            </Badge>
+          )}
           
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Home className="h-4 w-4" />
-            {content.propertyType}
-          </Badge>
+          {content.propertyType && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Home className="h-4 w-4" />
+              {content.propertyType}
+            </Badge>
+          )}
         </div>
       </div>
 
