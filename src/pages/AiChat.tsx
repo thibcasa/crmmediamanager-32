@@ -4,6 +4,7 @@ import { ChatMessages } from "@/components/ai-chat/ChatMessages";
 import { Message } from "@/components/ai-chat/types/chat";
 import { AIStrategyProvider } from "@/components/ai-chat/strategy/AIStrategyContext";
 import { Card } from "@/components/ui/card";
+import { MarketingAIAssistant } from "@/components/marketing/MarketingAIAssistant";
 
 export default function AiChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,7 +35,8 @@ export default function AiChat() {
 
   return (
     <AIStrategyProvider>
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col space-y-4">
+        <MarketingAIAssistant />
         <Card className="flex-1 flex flex-col">
           <ChatMessages messages={messages} isLoading={isLoading} />
           <ChatInput
