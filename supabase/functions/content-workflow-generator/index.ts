@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { OpenAI } from "https://deno.land/x/openai@v4.20.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,105 +12,75 @@ serve(async (req) => {
   }
 
   try {
-    const { objective, goalType, mandateGoal, frequency } = await req.json();
-    
-    console.log('Generating content for:', { objective, goalType, mandateGoal, frequency });
+    const { action, subject, tone, targetAudience, context } = await req.json();
 
-    const systemPrompt = `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
-    Ton objectif est de générer une série de posts LinkedIn ciblés pour obtenir ${mandateGoal || 4} mandats 
-    de vente par ${frequency || 'semaine'} dans les Alpes-Maritimes. Concentre-toi sur:
-    - La valorisation des biens d'exception
-    - Les opportunités du marché local
-    - L'expertise immobilière de luxe
-    - La confiance et la crédibilité professionnelle
-    - Les témoignages et succès`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: `Génère une série de 5 posts LinkedIn optimisés pour obtenir ${mandateGoal || 4} mandats 
-            de vente par ${frequency || 'semaine'} dans les Alpes-Maritimes. Format JSON avec:
-            - Le contenu du post
-            - Les hashtags pertinents
-            - Le meilleur moment pour poster
-            - Une description pour générer une image pertinente`
-          }
-        ],
-        temperature: 0.7,
-      }),
+    const openai = new OpenAI({
+      apiKey: Deno.env.get('OPENAI_API_KEY') || '',
     });
 
-    const aiResponse = await response.json();
-    const content = JSON.parse(aiResponse.choices[0].message.content);
+    if (action === 'optimize_title') {
+      const prompt = `En tant qu'expert immobilier, génère 5 titres accrocheurs pour le sujet suivant:
+        Sujet: ${subject}
+        Ton: ${tone}
+        Public cible: ${targetAudience}
+        Contexte: ${JSON.stringify(context)}
+        
+        Les titres doivent:
+        - Être optimisés pour LinkedIn
+        - Inclure des chiffres quand c'est pertinent
+        - Créer un sentiment d'urgence
+        - Être en français
+        - Être adaptés au marché immobilier de luxe
+        
+        Format: Retourne uniquement un tableau JSON de titres`;
 
-    // Generate images for each post
-    const postsWithImages = await Promise.all(content.posts.map(async (post: any) => {
-      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "dall-e-3",
-          prompt: `${post.imagePrompt}. Style: Professional luxury real estate photography in French Riviera, bright, modern.`,
-          n: 1,
-          size: "1024x1024",
-          quality: "standard",
-          style: "natural"
-        }),
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
       });
 
-      const imageData = await imageResponse.json();
-      return {
-        ...post,
-        imageUrl: imageData.data[0].url
-      };
-    }));
+      const titles = JSON.parse(completion.choices[0].message.content || '[]');
 
-    const result = {
-      posts: postsWithImages,
-      strategy: {
-        postingFrequency: frequency || "weekly",
-        targetMandates: mandateGoal || 4,
-        bestTimes: ["09:00", "12:00", "17:00"],
-        platforms: ["linkedin"],
-        targetMetrics: {
-          weeklyMandates: mandateGoal || 4,
-          engagement: "5%",
-          leads: mandateGoal * 5,
-          conversion: "20%"
-        }
-      }
-    };
+      return new Response(JSON.stringify({ titles }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    console.log('Generated content:', result);
+    if (action === 'analyze_title') {
+      const { title } = await req.json();
+      
+      const analysisPrompt = `Analyse ce titre LinkedIn pour l'immobilier:
+        "${title}"
+        
+        Retourne un JSON avec:
+        - seoScore: note /100
+        - engagementPrediction: probabilité 0-1
+        - suggestions: tableau de suggestions d'amélioration`;
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: analysisPrompt }],
+        temperature: 0.3,
+      });
+
+      const analysis = JSON.parse(completion.choices[0].message.content || '{}');
+
+      return new Response(JSON.stringify(analysis), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: 'Invalid action' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
-    console.error('Error in content generation:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    console.error('Error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

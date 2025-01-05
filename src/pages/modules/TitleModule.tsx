@@ -3,11 +3,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { TitleForm } from "@/components/title/TitleForm";
 import { TitleResults } from "@/components/title/TitleResults";
+import { TitleOptimizationService } from "@/services/ai/TitleOptimizationService";
 
 export default function TitleModule() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
   const { toast } = useToast();
+  const optimizationService = new TitleOptimizationService();
 
   const handleGenerateTitles = async (
     subject: string,
@@ -22,34 +24,35 @@ export default function TitleModule() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      const { data, error } = await supabase.functions.invoke('content-workflow-generator', {
-        body: {
-          action: 'generate_titles',
-          subject,
-          tone,
-          targetAudience,
-          propertyType,
-          count: 5
-        }
-      });
-
-      if (error) throw error;
+      // Generate optimized titles
+      const titles = await optimizationService.optimizeTitle(subject, tone, targetAudience);
       
+      // Analyze performance for each title
+      const titlesWithAnalysis = await Promise.all(
+        titles.map(async (title) => {
+          const analysis = await optimizationService.analyzeTitlePerformance(title);
+          return { title, analysis };
+        })
+      );
+
       // Store generated titles in history
-      await Promise.all(data.titles.map(async (title: string) => {
+      await Promise.all(titlesWithAnalysis.map(async ({ title, analysis }) => {
         await supabase.from('generated_titles').insert({
           user_id: user.id,
           subject,
           generated_title: title,
+          seo_score: analysis.seoScore,
+          engagement_score: Math.round(analysis.engagementPrediction * 100),
           metadata: {
             tone,
             targetAudience,
-            propertyType
+            propertyType,
+            analysis: analysis.suggestions
           }
         });
       }));
 
-      setGeneratedTitles(data.titles);
+      setGeneratedTitles(titles);
       
       toast({
         title: "Titres générés",
