@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
-import { ChatMessages } from "@/components/ai-chat/ChatMessages";
+import { ChatDisplay } from "@/components/ai-chat/ChatDisplay";
 import { useChat } from "@/hooks/use-chat";
 import { Card } from "@/components/ui/card";
 import { useSessionCheck } from "@/hooks/useSessionCheck";
@@ -20,6 +20,7 @@ const AiChat = () => {
     if (!input.trim()) return;
     
     try {
+      console.log("Envoi du message:", input);
       await sendMessage(input);
       setInput("");
     } catch (error) {
@@ -57,7 +58,7 @@ const AiChat = () => {
 
         <TabsContent value="chat" className="flex-1 flex flex-col space-y-4">
           <div className="flex-1 bg-white rounded-lg shadow-sm border border-sage-200 flex flex-col">
-            <ChatMessages messages={messages} isLoading={isLoading} />
+            <ChatDisplay messages={messages} />
             <ChatInput
               input={input}
               isLoading={isLoading}

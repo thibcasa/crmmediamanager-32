@@ -44,11 +44,18 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit, placehold
         return;
       }
 
-      // Lancer l'orchestration des modules avec l'objectif
+      console.log("Démarrage du workflow avec l'objectif:", input);
+      
+      // Exécuter le workflow avec l'objectif
       await executeWorkflow(input);
       
-      // Appeler le onSubmit original après l'orchestration
+      // Appeler le onSubmit original après l'exécution du workflow
       onSubmit(e);
+
+      toast({
+        title: "Succès",
+        description: "Votre demande a été traitée avec succès",
+      });
 
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
@@ -69,7 +76,7 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit, placehold
           <Input
             value={input}
             onChange={(e) => onInputChange(e.target.value)}
-            placeholder={placeholder || "Entrez votre message..."}
+            placeholder={placeholder || "Ex: Créer une campagne LinkedIn pour obtenir 4 mandats par semaine..."}
             disabled={isLoading}
             className="flex-1 border-sage-200 focus:ring-sage-500"
           />
