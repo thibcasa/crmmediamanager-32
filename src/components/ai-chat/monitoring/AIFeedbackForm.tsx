@@ -1,80 +1,104 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { AIMonitoringService } from '@/services/ai/monitoring/AIMonitoringService';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/lib/supabaseClient";
 import { toast } from "@/components/ui/use-toast";
 
-interface AIFeedbackFormProps {
-  moduleType: string;
-  suggestion: string;
-}
+export const AIFeedbackForm = () => {
+  const [feedback, setFeedback] = useState('');
+  const [rating, setRating] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-export const AIFeedbackForm = ({ moduleType, suggestion }: AIFeedbackFormProps) => {
-  const [isAccepted, setIsAccepted] = useState(true);
-  const [modifications, setModifications] = useState<string>('');
-  const [comments, setComments] = useState<string>('');
-
-  const handleSubmit = async () => {
-    try {
-      await AIMonitoringService.logMetrics({
-        moduleType,
-        accuracy: isAccepted ? 1 : 0,
-        confidence: 0.8,
-        userFeedback: {
-          isAccepted,
-          modifications: modifications.split('\n').filter(m => m.trim()),
-          comments: comments.trim()
-        }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback || !rating) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs",
+        variant: "destructive"
       });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase.from('automation_logs').insert({
+        user_id: user.id,
+        action_type: 'feedback',
+        description: feedback,
+        status: 'completed',
+        metadata: { rating, type: 'user_feedback' }
+      });
+
+      if (error) throw error;
 
       toast({
-        title: "Feedback enregistré",
-        description: "Merci de nous aider à améliorer l'IA !",
+        title: "Merci !",
+        description: "Votre retour a bien été enregistré"
       });
+      
+      setFeedback('');
+      setRating('');
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer votre feedback",
+        description: "Impossible d'enregistrer votre retour",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium">Évaluation de la suggestion</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            {isAccepted ? 'Acceptée' : 'Rejetée'}
-          </span>
-          <Switch
-            checked={isAccepted}
-            onCheckedChange={setIsAccepted}
-          />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium mb-4">Votre retour sur l'Assistant IA</h3>
+        
+        <div className="space-y-4">
+          <div>
+            <Label>Évaluation globale</Label>
+            <RadioGroup
+              value={rating}
+              onValueChange={setRating}
+              className="flex space-x-4 mt-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="positive" id="positive" />
+                <Label htmlFor="positive">Positif</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="neutral" id="neutral" />
+                <Label htmlFor="neutral">Neutre</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="negative" id="negative" />
+                <Label htmlFor="negative">Négatif</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div>
+            <Label>Commentaire détaillé</Label>
+            <Textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="Partagez votre expérience avec l'assistant..."
+              className="mt-2"
+            />
+          </div>
         </div>
       </div>
 
-      {!isAccepted && (
-        <Textarea
-          placeholder="Quelles modifications avez-vous apportées ? (une par ligne)"
-          value={modifications}
-          onChange={(e) => setModifications(e.target.value)}
-          className="min-h-[100px]"
-        />
-      )}
-
-      <Textarea
-        placeholder="Commentaires additionnels..."
-        value={comments}
-        onChange={(e) => setComments(e.target.value)}
-      />
-
-      <Button onClick={handleSubmit}>
-        Envoyer le feedback
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Envoi...' : 'Envoyer mon retour'}
       </Button>
-    </div>
+    </form>
   );
 };

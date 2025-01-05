@@ -1,63 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { AIMonitoringService } from '@/services/ai/monitoring/AIMonitoringService';
+import { supabase } from "@/lib/supabaseClient";
 
 export const AIPerformanceStats = () => {
-  const [stats, setStats] = useState<any>(null);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['ai-performance'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+      const { data, error } = await supabase
+        .from('automation_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-  const loadStats = async () => {
-    const data = await AIMonitoringService.getFeedbackStats();
-    if (data) setStats(data);
-  };
+      if (error) throw error;
 
-  if (!stats) return null;
+      const successRate = data.filter(log => log.status === 'completed').length / data.length * 100;
+      
+      return {
+        totalInteractions: data.length,
+        successRate: successRate.toFixed(1),
+        recentLogs: data.slice(0, 5)
+      };
+    }
+  });
+
+  if (isLoading) {
+    return <div>Chargement des statistiques...</div>;
+  }
 
   return (
-    <Card className="p-4 space-y-4">
-      <h3 className="font-medium">Performances de l'IA</h3>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Performance de l'Assistant IA</h2>
       
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>Taux d'acceptation</span>
-          <span>{stats.acceptanceRate.toFixed(1)}%</span>
-        </div>
-        <Progress value={stats.acceptanceRate} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <div className="text-sm text-muted-foreground">Interactions totales</div>
+          <div className="text-2xl font-bold">{stats?.totalInteractions || 0}</div>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="text-sm text-muted-foreground">Taux de réussite</div>
+          <div className="text-2xl font-bold">{stats?.successRate || 0}%</div>
+        </Card>
       </div>
 
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium">Performance par module</h4>
-        {Array.from(stats.modulePerformance.entries()).map(([module, data]: [string, any]) => (
-          <div key={module} className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span>{module}</span>
-              <span>{(data.accuracy * 100).toFixed(1)}%</span>
-            </div>
-            <Progress value={data.accuracy * 100} />
-          </div>
-        ))}
-      </div>
-
-      {stats.commonModifications.size > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-2">Modifications fréquentes</h4>
-          <ul className="text-sm space-y-1">
-            {Array.from(stats.commonModifications.entries())
-              .sort(([,a], [,b]) => b - a)
-              .slice(0, 5)
-              .map(([mod, count]) => (
-                <li key={mod} className="flex justify-between">
-                  <span>{mod}</span>
-                  <span className="text-gray-500">{count}x</span>
-                </li>
-              ))}
-          </ul>
+      <div className="mt-6">
+        <h3 className="text-lg font-medium mb-3">Dernières interactions</h3>
+        <div className="space-y-2">
+          {stats?.recentLogs.map((log, index) => (
+            <Card key={index} className="p-3">
+              <div className="text-sm">{log.description}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {new Date(log.created_at).toLocaleString()}
+              </div>
+            </Card>
+          ))}
         </div>
-      )}
-    </Card>
+      </div>
+    </div>
   );
 };

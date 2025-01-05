@@ -7,13 +7,17 @@ import { useSessionCheck } from "@/hooks/useSessionCheck";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleContainer } from "@/components/ai-chat/modules/ModuleContainer";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
-import { Brain, MessageSquare, Target } from "lucide-react";
+import { Brain, MessageSquare, Target, BarChart } from "lucide-react";
+import { AIPerformanceStats } from "@/components/ai-chat/monitoring/AIPerformanceStats";
+import { AIFeedbackForm } from "@/components/ai-chat/monitoring/AIFeedbackForm";
+import { toast } from "@/components/ui/use-toast";
 
 const AiChat = () => {
   useSessionCheck();
   const [input, setInput] = useState("");
   const { messages, sendMessage, isLoading } = useChat();
   const { moduleStates } = useAIOrchestrator();
+  const [showPerformance, setShowPerformance] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +29,11 @@ const AiChat = () => {
       setInput("");
     } catch (error) {
       console.error("Error sending message:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message",
+        variant: "destructive"
+      });
     }
   };
 
@@ -45,7 +54,7 @@ const AiChat = () => {
       </Card>
 
       <Tabs defaultValue="chat" className="flex-1">
-        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
           <TabsTrigger value="chat" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             Chat IA
@@ -53,6 +62,10 @@ const AiChat = () => {
           <TabsTrigger value="modules" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Modules
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <BarChart className="h-4 w-4" />
+            Performance IA
           </TabsTrigger>
         </TabsList>
 
@@ -80,6 +93,15 @@ const AiChat = () => {
             <ModuleContainer moduleType="predictive" />
             <ModuleContainer moduleType="correction" />
           </div>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <Card className="p-6">
+            <AIPerformanceStats />
+            <div className="mt-6">
+              <AIFeedbackForm />
+            </div>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
