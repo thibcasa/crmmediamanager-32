@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { PredictiveInsights } from '@/components/predictive/PredictiveInsights';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PredictiveAnalysisService } from '@/services/ai/PredictiveAnalysisService';

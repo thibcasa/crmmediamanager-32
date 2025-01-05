@@ -35,11 +35,16 @@ export const useSocialCRM = (postId?: string) => {
   useEffect(() => {
     if (!postId) return;
     
-    // Mettre en place le monitoring en temps réel
-    const cleanup = PostOptimizationService.monitorPostPerformance(postId);
+    let cleanup: (() => void) | undefined;
+    
+    const setupMonitoring = async () => {
+      cleanup = await PostOptimizationService.monitorPostPerformance(postId);
+    };
+    
+    setupMonitoring();
     
     return () => {
-      cleanup();
+      if (cleanup) cleanup();
     };
   }, [postId]);
 

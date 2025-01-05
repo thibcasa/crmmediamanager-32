@@ -87,7 +87,16 @@ export const CreateCampaignForm = ({ onSuccess }: CreateCampaignFormProps) => {
           content_themes: ["property_showcase"]
         },
         current_prediction: {},
-        optimization_cycles: []
+        optimization_cycles: [],
+        advanced_metrics: {
+          sentiment: { neutral: 0, negative: 0, positive: 0 },
+          demographicData: { ageRanges: {}, locations: {}, genderDistribution: {} },
+          interactionTimeline: []
+        },
+        reach: 0,
+        engagement_rate: 0,
+        conversion_rate: 0,
+        roi: 0
       };
 
       await SocialCampaignService.createCampaign(campaignData);

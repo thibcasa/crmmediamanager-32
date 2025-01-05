@@ -50,14 +50,4 @@ export abstract class BaseModule implements AIModule {
     conversion: number;
     roi: number;
   }>;
-
-  async optimize(result: ModuleResult): Promise<ModuleResult> {
-    return {
-      ...result,
-      optimizations: {
-        suggestions: ['Optimisation automatique suggérée'],
-        priority: 'medium'
-      }
-    };
-  }
 }
