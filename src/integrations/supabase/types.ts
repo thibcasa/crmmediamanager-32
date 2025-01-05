@@ -111,6 +111,39 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action: Json
+          condition: Json
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: Json
+          condition: Json
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: Json
+          condition?: Json
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           created_at: string | null
@@ -784,6 +817,7 @@ export type Database = {
       }
       social_campaigns: {
         Row: {
+          advanced_metrics: Json | null
           ai_feedback: Json | null
           content_strategy: Json | null
           created_at: string | null
@@ -805,6 +839,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          advanced_metrics?: Json | null
           ai_feedback?: Json | null
           content_strategy?: Json | null
           created_at?: string | null
@@ -826,6 +861,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          advanced_metrics?: Json | null
           ai_feedback?: Json | null
           content_strategy?: Json | null
           created_at?: string | null
