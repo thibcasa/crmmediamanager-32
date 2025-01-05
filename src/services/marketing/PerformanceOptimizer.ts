@@ -6,6 +6,7 @@ interface Campaign {
   objective: {
     type: string;
     target: number;
+    timeline: string; // Added timeline property
   };
   metrics?: {
     engagement_rate?: number;
@@ -63,7 +64,11 @@ export class PerformanceOptimizer {
           const improvements = await this.generateImprovements({
             campaign,
             performance,
-            objective: campaign.objective
+            objective: {
+              type: campaign.objective.type,
+              target: campaign.objective.target,
+              timeline: campaign.objective.timeline
+            }
           });
 
           await this.applyImprovements(campaign, improvements);
