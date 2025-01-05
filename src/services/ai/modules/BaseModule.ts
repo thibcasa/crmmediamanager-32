@@ -51,7 +51,6 @@ export abstract class BaseModule implements AIModule {
     roi: number;
   }>;
 
-  // Add the missing optimize method required by AIModule interface
   async optimize(input: any): Promise<ModuleResult> {
     const result = await this.execute(input);
     if (!result.success) {

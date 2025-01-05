@@ -49,6 +49,8 @@ export const FacebookCampaignForm = () => {
 
   const handleSubmit = async () => {
     try {
+      setIsSubmitting(true);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
