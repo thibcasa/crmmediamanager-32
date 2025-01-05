@@ -32,7 +32,7 @@ describe('PredictiveAnalytics', () => {
       ]
     };
 
-    (PredictiveAnalysisService.generateOptimizationSuggestions as jest.Mock).mockResolvedValue(mockRecommendations);
+    (PredictiveAnalysisService.generateOptimizationSuggestions as ReturnType<typeof vi.fn>).mockResolvedValue(mockRecommendations);
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -55,7 +55,7 @@ describe('PredictiveAnalytics', () => {
   });
 
   test('handles error state gracefully', async () => {
-    (PredictiveAnalysisService.generateOptimizationSuggestions as jest.Mock).mockRejectedValue(
+    (PredictiveAnalysisService.generateOptimizationSuggestions as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('Failed to fetch predictions')
     );
 

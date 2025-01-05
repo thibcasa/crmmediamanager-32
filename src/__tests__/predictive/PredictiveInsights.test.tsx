@@ -41,7 +41,7 @@ describe('PredictiveInsights', () => {
       ]
     };
 
-    (PredictiveAnalysisService.analyzeCampaignPerformance as jest.Mock).mockResolvedValue(mockInsights);
+    (PredictiveAnalysisService.analyzeCampaignPerformance as ReturnType<typeof vi.fn>).mockResolvedValue(mockInsights);
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -66,7 +66,7 @@ describe('PredictiveInsights', () => {
   });
 
   test('handles empty insights gracefully', async () => {
-    (PredictiveAnalysisService.analyzeCampaignPerformance as jest.Mock).mockResolvedValue({ insights: [] });
+    (PredictiveAnalysisService.analyzeCampaignPerformance as ReturnType<typeof vi.fn>).mockResolvedValue({ insights: [] });
 
     render(
       <QueryClientProvider client={queryClient}>
