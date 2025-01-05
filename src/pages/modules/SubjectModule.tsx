@@ -34,7 +34,9 @@ export default function SubjectModule() {
 
       if (error) throw error;
 
-      setGeneratedSubjects(data.subjects);
+      // Ensure data.subjects exists and is an array before setting it
+      const subjects = Array.isArray(data?.subjects) ? data.subjects : [];
+      setGeneratedSubjects(subjects);
       
       // Log the successful generation
       await supabase.from('automation_logs').insert({
@@ -44,7 +46,7 @@ export default function SubjectModule() {
         metadata: {
           objective,
           domain,
-          generated_subjects: data.subjects
+          generated_subjects: subjects
         }
       });
 
@@ -59,6 +61,8 @@ export default function SubjectModule() {
         description: "Impossible de générer les sujets",
         variant: "destructive",
       });
+      // Initialize empty array on error to prevent undefined
+      setGeneratedSubjects([]);
     } finally {
       setIsGenerating(false);
     }
@@ -113,7 +117,8 @@ export default function SubjectModule() {
           </Button>
         </div>
 
-        {generatedSubjects.length > 0 && (
+        {/* Only render subjects section if there are subjects */}
+        {Array.isArray(generatedSubjects) && generatedSubjects.length > 0 && (
           <div className="mt-6 space-y-4">
             <h3 className="text-lg font-medium">Sujets générés</h3>
             <div className="space-y-2">
