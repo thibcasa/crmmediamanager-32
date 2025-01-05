@@ -24,13 +24,21 @@ export const ChatDisplay = ({ messages }: ChatDisplayProps) => {
                   <p className="text-sm text-gray-800">{message.content}</p>
                 ) : (
                   <div className="text-sm text-gray-800">
-                    <p className="font-medium">{message.content.text}</p>
-                    <div className="mt-2 text-xs text-gray-600">
-                      <p>Platform: {message.content.platform}</p>
-                      <p>Target Audience: {message.content.targetAudience}</p>
-                      <p>Location: {message.content.location}</p>
-                      <p>Property Type: {message.content.propertyType}</p>
-                    </div>
+                    <p className="font-medium">{message.content.text || 'No content available'}</p>
+                    {message.content.platform && (
+                      <div className="mt-2 text-xs text-gray-600">
+                        <p>Platform: {message.content.platform}</p>
+                        {message.content.targetAudience && (
+                          <p>Target Audience: {message.content.targetAudience}</p>
+                        )}
+                        {message.content.location && (
+                          <p>Location: {message.content.location}</p>
+                        )}
+                        {message.content.propertyType && (
+                          <p>Property Type: {message.content.propertyType}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
