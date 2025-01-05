@@ -18,25 +18,52 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
+    if (!email || !password) {
       toast({
-        title: "Connexion réussie",
-        description: "Bienvenue dans votre CRM IA",
+        title: "Erreur de validation",
+        description: "L'email et le mot de passe sont requis",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      navigate("/ai-chat");
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          toast({
+            title: "Erreur de connexion",
+            description: "Email ou mot de passe incorrect",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erreur de connexion",
+            description: "Une erreur est survenue, veuillez réessayer",
+            variant: "destructive",
+          });
+        }
+        console.error("Erreur de connexion:", error);
+        return;
+      }
+
+      if (data.session) {
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue dans votre CRM IA",
+        });
+        navigate("/ai-chat");
+      }
     } catch (error) {
       console.error("Erreur de connexion:", error);
       toast({
         title: "Erreur de connexion",
-        description: "Vérifiez vos identifiants et réessayez",
+        description: "Une erreur inattendue est survenue",
         variant: "destructive",
       });
     } finally {
@@ -66,6 +93,8 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="w-full"
+              disabled={isLoading}
             />
           </div>
 
@@ -80,6 +109,8 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="w-full"
+              disabled={isLoading}
             />
           </div>
 
