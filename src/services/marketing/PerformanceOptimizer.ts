@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabaseClient';
-
 export class PerformanceOptimizer {
   async monitorAndOptimize(campaign: any): Promise<void> {
+    const checkInterval = 300000; // 5 minutes in milliseconds
+    
     const monitor = setInterval(async () => {
       const performance = await this.analyzePerformance(campaign);
       
@@ -15,36 +15,31 @@ export class PerformanceOptimizer {
         await this.applyImprovements(campaign, improvements);
         await this.notifyUser(improvements);
       }
-    }, 3600000); // Check every hour
+    }, checkInterval);
 
-    return () => clearInterval(monitor);
+    // Clear the interval after 24 hours
+    setTimeout(() => {
+      clearInterval(monitor);
+    }, 86400000);
   }
 
   private async analyzePerformance(campaign: any) {
-    const { data: performance } = await supabase.functions.invoke('performance-analyzer', {
-      body: { campaign }
-    });
-    return performance;
+    // Implement performance analysis logic
+    return {
+      belowTarget: false
+    };
   }
 
   private async generateImprovements(context: any) {
-    const { data: improvements } = await supabase.functions.invoke('improvement-generator', {
-      body: context
-    });
-    return improvements;
+    // Implement improvements generation logic
+    return [];
   }
 
   private async applyImprovements(campaign: any, improvements: any[]) {
-    const { data: result } = await supabase.functions.invoke('improvement-applier', {
-      body: { campaign, improvements }
-    });
-    return result;
+    // Implement improvements application logic
   }
 
   private async notifyUser(improvements: any[]) {
-    const { data: notification } = await supabase.functions.invoke('user-notifier', {
-      body: { improvements }
-    });
-    return notification;
+    // Implement user notification logic
   }
 }
