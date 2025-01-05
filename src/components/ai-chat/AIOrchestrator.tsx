@@ -119,6 +119,23 @@ export const useAIOrchestrator = () => {
         frequency: parsedObjective.frequency,
         customMetrics: parsedObjective.customMetrics
       };
+
+      console.log('Calling content-workflow-generator with:', campaignObjective);
+      
+      // Generate content workflow
+      const { data: contentWorkflow, error: workflowError } = await supabase.functions.invoke(
+        'content-workflow-generator',
+        {
+          body: {
+            objective: campaignObjective.objective,
+            goalType: campaignObjective.goalType,
+            mandateGoal: campaignObjective.mandateGoal,
+            frequency: campaignObjective.frequency
+          }
+        }
+      );
+
+      if (workflowError) throw workflowError;
       
       // Execute module chain with proper object
       const results = await ModuleOrchestrator.executeModuleChain(campaignObjective);

@@ -12,75 +12,62 @@ serve(async (req) => {
   }
 
   try {
-    const { action, subject, tone, targetAudience, context } = await req.json();
+    const { objective, goalType, mandateGoal, frequency } = await req.json();
+    console.log('Received request:', { objective, goalType, mandateGoal, frequency });
+
+    if (!objective) {
+      throw new Error('Objective is required');
+    }
 
     const openai = new OpenAI({
       apiKey: Deno.env.get('OPENAI_API_KEY') || '',
     });
 
-    if (action === 'optimize_title') {
-      const prompt = `En tant qu'expert immobilier, génère 5 titres accrocheurs pour le sujet suivant:
-        Sujet: ${subject}
-        Ton: ${tone}
-        Public cible: ${targetAudience}
-        Contexte: ${JSON.stringify(context)}
-        
-        Les titres doivent:
-        - Être optimisés pour LinkedIn
-        - Inclure des chiffres quand c'est pertinent
-        - Créer un sentiment d'urgence
-        - Être en français
-        - Être adaptés au marché immobilier de luxe
-        
-        Format: Retourne uniquement un tableau JSON de titres`;
+    // Generate content strategy based on objective
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `Vous êtes un expert en marketing immobilier sur la Côte d'Azur. 
+                   Générez une stratégie de contenu optimisée pour atteindre les objectifs donnés.`
+        },
+        {
+          role: "user",
+          content: `Créez une stratégie de contenu pour : ${objective}
+                   Type d'objectif : ${goalType}
+                   ${mandateGoal ? `Objectif de mandats : ${mandateGoal} par ${frequency}` : ''}
+                   
+                   Retournez un JSON avec:
+                   - template: le modèle de message
+                   - posts: tableau de posts optimisés
+                   - seoTitles: suggestions de titres SEO
+                   - hashtags: hashtags pertinents`
+        }
+      ]
+    });
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      });
-
-      const titles = JSON.parse(completion.choices[0].message.content || '[]');
-
-      return new Response(JSON.stringify({ titles }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!completion.choices[0].message?.content) {
+      throw new Error('Invalid response from OpenAI');
     }
 
-    if (action === 'analyze_title') {
-      const { title } = await req.json();
-      
-      const analysisPrompt = `Analyse ce titre LinkedIn pour l'immobilier:
-        "${title}"
-        
-        Retourne un JSON avec:
-        - seoScore: note /100
-        - engagementPrediction: probabilité 0-1
-        - suggestions: tableau de suggestions d'amélioration`;
+    // Parse the JSON response
+    const strategy = JSON.parse(completion.choices[0].message.content);
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: analysisPrompt }],
-        temperature: 0.3,
-      });
-
-      const analysis = JSON.parse(completion.choices[0].message.content || '{}');
-
-      return new Response(JSON.stringify(analysis), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: 'Invalid action' }), {
-      status: 400,
+    return new Response(JSON.stringify(strategy), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('Error in content-workflow-generator:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || "An error occurred processing your request"
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
