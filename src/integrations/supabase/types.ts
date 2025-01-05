@@ -579,6 +579,57 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_strategies: {
+        Row: {
+          approach: Json
+          channels: string[]
+          content_plan: Json
+          created_at: string | null
+          expected_results: Json
+          id: string
+          market_context: Json | null
+          objective_target: number
+          objective_timeline: Json
+          objective_type: Database["public"]["Enums"]["business_objective_type"]
+          schedule: Json
+          target_audience: Json[]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approach: Json
+          channels: string[]
+          content_plan: Json
+          created_at?: string | null
+          expected_results: Json
+          id?: string
+          market_context?: Json | null
+          objective_target: number
+          objective_timeline: Json
+          objective_type: Database["public"]["Enums"]["business_objective_type"]
+          schedule: Json
+          target_audience: Json[]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approach?: Json
+          channels?: string[]
+          content_plan?: Json
+          created_at?: string | null
+          expected_results?: Json
+          id?: string
+          market_context?: Json | null
+          objective_target?: number
+          objective_timeline?: Json
+          objective_type?: Database["public"]["Enums"]["business_objective_type"]
+          schedule?: Json
+          target_audience?: Json[]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meetings: {
         Row: {
           created_at: string | null
@@ -1208,6 +1259,10 @@ export type Database = {
         | "message_received"
         | "score_changed"
         | "campaign_engagement"
+      business_objective_type:
+        | "SALES_MANDATE"
+        | "LEAD_GENERATION"
+        | "BRAND_AWARENESS"
       contact_qualification: "lead" | "prospect" | "client"
       lead_source: "facebook" | "instagram" | "linkedin" | "direct"
       lead_status: "cold" | "warm" | "hot"

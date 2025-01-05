@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.1.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,37 +21,34 @@ serve(async (req) => {
       throw new Error('Message is required');
     }
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "Vous êtes un expert en immobilier de luxe sur la Côte d'Azur, spécialisé dans la création de stratégies marketing et la génération de leads qualifiés."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7,
-      }),
+    // Initialize OpenAI
+    const configuration = new Configuration({
+      apiKey: Deno.env.get('OPENAI_API_KEY'),
+    });
+    const openai = new OpenAIApi(configuration);
+
+    // Create chat completion
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "Vous êtes un expert en immobilier de luxe sur la Côte d'Azur, spécialisé dans la création de stratégies marketing et la génération de leads qualifiés."
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ],
+      temperature: 0.7,
     });
 
-    const data = await openAIResponse.json();
-    console.log('OpenAI response:', data);
-
-    if (!data.choices || !data.choices[0]) {
+    if (!completion.data.choices || !completion.data.choices[0]) {
       throw new Error('Invalid response from OpenAI');
     }
 
     const response = {
-      content: data.choices[0].message.content,
+      content: completion.data.choices[0].message?.content,
       role: 'assistant',
       metadata: {
         model: "gpt-4",
@@ -59,21 +57,24 @@ serve(async (req) => {
       }
     };
 
-    // Log the interaction in Supabase
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') || '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
     );
 
+    // Log the interaction
     await supabaseClient
-      .from('chat_interactions')
+      .from('automation_logs')
       .insert({
         user_id: userId,
-        message: message,
-        response: response.content,
+        action_type: 'ai_chat',
+        description: message,
+        status: 'completed',
         metadata: {
           model: response.metadata.model,
-          timestamp: response.metadata.timestamp
+          timestamp: response.metadata.timestamp,
+          response: response.content
         }
       });
 
@@ -89,6 +90,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in AI chat:', error);
+    
     return new Response(
       JSON.stringify({ 
         error: error.message || "An error occurred processing your request"
