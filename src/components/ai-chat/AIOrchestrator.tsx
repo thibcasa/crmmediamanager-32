@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ModuleState, ModuleType, CampaignObjective } from '@/types/modules';
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { Brain, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Brain, CheckCircle, AlertCircle, Loader2, Target } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { ModuleOrchestrator } from '@/services/ai/orchestration/ModuleOrchestrator';
 
@@ -20,6 +20,8 @@ export const useAIOrchestrator = () => {
   const { executeWorkflow: executeBaseWorkflow, isProcessing } = useWorkflowExecution();
   const { toast } = useToast();
   const [currentObjective, setCurrentObjective] = useState<string | null>(null);
+  const [mandateGoal, setMandateGoal] = useState<number>(0);
+  const [currentMandates, setCurrentMandates] = useState<number>(0);
   const [moduleStates, setModuleStates] = useState<Record<ModuleType, ModuleState>>({
     subject: { ...initialModuleState },
     title: { ...initialModuleState },
@@ -42,6 +44,22 @@ export const useAIOrchestrator = () => {
     }));
   };
 
+  const parseObjective = (objective: string) => {
+    const mandateMatch = objective.match(/(\d+)\s*mandats?/i);
+    const weeklyMatch = objective.includes('semaine') || objective.includes('hebdomadaire');
+    
+    if (mandateMatch) {
+      const mandateCount = parseInt(mandateMatch[1]);
+      return {
+        mandateGoal: mandateCount,
+        frequency: weeklyMatch ? 'weekly' : 'monthly',
+        type: 'mandate_generation'
+      };
+    }
+    
+    return null;
+  };
+
   const executeWorkflow = async (objective: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -57,11 +75,20 @@ export const useAIOrchestrator = () => {
       setCurrentObjective(objective);
       console.log('Démarrage de l\'orchestration avec l\'objectif:', objective);
       
+      // Parse objective for mandate goals
+      const parsedObjective = parseObjective(objective);
+      if (parsedObjective) {
+        setMandateGoal(parsedObjective.mandateGoal);
+        console.log(`Objectif détecté: ${parsedObjective.mandateGoal} mandats par ${parsedObjective.frequency}`);
+      }
+
       // Convert string objective to CampaignObjective object
       const campaignObjective: CampaignObjective = {
         objective: objective,
-        goalType: 'lead_generation', // Default goal type
-        platform: 'facebook', // Default platform
+        goalType: parsedObjective ? 'mandate_generation' : 'lead_generation',
+        platform: 'linkedin', // Default platform
+        mandateGoal: parsedObjective?.mandateGoal || 0,
+        frequency: parsedObjective?.frequency || 'weekly'
       };
       
       // Execute module chain with proper object
@@ -77,6 +104,30 @@ export const useAIOrchestrator = () => {
         });
       });
 
+      // Create campaign in database
+      const { data: campaign, error: campaignError } = await supabase
+        .from('social_campaigns')
+        .insert({
+          name: `Campagne Mandats - Objectif ${parsedObjective?.mandateGoal || 'leads'}`,
+          platform: 'linkedin',
+          status: 'active',
+          targeting_criteria: {
+            location: "Alpes-Maritimes",
+            interests: ["Immobilier", "Investissement immobilier"],
+            property_types: ["Appartement", "Maison", "Villa"]
+          },
+          message_template: results.content.data?.template,
+          target_metrics: {
+            weekly_mandates: parsedObjective?.mandateGoal || 4,
+            engagement_rate: 0.05,
+            conversion_rate: 0.02
+          }
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
       // Log successful execution
       await supabase.from('automation_logs').insert({
         user_id: session.user.id,
@@ -84,13 +135,17 @@ export const useAIOrchestrator = () => {
         description: `Workflow exécuté avec succès pour l'objectif: ${objective}`,
         metadata: {
           objective,
-          results
+          results,
+          campaign_id: campaign.id,
+          mandate_goal: parsedObjective?.mandateGoal
         }
       });
 
       toast({
         title: "Workflow exécuté avec succès",
-        description: "Tous les modules ont été exécutés avec succès",
+        description: parsedObjective 
+          ? `Campagne créée avec objectif de ${parsedObjective.mandateGoal} mandats par ${parsedObjective.frequency}`
+          : "Campagne créée avec succès",
       });
 
       return results;
@@ -123,6 +178,8 @@ export const useAIOrchestrator = () => {
     isProcessing,
     currentObjective,
     moduleStates,
-    getModuleIcon
+    getModuleIcon,
+    mandateGoal,
+    currentMandates
   };
 };

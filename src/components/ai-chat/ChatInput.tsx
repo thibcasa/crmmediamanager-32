@@ -61,6 +61,14 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
       // Appeler le onSubmit original après l'orchestration
       onSubmit(e);
 
+      // Afficher un message de confirmation spécifique pour les objectifs de mandats
+      if (input.toLowerCase().includes('mandat')) {
+        toast({
+          title: "Campagne de mandats lancée",
+          description: "L'IA va générer et optimiser des posts jusqu'à atteindre votre objectif de mandats",
+        });
+      }
+
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
       toast({
@@ -84,7 +92,7 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit }: ChatInp
             <Input
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
-              placeholder="Ex: Créer une stratégie LinkedIn pour obtenir des mandats immobiliers..."
+              placeholder="Ex: Lancer une campagne pour obtenir 4 mandats de vente par semaine..."
               disabled={isLoading}
               className={`flex-1 border-sage-200 focus:ring-sage-500 ${
                 isOverLimit ? 'border-red-500' : ''

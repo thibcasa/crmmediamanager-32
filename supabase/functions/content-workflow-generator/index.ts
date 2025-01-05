@@ -12,9 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { objective, domain, target_audience, platforms } = await req.json();
+    const { objective, goalType, mandateGoal, frequency } = await req.json();
     
-    console.log('Generating content for:', { objective, domain, target_audience, platforms });
+    console.log('Generating content for:', { objective, goalType, mandateGoal, frequency });
+
+    const systemPrompt = `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
+    Ton objectif est de générer une série de posts LinkedIn ciblés pour obtenir ${mandateGoal || 4} mandats 
+    de vente par ${frequency || 'semaine'} dans les Alpes-Maritimes. Concentre-toi sur:
+    - La valorisation des biens d'exception
+    - Les opportunités du marché local
+    - L'expertise immobilière de luxe
+    - La confiance et la crédibilité professionnelle
+    - Les témoignages et succès`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -27,42 +36,16 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Tu es un expert en marketing immobilier de luxe sur la Côte d'Azur.
-            Ton objectif est de générer du contenu marketing ciblé pour les propriétaires
-            de biens immobiliers haut de gamme dans les Alpes-Maritimes.
-            Concentre-toi sur la valorisation des biens d'exception, les opportunités
-            du marché local et l'expertise immobilière de luxe.`
+            content: systemPrompt
           },
           {
             role: 'user',
-            content: `Génère une série de posts pour les réseaux sociaux avec les caractéristiques suivantes:
-            - Objectif: ${objective}
-            - Domaine: ${domain}
-            - Cible: ${target_audience}
-            - Plateformes: ${platforms.join(', ')}
-            
-            Format de réponse souhaité en JSON:
-            {
-              "posts": [
-                {
-                  "platform": "linkedin",
-                  "content": "Contenu du post",
-                  "hashtags": ["liste", "des", "hashtags"],
-                  "callToAction": "Appel à l'action",
-                  "imagePrompt": "Description pour la génération d'image",
-                  "suggestedTiming": "Meilleur moment pour poster"
-                }
-              ],
-              "strategy": {
-                "postingFrequency": "Fréquence de publication",
-                "bestTimes": ["09:00", "12:00", "17:00"],
-                "targetMetrics": {
-                  "engagement": "Objectif d'engagement",
-                  "leads": "Objectif de leads",
-                  "conversion": "Objectif de conversion"
-                }
-              }
-            }`
+            content: `Génère une série de 5 posts LinkedIn optimisés pour obtenir ${mandateGoal || 4} mandats 
+            de vente par ${frequency || 'semaine'} dans les Alpes-Maritimes. Format JSON avec:
+            - Le contenu du post
+            - Les hashtags pertinents
+            - Le meilleur moment pour poster
+            - Une description pour générer une image pertinente`
           }
         ],
         temperature: 0.7,
@@ -82,7 +65,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "dall-e-3",
-          prompt: `${post.imagePrompt}. Style: Professional real estate photography, luxury property in French Riviera, bright, modern.`,
+          prompt: `${post.imagePrompt}. Style: Professional luxury real estate photography in French Riviera, bright, modern.`,
           n: 1,
           size: "1024x1024",
           quality: "standard",
@@ -97,13 +80,26 @@ serve(async (req) => {
       };
     }));
 
-    content.posts = postsWithImages;
+    const result = {
+      posts: postsWithImages,
+      strategy: {
+        postingFrequency: frequency || "weekly",
+        targetMandates: mandateGoal || 4,
+        bestTimes: ["09:00", "12:00", "17:00"],
+        platforms: ["linkedin"],
+        targetMetrics: {
+          weeklyMandates: mandateGoal || 4,
+          engagement: "5%",
+          leads: mandateGoal * 5,
+          conversion: "20%"
+        }
+      }
+    };
 
-    // Log the generated content
-    console.log('Generated content:', content);
+    console.log('Generated content:', result);
 
     return new Response(
-      JSON.stringify(content),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
