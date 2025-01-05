@@ -106,8 +106,7 @@ export const useAIOrchestrator = () => {
         goalType: parsedObjective.goalType,
         platform: 'linkedin',
         mandateGoal: parsedObjective.mandateGoal,
-        frequency: parsedObjective.frequency,
-        customMetrics: parsedObjective.customMetrics
+        frequency: parsedObjective.frequency
       };
 
       const strategy = await generateStrategy(campaignObjective);
