@@ -49,8 +49,6 @@ export const FacebookCampaignForm = () => {
 
   const handleSubmit = async () => {
     try {
-      setIsSubmitting(true);
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -94,7 +92,16 @@ export const FacebookCampaignForm = () => {
           content_themes: ["property_showcase"]
         },
         current_prediction: {},
-        optimization_cycles: []
+        optimization_cycles: [],
+        roi: 0,
+        advanced_metrics: {
+          sentiment: { neutral: 0, negative: 0, positive: 0 },
+          demographicData: { ageRanges: {}, locations: {}, genderDistribution: {} },
+          interactionTimeline: []
+        },
+        conversion_rate: 0,
+        engagement_rate: 0,
+        reach: 0
       };
 
       await SocialCampaignService.createCampaign(formattedCampaign);
