@@ -29,22 +29,23 @@ serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `Vous êtes un expert en marketing immobilier sur la Côte d'Azur. 
-                   Générez une stratégie de contenu optimisée pour atteindre les objectifs donnés.`
+          content: `You are an expert in real estate marketing for the French Riviera.
+                   Generate an optimized content strategy in JSON format with the following structure:
+                   {
+                     "template": "message template",
+                     "posts": [{"content": "post content", "type": "post type"}],
+                     "seoTitles": ["title 1", "title 2"],
+                     "hashtags": ["hashtag1", "hashtag2"]
+                   }`
         },
         {
           role: "user",
-          content: `Créez une stratégie de contenu pour : ${objective}
-                   Type d'objectif : ${goalType}
-                   ${mandateGoal ? `Objectif de mandats : ${mandateGoal} par ${frequency}` : ''}
-                   
-                   Retournez un JSON avec:
-                   - template: le modèle de message
-                   - posts: tableau de posts optimisés
-                   - seoTitles: suggestions de titres SEO
-                   - hashtags: hashtags pertinents`
+          content: `Create a content strategy for: ${objective}
+                   Type d'objectif: ${goalType}
+                   ${mandateGoal ? `Objectif de mandats: ${mandateGoal} par ${frequency}` : ''}`
         }
-      ]
+      ],
+      response_format: { type: "json_object" }
     });
 
     if (!completion.choices[0].message?.content) {
@@ -54,15 +55,21 @@ serve(async (req) => {
     // Parse the JSON response
     const strategy = JSON.parse(completion.choices[0].message.content);
 
+    // Log the generated strategy
+    console.log('Generated strategy:', strategy);
+
     return new Response(JSON.stringify(strategy), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in content-workflow-generator:', error);
+    
+    // Return a properly formatted error response
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An error occurred processing your request"
+        error: error.message,
+        details: error.stack
       }),
       {
         status: 500,
