@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { ChatMessages } from "@/components/ai-chat/ChatMessages";
-import { ExamplePrompts } from "@/components/ai-chat/ExamplePrompts";
 import { useChat } from "@/hooks/use-chat";
 import { Card } from "@/components/ui/card";
 import { useSessionCheck } from "@/hooks/useSessionCheck";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleContainer } from "@/components/ai-chat/modules/ModuleContainer";
-import { CreativesModule } from "@/components/ai-chat/modules/CreativesModule";
 import { useAIOrchestrator } from "@/components/ai-chat/AIOrchestrator";
+import { Brain, MessageSquare, Target } from "lucide-react";
 
 const AiChat = () => {
   useSessionCheck();
@@ -28,32 +27,35 @@ const AiChat = () => {
     }
   };
 
-  const handleExampleClick = (prompt: string) => {
-    setInput(prompt);
-  };
-
   return (
     <div className="flex flex-col h-full max-w-7xl mx-auto p-4 space-y-4">
-      <Card className="p-6">
-        <h1 className="text-2xl font-bold text-sage-800 mb-2">
-          Assistant Marketing Immobilier
-        </h1>
-        <p className="text-sage-600 mb-4">
-          Je suis votre assistant spécialisé dans le marketing immobilier de luxe sur la Côte d'Azur.
-          Je peux vous aider à créer du contenu, analyser vos performances et optimiser vos stratégies.
-        </p>
+      <Card className="p-6 bg-gradient-to-r from-sage-50 to-sage-100">
+        <div className="flex items-center gap-3 mb-4">
+          <Brain className="h-8 w-8 text-sage-600" />
+          <div>
+            <h1 className="text-2xl font-bold text-sage-800">
+              Assistant Marketing Immobilier
+            </h1>
+            <p className="text-sage-600">
+              Je suis votre assistant spécialisé dans le marketing immobilier de luxe sur la Côte d'Azur.
+            </p>
+          </div>
+        </div>
       </Card>
 
       <Tabs defaultValue="chat" className="flex-1">
-        <TabsList>
-          <TabsTrigger value="chat">Chat IA</TabsTrigger>
-          <TabsTrigger value="modules">Modules</TabsTrigger>
-          <TabsTrigger value="creatives">Créatives</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsTrigger value="chat" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Chat IA
+          </TabsTrigger>
+          <TabsTrigger value="modules" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Modules
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="flex-1 flex flex-col space-y-4">
-          <ExamplePrompts onPromptClick={handleExampleClick} />
-          
           <div className="flex-1 bg-white rounded-lg shadow-sm border border-sage-200 flex flex-col">
             <ChatMessages messages={messages} isLoading={isLoading} />
             <ChatInput
@@ -61,6 +63,7 @@ const AiChat = () => {
               isLoading={isLoading}
               onInputChange={setInput}
               onSubmit={handleSubmit}
+              placeholder="Ex: Créer une campagne LinkedIn pour obtenir 4 mandats par semaine..."
             />
           </div>
         </TabsContent>
@@ -76,10 +79,6 @@ const AiChat = () => {
             <ModuleContainer moduleType="predictive" />
             <ModuleContainer moduleType="correction" />
           </div>
-        </TabsContent>
-
-        <TabsContent value="creatives">
-          <CreativesModule />
         </TabsContent>
       </Tabs>
     </div>
