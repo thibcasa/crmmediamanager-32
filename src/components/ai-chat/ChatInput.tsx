@@ -47,15 +47,18 @@ export const ChatInput = ({ input, isLoading, onInputChange, onSubmit, placehold
       console.log("Démarrage du workflow avec l'objectif:", input);
       
       // Exécuter le workflow avec l'objectif
-      await executeWorkflow(input);
+      const result = await executeWorkflow(input);
       
-      // Appeler le onSubmit original après l'exécution du workflow
-      onSubmit(e);
+      if (result) {
+        console.log("Résultat du workflow:", result);
+        // Appeler le onSubmit original après l'exécution du workflow
+        onSubmit(e);
 
-      toast({
-        title: "Succès",
-        description: "Votre demande a été traitée avec succès",
-      });
+        toast({
+          title: "Succès",
+          description: "Votre demande a été traitée avec succès",
+        });
+      }
 
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);

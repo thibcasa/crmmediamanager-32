@@ -1,11 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Brain, User } from "lucide-react";
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { Message } from './types/chat';
 
 interface ChatDisplayProps {
   messages: Message[];
@@ -24,7 +20,19 @@ export const ChatDisplay = ({ messages }: ChatDisplayProps) => {
                 <User className="h-6 w-6 text-gray-600 mt-1" />
               )}
               <div className="flex-1">
-                <p className="text-sm text-gray-800">{message.content}</p>
+                {typeof message.content === 'string' ? (
+                  <p className="text-sm text-gray-800">{message.content}</p>
+                ) : (
+                  <div className="text-sm text-gray-800">
+                    <p className="font-medium">{message.content.text}</p>
+                    <div className="mt-2 text-xs text-gray-600">
+                      <p>Platform: {message.content.platform}</p>
+                      <p>Target Audience: {message.content.targetAudience}</p>
+                      <p>Location: {message.content.location}</p>
+                      <p>Property Type: {message.content.propertyType}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
